@@ -12,13 +12,19 @@ import (
 
 type Querier interface {
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (uuid.UUID, error)
+	CreateContributor(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	CreateScore(ctx context.Context, arg CreateScoreParams) error
 	GetAccountByEmail(ctx context.Context, email string) (GetAccountByEmailRow, error)
 	GetAccountById(ctx context.Context, id uuid.UUID) (GetAccountByIdRow, error)
 	GetAccounts(ctx context.Context) ([]GetAccountsRow, error)
-	GetProfileByAccountId(ctx context.Context, accountID uuid.UUID) (Profile, error)
-	GetScoresByProfile(ctx context.Context, accountID uuid.UUID) ([]Score, error)
+	GetContributorById(ctx context.Context, id uuid.UUID) (GetContributorByIdRow, error)
+	GetProfileById(ctx context.Context, id uuid.UUID) (Profile, error)
+	GetScoresByContributorId(ctx context.Context, id uuid.UUID) ([]Score, error)
+	GetUnverifiedContributors(ctx context.Context) ([]Contributor, error)
+	GetVerifiedScores(ctx context.Context) ([]GetVerifiedScoresRow, error)
 	UpdateAccount(ctx context.Context, arg UpdateAccountParams) (uuid.UUID, error)
+	UpdateAccountRole(ctx context.Context, arg UpdateAccountRoleParams) (uuid.UUID, error)
+	VerifyContributor(ctx context.Context, id uuid.UUID) error
 }
 
 var _ Querier = (*Queries)(nil)

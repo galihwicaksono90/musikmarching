@@ -22,7 +22,7 @@ type accountService struct {
 }
 
 // CreateOrUpdateAccount implements AccountService.
-func (s *accountService) UpsertAccount(user goth.User) (*model.SessionUser, error){
+func (s *accountService) UpsertAccount(user goth.User) (*model.SessionUser, error) {
 	ctx := context.Background()
 	accountCheck, err := s.store.GetAccountByEmail(ctx, user.Email)
 	var id uuid.UUID
@@ -62,11 +62,11 @@ func (s *accountService) UpsertAccount(user goth.User) (*model.SessionUser, erro
 	}
 
 	return &model.SessionUser{
-		ID:       id,
-		Email:    user.Email,
-		Name:     user.Name,
-		RoleName: res.RoleName,
-		Picture:  user.AvatarURL,
+		ID:         id,
+		Email:      user.Email,
+		Name:       user.Name,
+		RoleName:   res.RoleName,
+		PictureUrl: user.AvatarURL,
 	}, nil
 }
 

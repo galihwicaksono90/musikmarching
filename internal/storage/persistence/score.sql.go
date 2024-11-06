@@ -17,7 +17,7 @@ WITH score_insert AS (
   VALUES ($2)
   RETURNING id
 )
-INSERT INTO profile_score_uploads (profile_id, score_id)
+INSERT INTO contributor_score_uploads (contributor_id, score_id)
 values($1, (SELECT id FROM score_insert))
 `
 
@@ -31,17 +31,17 @@ func (q *Queries) CreateScore(ctx context.Context, arg CreateScoreParams) error 
 	return err
 }
 
-const getScoresByProfile = `-- name: GetScoresByProfile :many
-select s.id, s.title, s.created_at, s.updated_at, s.deleted_at
-from profile p
-inner join profile_score_uploads psu on p.id = psu.profile_id
+const getScoresByContributorId = `-- name: GetScoresByContributorId :many
+select s.id, s.title, s.isverified, s.verifiedat, s.created_at, s.updated_at, s.deleted_at
+from contributor p
+inner join contributor_score_uploads psu on p.id = psu.profile_id
 inner join score s on psu.score_id = s.id
-where p.account_id = $1
+where p.id = $1
 group by s.id, s.title
 `
 
-func (q *Queries) GetScoresByProfile(ctx context.Context, accountID uuid.UUID) ([]Score, error) {
-	rows, err := q.db.Query(ctx, getScoresByProfile, accountID)
+func (q *Queries) GetScoresByContributorId(ctx context.Context, id uuid.UUID) ([]Score, error) {
+	rows, err := q.db.Query(ctx, getScoresByContributorId, id)
 	if err != nil {
 		return nil, err
 	}
@@ -52,9 +52,55 @@ func (q *Queries) GetScoresByProfile(ctx context.Context, accountID uuid.UUID) (
 		if err := rows.Scan(
 			&i.ID,
 			&i.Title,
+			&i.Isverified,
+			&i.Verifiedat,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getVerifiedScores = `-- name: GetVerifiedScores :many
+select s.id, s.title, c.id, a.email, a.name from score as s
+inner join contributor_score_uploads as csu on s.id = csu.score_id
+inner join contributor as c on csu.contributor_id = c.id
+inner join profile as p on p.id = c.id
+inner join account as a on p.id = a.id
+where c.isverified = true 
+and s.isverified = true
+`
+
+type GetVerifiedScoresRow struct {
+	ID    uuid.UUID `db:"id" json:"id"`
+	Title string    `db:"title" json:"title"`
+	ID_2  uuid.UUID `db:"id_2" json:"id_2"`
+	Email string    `db:"email" json:"email"`
+	Name  string    `db:"name" json:"name"`
+}
+
+func (q *Queries) GetVerifiedScores(ctx context.Context) ([]GetVerifiedScoresRow, error) {
+	rows, err := q.db.Query(ctx, getVerifiedScores)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetVerifiedScoresRow{}
+	for rows.Next() {
+		var i GetVerifiedScoresRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.ID_2,
+			&i.Email,
+			&i.Name,
 		); err != nil {
 			return nil, err
 		}

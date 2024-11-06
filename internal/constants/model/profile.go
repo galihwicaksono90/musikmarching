@@ -6,6 +6,4 @@ import (
 
 type Profile struct {
 	*db.Profile
-	UploadedScores *[]db.Score `json:"uploaded_scores"`
 }
-

@@ -15,13 +15,23 @@ type Profile struct {
 }
 
 type ScoreService interface {
-	GetScoresByAccountId(account_id uuid.UUID) ([]db.Score, error)
+	GetScoresByContributorId(account_id uuid.UUID) ([]db.Score, error)
 	CreateScore(db.CreateScoreParams) error
+	GetVerifiedScores() (*[]db.GetVerifiedScoresRow, error)
 }
 
 type scoreService struct {
 	logger *logrus.Logger
 	store  db.Store
+}
+
+// GetVerifiedScores implements ScoreService.
+func (p *scoreService) GetVerifiedScores() (*[]db.GetVerifiedScoresRow, error) {
+	scores, err := p.store.GetVerifiedScores(context.Background())
+	if err != nil {
+		return &[]db.GetVerifiedScoresRow{}, err
+	}
+	return &scores, nil
 }
 
 // CreateScore implements ScoreService.
@@ -30,11 +40,11 @@ func (p *scoreService) CreateScore(params db.CreateScoreParams) error {
 }
 
 // GetScoresByAccountId implements ProfileService.
-func (p *scoreService) GetScoresByAccountId(account_id uuid.UUID) ([]db.Score, error) {
-	return p.store.GetScoresByProfile(context.Background(), account_id)
+func (p *scoreService) GetScoresByContributorId(account_id uuid.UUID) ([]db.Score, error) {
+	return p.store.GetScoresByContributorId(context.Background(), account_id)
 }
 
-func NewProfileService(logger *logrus.Logger, store db.Store) ScoreService {
+func NewScoreService(logger *logrus.Logger, store db.Store) ScoreService {
 	return &scoreService{
 		logger,
 		store,

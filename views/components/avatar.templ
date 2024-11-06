@@ -1,0 +1,9 @@
+package components
+
+import "galihwicaksono90/musikmarching-be/internal/constants/model"
+
+templ Avatar(user model.SessionUser) {
+	<div class="rounded-full overflow-hidden">
+		<img class="h-12 w-12 rounded-full" src={ user.PictureUrl } alt="avatar picture"/>
+	</div>
+}

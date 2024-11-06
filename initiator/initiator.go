@@ -36,7 +36,7 @@ func Init() {
 
 	sessionStore := auth.NewSessionStore(auth.SessionOptions{
 		CookiesKey: "secretkey",
-		MaxAge:     60 * 60 * 24 * 2,
+		MaxAge:     60 * 60 * 24 * 4,
 		HttpOnly:   true,
 		Secure:     true,
 	})
@@ -45,12 +45,13 @@ func Init() {
 	authService := auth.NewAuthService(logger, sessionStore)
 	accountService := account.NewAccountService(logger, store)
 	profileService := profile.NewProfileService(logger, store)
-	scoreService := score.NewProfileService(logger, store)
+	scoreService := score.NewScoreService(logger, store)
 
+	// initiate new handler
 	handler := handlers.New(
-		logger, 
-		&store, 
-		authService, 
+		logger,
+		&store,
+		authService,
 		accountService,
 		profileService,
 		scoreService,
@@ -59,15 +60,18 @@ func Init() {
 	// routings
 	router := mux.NewRouter()
 
+	routings.PageRouting(handler, router)
 	routings.AuthRouting(handler, router)
-	routings.HomeRouting(handler, router)
 	routings.ScoreRouting(handler, router)
-	routings.ProfileRouting(handler, router)
+	// routings.ProfileRouting(handler, router)
+
+	// serve static files
+	fs := http.FileServer(http.Dir("./static/"))
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 
 	port := fmt.Sprintf(":%s", config.PORT)
 
 	fmt.Printf("listening to port %s \n", port)
 
-	// log.Printf("Server: Listening on %s:%s\n", "http://localohst", port)
 	log.Fatalln(http.ListenAndServe(port, router))
 }

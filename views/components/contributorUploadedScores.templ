@@ -1,0 +1,13 @@
+package components
+
+import db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
+
+templ ContributorUploadedScores(scores *[]db.Score) {
+	<div>
+		<ul id="score-list">
+			for _, score := range *scores {
+				<li>{ score.Title }</li>
+			}
+		</ul>
+	</div>
+}

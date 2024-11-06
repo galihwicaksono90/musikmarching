@@ -21,11 +21,11 @@ inner join role r on r.id = a.role_id
 WITH account_insert AS (
   INSERT INTO Account (email, name, picture_url, role_id)
   VALUES (@email, @name, @pictureurl, (select id from role where name = 'user'))
-  RETURNING id
+  RETURNING id, name
 )
-INSERT INTO Profile as p (account_id)
-SELECT id FROM account_insert
-returning account_id
+INSERT INTO Profile as p (id, name)
+SELECT id, name FROM account_insert
+returning p.id
 ;
 
 -- name: UpdateAccount :one
@@ -33,4 +33,11 @@ update account a
 set name = @name, picture_url = @pictureUrl
 where id = @id
 returning a.id
+;
+
+-- name: UpdateAccountRole :one
+update account a
+set role_id = (select id from role as r where r.name = @roleName)
+where a.id = @id
+RETURNING id
 ;

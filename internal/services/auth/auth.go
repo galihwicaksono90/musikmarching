@@ -32,15 +32,16 @@ func (a *authService) GetSessionUser(r *http.Request) (model.SessionUser, error)
 	}
 
 	u := session.Values["user"]
-
 	if u == nil {
 		return model.SessionUser{}, fmt.Errorf("user is not authenticated! %v", u)
 	}
+
 	return model.SessionUser{
-		ID:       u.(model.SessionUser).ID,
-		Email:    u.(model.SessionUser).Email,
-		Name:     u.(model.SessionUser).Name,
-		RoleName: u.(model.SessionUser).RoleName,
+		ID:         u.(model.SessionUser).ID,
+		Email:      u.(model.SessionUser).Email,
+		Name:       u.(model.SessionUser).Name,
+		RoleName:   u.(model.SessionUser).RoleName,
+		PictureUrl: u.(model.SessionUser).PictureUrl,
 	}, nil
 }
 

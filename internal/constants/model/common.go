@@ -8,11 +8,11 @@ import (
 )
 
 type SessionUser struct {
-	ID       uuid.UUID   `json:"id"`
-	Email    string      `json:"email"`
-	Name     string      `json:"name"`
-	RoleName db.Rolename `json:"role_name"`
-	Picture  string      `json:"picture"`
+	ID         uuid.UUID   `json:"id"`
+	Email      string      `json:"email"`
+	Name       string      `json:"name"`
+	RoleName   db.Rolename `json:"role_name"`
+	PictureUrl string      `json:"picture"`
 }
 
 type Account struct {

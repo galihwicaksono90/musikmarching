@@ -11,16 +11,22 @@ import (
 	"github.com/google/uuid"
 )
 
-const getProfileByAccountId = `-- name: GetProfileByAccountId :one
-select id, account_id
+const getProfileById = `-- name: GetProfileById :one
+select id, name, created_at, updated_at, deleted_at
 from profile p
-where p.account_id = $1
+where p.id = $1
 limit 1
 `
 
-func (q *Queries) GetProfileByAccountId(ctx context.Context, accountID uuid.UUID) (Profile, error) {
-	row := q.db.QueryRow(ctx, getProfileByAccountId, accountID)
+func (q *Queries) GetProfileById(ctx context.Context, id uuid.UUID) (Profile, error) {
+	row := q.db.QueryRow(ctx, getProfileById, id)
 	var i Profile
-	err := row.Scan(&i.ID, &i.AccountID)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
 	return i, err
 }

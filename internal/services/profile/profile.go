@@ -1,7 +1,7 @@
 package profile
 
 import (
-	"context"
+	// "context"
 	"galihwicaksono90/musikmarching-be/internal/constants/model"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 
@@ -10,7 +10,7 @@ import (
 )
 
 type ProfileService interface {
-	GetProfileByAccountId(account_id uuid.UUID) (*model.Profile, error)
+	GetProfileById(account_id uuid.UUID) (*model.Profile, error)
 }
 
 type profileService struct {
@@ -19,22 +19,23 @@ type profileService struct {
 }
 
 // GetScoresByAccountId implements ProfileService.
-func (p *profileService) GetProfileByAccountId(account_id uuid.UUID) (*model.Profile, error) {
+func (p *profileService) GetProfileById(account_id uuid.UUID) (*model.Profile, error) {
 
-	profile, err := p.store.GetProfileByAccountId(context.Background(), account_id)
-	if err != nil {
-		return nil, err
-	}
+	// profile, err := p.store.GetProfileById(context.Background(), account_id)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	uploadedScores, err := p.store.GetScoresByProfile(context.Background(), account_id)
-	if err != nil {
-		p.logger.Errorln(err)
-	}
+	// uploadedScores, err := p.store.GetScoresByProfileId(context.Background(), account_id)
+	// if err != nil {
+	// 	p.logger.Errorln(err)
+	// }
 
-	return &model.Profile{
-		Profile:        &profile,
-		UploadedScores: &uploadedScores,
-	}, nil
+	// return &model.Profile{
+	// 	Profile:        &profile,
+	// 	UploadedScores: uploadedScores,
+	// }, nil
+	return nil, nil
 }
 
 func NewProfileService(logger *logrus.Logger, store db.Store) ProfileService {

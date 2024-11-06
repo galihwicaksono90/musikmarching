@@ -5,12 +5,16 @@ templ Index() {
 	<html lang="en">
 		<head>
 			<title>Musik Marching</title>
-			<meta charset="UTF-8"/>
-			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<script src="https://unpkg.com/htmx.org@2.0.3" integrity="sha384-0895/pl2MU10Hqc6jd4RvrthNlDiE9U1tWmX7WRESftEDRosgxNsQG/Ze9YMRzHq" crossorigin="anonymous"></script>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<meta name="color-scheme" content="light dark"/>
+			<script src="static/script/htmx.min.js"></script>
+			<link rel="stylesheet" href="static/css/style.css"/>
 		</head>
 		<body>
-			{ children... }
+			<main class="container mx-auto">
+				{ children... }
+			</main>
 		</body>
 	</html>
 }

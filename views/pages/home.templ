@@ -2,30 +2,16 @@ package pages
 
 import (
 	"galihwicaksono90/musikmarching-be/internal/constants/model"
+	"galihwicaksono90/musikmarching-be/views/components"
 	"galihwicaksono90/musikmarching-be/views/layouts"
 )
 
 templ Home(user model.SessionUser) {
 	@layouts.Index() {
-		<div>
-			<h1 class="text-3xl font-bold text-center my-4">
-				{ user.Email }
-			</h1>
-			<div id="scores"></div>
-			<h1 class="text-3xl font-bold text-center my-4">
-				{ string( user.RoleName ) }
-			</h1>
-			if user.Name == "" {
-				<div>
-					<h1>Not logged in</h1>
-					<a href="/oauth2/google">Login google</a>
-				</div>
-			} else {
-				<h1>{ user.Name }</h1>
-				<a href="/oauth2/logout/google">Logout</a>
-			}
-			<button hx-get="/scores" hx-swap="innerHTML" hx-target="#scores">Get scores</button>
-			<div id="scores">testing</div>
+		@components.Header(user)
+		<div class="container mx-auto">
+			<h1>Home</h1>
+			<div hx-get="/score/verified" hx-trigger="load">hello</div>
 		</div>
 	}
 }

@@ -10,11 +10,11 @@ templ Profile(profile model.Profile) {
 		<div id="profile">
 			{ profile.Profile.ID.String() }
 			<h1>profileeee</h1>
-			<ul id="score-list">
-				for _, score := range *profile.UploadedScores {
-					<li>{ score.Title }</li>
-				}
-			</ul>
+			<!-- <ul id="score-list"> -->
+			<!-- 	for _, score := range *profile.UploadedScores { -->
+			<!-- 		<li>{ score.Title }</li> -->
+			<!-- 	} -->
+			<!-- </ul> -->
 			<form>
 				<input type="text" name="title" placeholder="Title"/>
 				<button

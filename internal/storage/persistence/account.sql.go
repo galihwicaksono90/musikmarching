@@ -17,11 +17,11 @@ const createAccount = `-- name: CreateAccount :one
 WITH account_insert AS (
   INSERT INTO Account (email, name, picture_url, role_id)
   VALUES ($1, $2, $3, (select id from role where name = 'user'))
-  RETURNING id
+  RETURNING id, name
 )
-INSERT INTO Profile as p (account_id)
-SELECT id FROM account_insert
-returning account_id
+INSERT INTO Profile as p (id, name)
+SELECT id, name FROM account_insert
+returning p.id
 `
 
 type CreateAccountParams struct {
@@ -32,9 +32,9 @@ type CreateAccountParams struct {
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (uuid.UUID, error) {
 	row := q.db.QueryRow(ctx, createAccount, arg.Email, arg.Name, arg.Pictureurl)
-	var account_id uuid.UUID
-	err := row.Scan(&account_id)
-	return account_id, err
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const getAccountByEmail = `-- name: GetAccountByEmail :one
@@ -171,6 +171,25 @@ type UpdateAccountParams struct {
 
 func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) (uuid.UUID, error) {
 	row := q.db.QueryRow(ctx, updateAccount, arg.Name, arg.Pictureurl, arg.ID)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
+const updateAccountRole = `-- name: UpdateAccountRole :one
+update account a
+set role_id = (select id from role as r where r.name = $1)
+where a.id = $2
+RETURNING id
+`
+
+type UpdateAccountRoleParams struct {
+	Rolename Rolename  `db:"rolename" json:"rolename"`
+	ID       uuid.UUID `db:"id" json:"id"`
+}
+
+func (q *Queries) UpdateAccountRole(ctx context.Context, arg UpdateAccountRoleParams) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, updateAccountRole, arg.Rolename, arg.ID)
 	var id uuid.UUID
 	err := row.Scan(&id)
 	return id, err

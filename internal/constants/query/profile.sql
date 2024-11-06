@@ -1,6 +1,6 @@
--- name: GetProfileByAccountId :one
+-- name: GetProfileById :one
 select *
 from profile p
-where p.account_id = @account_id
+where p.id = @id
 limit 1
 ;
