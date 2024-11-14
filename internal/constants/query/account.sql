@@ -18,14 +18,9 @@ inner join role r on r.id = a.role_id
 ;
 
 -- name: CreateAccount :one
-WITH account_insert AS (
-  INSERT INTO Account (email, name, picture_url, role_id)
-  VALUES (@email, @name, @pictureurl, (select id from role where name = 'user'))
-  RETURNING id, name
-)
-INSERT INTO Profile as p (id, name)
-SELECT id, name FROM account_insert
-returning p.id
+INSERT INTO Account (email, name, picture_url, role_id)
+VALUES (@email, @name, @pictureurl, (select id from role where name = 'user'))
+RETURNING id, name
 ;
 
 -- name: UpdateAccount :one

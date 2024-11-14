@@ -1,19 +1,42 @@
 package components
 
-import db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
+import "fmt"
 
-templ scoreItem(score db.GetVerifiedScoresRow) {
-	<div class="flex flex-row items">
-		{ score.Title } - { score.Name }
-	</div>
+type VerifiedScoreProps struct {
+	ID    string
+	Title string
+	Name  string
+	Price string
 }
 
-templ Scores(scores *[]db.GetVerifiedScoresRow) {
-	<ul id="score-list">
-		for _, score := range *scores {
-			<li>
-				@scoreItem(score)
-			</li>
-		}
-	</ul>
+templ ScoreList() {
+	<div
+		hx-get="/score/verified"
+		hx-trigger="load"
+		hx-vals='{"page_limit": 2, "page_offset": 0}'
+	/>
+}
+
+templ VerifiedScores(scores []VerifiedScoreProps) {
+	<div>
+		<h1>Verified Scores</h1>
+		<ul>
+			for _, score := range scores {
+				<li>
+					{ score.Title } - { score.Name } - { score.Price }
+					<button
+						type="button"
+						class="btn btn-primary"
+						hx-post={ fmt.Sprintf("/purchase/score/%s", score.ID) }
+						hx-swap="outerHTML"
+						hx-confirm="Are you sure?"
+						hx-params="score_id={{ score.ID }}"
+						hx-target="#purchase-notification"
+					>
+						Purchase
+					</button>
+				</li>
+			}
+		</ul>
+	</div>
 }

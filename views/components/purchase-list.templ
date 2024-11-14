@@ -1,0 +1,15 @@
+package components
+
+import db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
+
+templ PurchaseList(purchases []db.Purchase) {
+	<div>
+		<ul>
+			for _, purchase := range purchases {
+				<li>
+					{ purchase.Title } - { purchase.CreatedAt.Format("2006-01-02") }
+				</li>
+			}
+		</ul>
+	</div>
+}

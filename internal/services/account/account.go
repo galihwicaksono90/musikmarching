@@ -28,18 +28,19 @@ func (s *accountService) UpsertAccount(user goth.User) (*model.SessionUser, erro
 	var id uuid.UUID
 
 	if err != nil {
-		id, err = s.store.CreateAccount(ctx,
-			db.CreateAccountParams{
-				Name:  user.Name,
-				Email: user.Email,
-				Pictureurl: pgtype.Text{
-					String: user.AvatarURL,
-					Valid:  true,
-				},
-			})
+		newAccount, err := s.store.CreateAccount(ctx, db.CreateAccountParams{
+			Email: user.Email,
+			Name:  user.Name,
+			Pictureurl: pgtype.Text{
+				String: user.AvatarURL,
+				Valid:  true,
+			}},
+		)
 		if err != nil {
 			return nil, err
 		}
+
+		id = newAccount.ID
 	} else {
 		id, err = s.store.UpdateAccount(ctx,
 			db.UpdateAccountParams{

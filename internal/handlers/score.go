@@ -1,47 +1,43 @@
 package handlers
 
 import (
+	"fmt"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 	"galihwicaksono90/musikmarching-be/views/components"
 	"net/http"
+	"strconv"
 )
 
-func (h *Handler) HandleCreateScoreForm(w http.ResponseWriter, r *http.Request) {
-	components.CreateScoreForm().Render(r.Context(), w)
-}
-
-func (h *Handler) HandleCreateScore(w http.ResponseWriter, r *http.Request) {
-	session, _ := h.auth.GetSessionUser(r)
-
-	err := h.score.CreateScore(db.CreateScoreParams{
-		ID:    session.ID,
-		Title: r.FormValue("title"),
-	})
-	if err != nil {
-		http.Redirect(w, r, "/", http.StatusInternalServerError)
-	}
-
-	// scores, _ := h.score.GetScoresByContributorId(session.ID)
-	//
-	// components.Scores(&scores).Render(r.Context(), w)
-}
-
-func (h *Handler) HandleGetScoresByContributor(w http.ResponseWriter, r *http.Request) {
-	session, _ := h.auth.GetSessionUser(r)
-
-	_, err := h.score.GetScoresByContributorId(session.ID)
-	if err != nil {
-		h.logger.Error(err)
-		// scores = []db.Score{}
-	}
-
-	// components.Scores(&scores).Render(r.Context(), w)
-}
-
 func (h *Handler) HandleGetVerifiedScores(w http.ResponseWriter, r *http.Request) {
-	score, _ := h.score.GetVerifiedScores()
+	limit, err := strconv.Atoi(r.FormValue("page_limit"))
+	if err != nil {
+		limit = 1
+	}
+	offset, err := strconv.Atoi(r.FormValue("page_offset"))
+	if err != nil {
+		offset = 0
+	}
 
-	h.logger.Info("verified scores")
+	scores := h.score.GetVerifiedScores(db.GetVerifiedScoresParams{
+		Pagelimit:  int32(limit),
+		Pageoffset: int32(offset),
+	})
 
-	components.Scores(score).Render(r.Context(), w)
+	verifiedScores := make([]components.VerifiedScoreProps, len(*scores))
+	h.logger.Println(verifiedScores)
+
+	for index, score := range *scores {
+		s, _ := score.Price.Float64Value()
+		fmt.Println(s)
+		ss := fmt.Sprintf("%v", s.Float64)
+
+		verifiedScores[index] = components.VerifiedScoreProps{
+			ID:    score.ID.String(),
+			Title: score.Title,
+			Name:  score.Name,
+			Price: ss,
+		}
+	}
+
+	components.VerifiedScores(verifiedScores).Render(r.Context(), w)
 }

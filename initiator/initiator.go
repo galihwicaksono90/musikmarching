@@ -7,8 +7,8 @@ import (
 	"galihwicaksono90/musikmarching-be/internal/handlers"
 	"galihwicaksono90/musikmarching-be/internal/services/account"
 	"galihwicaksono90/musikmarching-be/internal/services/auth"
-	"galihwicaksono90/musikmarching-be/internal/services/profile"
 	"galihwicaksono90/musikmarching-be/internal/services/score"
+	"galihwicaksono90/musikmarching-be/internal/services/purchase"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 	"log"
 	"net/http"
@@ -44,8 +44,8 @@ func Init() {
 	// services
 	authService := auth.NewAuthService(logger, sessionStore)
 	accountService := account.NewAccountService(logger, store)
-	profileService := profile.NewProfileService(logger, store)
 	scoreService := score.NewScoreService(logger, store)
+	purchaseService := purchase.NewPurchaseService(logger, store)
 
 	// initiate new handler
 	handler := handlers.New(
@@ -53,8 +53,8 @@ func Init() {
 		&store,
 		authService,
 		accountService,
-		profileService,
 		scoreService,
+		purchaseService,
 	)
 
 	// routings
@@ -63,7 +63,7 @@ func Init() {
 	routings.PageRouting(handler, router)
 	routings.AuthRouting(handler, router)
 	routings.ScoreRouting(handler, router)
-	// routings.ProfileRouting(handler, router)
+	routings.PurchaseRouting(handler, router)
 
 	// serve static files
 	fs := http.FileServer(http.Dir("./static/"))

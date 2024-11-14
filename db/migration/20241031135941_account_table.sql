@@ -13,24 +13,26 @@ CREATE TABLE Account (
   UNIQUE(email)
 );
 
+alter table account
+add constraint fk_account_role 
+FOREIGN KEY (role_id) REFERENCES role (id) deferrable initially deferred;
+
 insert into account (id, email, name, picture_url, role_id)
-values (
+values
+(
+  '291a7f36-69ab-4be1-ba91-064445349bbd', 
+  'gorillahobo@gmail.com', 
+  'gorillahobo', 
+  'https://lh3.googleusercontent.com/a/ACg8ocJ5FwcGkTjLYTdbgvTsbKdQzVQaHcytNSMJHKFkBPptwbjRu-c=s96-c',
+  (select id from role where name = 'contributor')
+),
+(
   'f45cb09c-7ef3-473a-a8df-0e580ad026d1', 
   'galihwicaksono90@gmail.com', 
   'Galih Wicaksono', 
   'https://lh3.googleusercontent.com/a/ACg8ocJ5FwcGkTjLYTdbgvTsbKdQzVQaHcytNSMJHKFkBPptwbjRu-c=s96-c',
-  '515ebadd-f8d1-472f-8b8c-1ba53d61a358'
+  (select id from role where name = 'user')
 )
-;
-
-insert into account (id, email, name, role_id)
-values (
-  '291a7f36-69ab-4be1-ba91-064445349bbd', 
-  'gorillahobo@gmail.com', 
-  'gorillahobo', 
-  (select id from role where name = 'contributor')
-)
-;
 
 -- +goose StatementEnd
 

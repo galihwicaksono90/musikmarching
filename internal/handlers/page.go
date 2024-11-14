@@ -8,8 +8,9 @@ import (
 
 func (h *Handler) HandleHomePage(w http.ResponseWriter, r *http.Request) {
 	user, _ := h.auth.GetSessionUser(r)
+	purchases, _ := h.purchase.GetPurchases(user.ID)
 
-	pages.Home(user).Render(r.Context(), w)
+	pages.Home(user, purchases).Render(r.Context(), w)
 }
 
 func (h *Handler) HandleContributorPage(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +20,5 @@ func (h *Handler) HandleContributorPage(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-
-
-	pages.Home(user).Render(r.Context(), w)
+	pages.Home(user, []db.Purchase{}).Render(r.Context(), w)
 }

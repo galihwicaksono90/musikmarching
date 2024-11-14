@@ -14,14 +14,9 @@ import (
 )
 
 const createAccount = `-- name: CreateAccount :one
-WITH account_insert AS (
-  INSERT INTO Account (email, name, picture_url, role_id)
-  VALUES ($1, $2, $3, (select id from role where name = 'user'))
-  RETURNING id, name
-)
-INSERT INTO Profile as p (id, name)
-SELECT id, name FROM account_insert
-returning p.id
+INSERT INTO Account (email, name, picture_url, role_id)
+VALUES ($1, $2, $3, (select id from role where name = 'user'))
+RETURNING id, name
 `
 
 type CreateAccountParams struct {
@@ -30,11 +25,16 @@ type CreateAccountParams struct {
 	Pictureurl pgtype.Text `db:"pictureurl" json:"pictureurl"`
 }
 
-func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (uuid.UUID, error) {
+type CreateAccountRow struct {
+	ID   uuid.UUID `db:"id" json:"id"`
+	Name string    `db:"name" json:"name"`
+}
+
+func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (CreateAccountRow, error) {
 	row := q.db.QueryRow(ctx, createAccount, arg.Email, arg.Name, arg.Pictureurl)
-	var id uuid.UUID
-	err := row.Scan(&id)
-	return id, err
+	var i CreateAccountRow
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
 }
 
 const getAccountByEmail = `-- name: GetAccountByEmail :one

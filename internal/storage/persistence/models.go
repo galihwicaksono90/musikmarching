@@ -69,24 +69,25 @@ type Account struct {
 
 type Contributor struct {
 	ID         uuid.UUID          `db:"id" json:"id"`
-	Isverified pgtype.Bool        `db:"isverified" json:"isverified"`
+	IsVerified pgtype.Bool        `db:"is_verified" json:"is_verified"`
 	VerifiedAt pgtype.Timestamptz `db:"verified_at" json:"verified_at"`
 	CreatedAt  time.Time          `db:"created_at" json:"created_at"`
 	UpdatedAt  pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 	DeletedAt  pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
 }
 
-type ContributorScoreUpload struct {
-	ContributorID uuid.UUID `db:"contributor_id" json:"contributor_id"`
-	ScoreID       uuid.UUID `db:"score_id" json:"score_id"`
-}
-
-type Profile struct {
-	ID        uuid.UUID          `db:"id" json:"id"`
-	Name      pgtype.Text        `db:"name" json:"name"`
-	CreatedAt time.Time          `db:"created_at" json:"created_at"`
-	UpdatedAt pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
-	DeletedAt pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
+type Purchase struct {
+	ID            uuid.UUID          `db:"id" json:"id"`
+	InvoiceSerial int32              `db:"invoice_serial" json:"invoice_serial"`
+	AccountID     uuid.UUID          `db:"account_id" json:"account_id"`
+	ScoreID       uuid.UUID          `db:"score_id" json:"score_id"`
+	Price         pgtype.Numeric     `db:"price" json:"price"`
+	Title         string             `db:"title" json:"title"`
+	IsVerified    bool               `db:"is_verified" json:"is_verified"`
+	Verifiedat    pgtype.Timestamptz `db:"verifiedat" json:"verifiedat"`
+	CreatedAt     time.Time          `db:"created_at" json:"created_at"`
+	UpdatedAt     pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	DeletedAt     pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
 }
 
 type Role struct {
@@ -98,11 +99,13 @@ type Role struct {
 }
 
 type Score struct {
-	ID         uuid.UUID          `db:"id" json:"id"`
-	Title      string             `db:"title" json:"title"`
-	Isverified bool               `db:"isverified" json:"isverified"`
-	Verifiedat pgtype.Timestamptz `db:"verifiedat" json:"verifiedat"`
-	CreatedAt  time.Time          `db:"created_at" json:"created_at"`
-	UpdatedAt  pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
-	DeletedAt  pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
+	ID            uuid.UUID          `db:"id" json:"id"`
+	ContributorID uuid.UUID          `db:"contributor_id" json:"contributor_id"`
+	Title         string             `db:"title" json:"title"`
+	Price         pgtype.Numeric     `db:"price" json:"price"`
+	IsVerified    bool               `db:"is_verified" json:"is_verified"`
+	Verifiedat    pgtype.Timestamptz `db:"verifiedat" json:"verifiedat"`
+	CreatedAt     time.Time          `db:"created_at" json:"created_at"`
+	UpdatedAt     pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	DeletedAt     pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
 }

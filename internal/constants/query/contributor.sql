@@ -2,15 +2,13 @@
 select 
   a.id,
   a.email,
-  p.id, 
-  p.name, 
-  c.isverified, 
+  a.name,
+  c.is_verified, 
   c.verified_at,
   c.created_at
 from contributor as c
-inner join profile as p on c.id = p.id
 inner join account as a on c.id = a.id
-where p.id = @id
+where c.id = @id
 ;
 
 -- name: CreateContributor :one
@@ -22,12 +20,12 @@ returning c.id
 
 -- name: GetUnverifiedContributors :many
 select * from contributor as c
-where c.isverified = false;
+where c.is_verified = false;
 ;
 
 -- name: VerifyContributor :exec
 update contributor
-set isverified = true,
-    verifiedat = now()
+set is_verified = true,
+    verified_at = now()
 where id = @id;
 ;

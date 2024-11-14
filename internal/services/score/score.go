@@ -8,16 +8,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type Profile struct {
-	ID             uuid.UUID  `json:"id"`
-	AccountID      uuid.UUID  `json:"account_id"`
-	UploadedScores []db.Score `json:"uploaded_scores"`
-}
-
 type ScoreService interface {
 	GetScoresByContributorId(account_id uuid.UUID) ([]db.Score, error)
-	CreateScore(db.CreateScoreParams) error
-	GetVerifiedScores() (*[]db.GetVerifiedScoresRow, error)
+	CreateScore() error
+	GetVerifiedScores(db.GetVerifiedScoresParams) *[]db.GetVerifiedScoresRow
+	GetVerifiedScoreById(id uuid.UUID) (db.GetVerifiedScoreByIdRow, error)
 }
 
 type scoreService struct {
@@ -25,23 +20,29 @@ type scoreService struct {
 	store  db.Store
 }
 
-// GetVerifiedScores implements ScoreService.
-func (p *scoreService) GetVerifiedScores() (*[]db.GetVerifiedScoresRow, error) {
-	scores, err := p.store.GetVerifiedScores(context.Background())
-	if err != nil {
-		return &[]db.GetVerifiedScoresRow{}, err
-	}
-	return &scores, nil
+// GetVerifiedScoreById implements ScoreService.
+func (s *scoreService) GetVerifiedScoreById(id uuid.UUID) (db.GetVerifiedScoreByIdRow, error) {
+	return s.store.GetVerifiedScoreById(context.Background(), id)
 }
 
 // CreateScore implements ScoreService.
-func (p *scoreService) CreateScore(params db.CreateScoreParams) error {
-	return p.store.CreateScore(context.Background(), params)
+func (s *scoreService) CreateScore() error {
+	panic("unimplemented")
 }
 
-// GetScoresByAccountId implements ProfileService.
-func (p *scoreService) GetScoresByContributorId(account_id uuid.UUID) ([]db.Score, error) {
-	return p.store.GetScoresByContributorId(context.Background(), account_id)
+// GetScoresByContributorId implements ScoreService.
+func (s *scoreService) GetScoresByContributorId(account_id uuid.UUID) ([]db.Score, error) {
+	panic("unimplemented")
+}
+
+// GetVerifiedScores implements ScoreService.
+func (s *scoreService) GetVerifiedScores(params db.GetVerifiedScoresParams) *[]db.GetVerifiedScoresRow {
+	scores, err := s.store.GetVerifiedScores(context.Background(), params)
+
+	if err != nil {
+		return &[]db.GetVerifiedScoresRow{}
+	}
+	return &scores
 }
 
 func NewScoreService(logger *logrus.Logger, store db.Store) ScoreService {

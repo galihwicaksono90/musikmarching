@@ -40,3 +40,7 @@ templ-watch:
 .PHONY: templ
 templ:
 	templ generate
+
+.PHONY: sqlc-generate
+sqlc-generate:
+	sqlc generate

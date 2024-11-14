@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"galihwicaksono90/musikmarching-be/internal/services/account"
-	"galihwicaksono90/musikmarching-be/internal/services/auth"
-	"galihwicaksono90/musikmarching-be/internal/services/score"
-	"galihwicaksono90/musikmarching-be/internal/services/profile"
-	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
+  "galihwicaksono90/musikmarching-be/internal/services/account"
+  "galihwicaksono90/musikmarching-be/internal/services/auth"
+  "galihwicaksono90/musikmarching-be/internal/services/score"
+  "galihwicaksono90/musikmarching-be/internal/services/purchase"
+  db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 
-	"github.com/sirupsen/logrus"
+  "github.com/sirupsen/logrus"
 )
 
 type Handler struct {
@@ -15,8 +15,8 @@ type Handler struct {
   store *db.Store
   auth auth.AuthService
   account account.AccountService
-  profile profile.ProfileService
   score score.ScoreService
+  purchase purchase.PurchaseService
 }
 
 func New(
@@ -24,15 +24,15 @@ func New(
   store *db.Store, 
   auth auth.AuthService, 
   account account.AccountService,
-  profile profile.ProfileService,
   score score.ScoreService,
+  purchase purchase.PurchaseService,
 ) *Handler {
   return &Handler{
     logger,
     store,
     auth,
     account,
-    profile,
     score,
+    purchase,
   }
 }

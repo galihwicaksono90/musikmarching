@@ -9,85 +9,69 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createScore = `-- name: CreateScore :exec
-WITH score_insert AS (
-  INSERT INTO Score (title)
-  VALUES ($2)
-  RETURNING id
-)
-INSERT INTO contributor_score_uploads (contributor_id, score_id)
-values($1, (SELECT id FROM score_insert))
+const getVerifiedScoreById = `-- name: GetVerifiedScoreById :one
+select 
+  s.id,
+  s.title,
+  s.price,
+  a.name as contributor_name
+from score s
+inner join contributor c on c.id = s.contributor_id
+inner join account a  on a.id = s.contributor_id
+where s.is_verified = true and s.id = $1
 `
 
-type CreateScoreParams struct {
-	ID    uuid.UUID `db:"id" json:"id"`
-	Title string    `db:"title" json:"title"`
+type GetVerifiedScoreByIdRow struct {
+	ID              uuid.UUID      `db:"id" json:"id"`
+	Title           string         `db:"title" json:"title"`
+	Price           pgtype.Numeric `db:"price" json:"price"`
+	ContributorName string         `db:"contributor_name" json:"contributor_name"`
 }
 
-func (q *Queries) CreateScore(ctx context.Context, arg CreateScoreParams) error {
-	_, err := q.db.Exec(ctx, createScore, arg.ID, arg.Title)
-	return err
-}
-
-const getScoresByContributorId = `-- name: GetScoresByContributorId :many
-select s.id, s.title, s.isverified, s.verifiedat, s.created_at, s.updated_at, s.deleted_at
-from contributor p
-inner join contributor_score_uploads psu on p.id = psu.profile_id
-inner join score s on psu.score_id = s.id
-where p.id = $1
-group by s.id, s.title
-`
-
-func (q *Queries) GetScoresByContributorId(ctx context.Context, id uuid.UUID) ([]Score, error) {
-	rows, err := q.db.Query(ctx, getScoresByContributorId, id)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Score{}
-	for rows.Next() {
-		var i Score
-		if err := rows.Scan(
-			&i.ID,
-			&i.Title,
-			&i.Isverified,
-			&i.Verifiedat,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.DeletedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) GetVerifiedScoreById(ctx context.Context, id uuid.UUID) (GetVerifiedScoreByIdRow, error) {
+	row := q.db.QueryRow(ctx, getVerifiedScoreById, id)
+	var i GetVerifiedScoreByIdRow
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Price,
+		&i.ContributorName,
+	)
+	return i, err
 }
 
 const getVerifiedScores = `-- name: GetVerifiedScores :many
-select s.id, s.title, c.id, a.email, a.name from score as s
-inner join contributor_score_uploads as csu on s.id = csu.score_id
-inner join contributor as c on csu.contributor_id = c.id
-inner join profile as p on p.id = c.id
-inner join account as a on p.id = a.id
-where c.isverified = true 
-and s.isverified = true
+select 
+  s.id,
+  s.title,
+  s.price,
+  a.name,
+  a.email
+from score s
+inner join contributor c on c.id = s.contributor_id
+inner join account a  on a.id = s.contributor_id
+where s.is_verified = true and c.is_verified = true 
+limit $2::int offset $1::int
 `
 
-type GetVerifiedScoresRow struct {
-	ID    uuid.UUID `db:"id" json:"id"`
-	Title string    `db:"title" json:"title"`
-	ID_2  uuid.UUID `db:"id_2" json:"id_2"`
-	Email string    `db:"email" json:"email"`
-	Name  string    `db:"name" json:"name"`
+type GetVerifiedScoresParams struct {
+	Pageoffset int32 `db:"pageoffset" json:"pageoffset"`
+	Pagelimit  int32 `db:"pagelimit" json:"pagelimit"`
 }
 
-func (q *Queries) GetVerifiedScores(ctx context.Context) ([]GetVerifiedScoresRow, error) {
-	rows, err := q.db.Query(ctx, getVerifiedScores)
+type GetVerifiedScoresRow struct {
+	ID    uuid.UUID      `db:"id" json:"id"`
+	Title string         `db:"title" json:"title"`
+	Price pgtype.Numeric `db:"price" json:"price"`
+	Name  string         `db:"name" json:"name"`
+	Email string         `db:"email" json:"email"`
+}
+
+func (q *Queries) GetVerifiedScores(ctx context.Context, arg GetVerifiedScoresParams) ([]GetVerifiedScoresRow, error) {
+	rows, err := q.db.Query(ctx, getVerifiedScores, arg.Pageoffset, arg.Pagelimit)
 	if err != nil {
 		return nil, err
 	}
@@ -98,9 +82,9 @@ func (q *Queries) GetVerifiedScores(ctx context.Context) ([]GetVerifiedScoresRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Title,
-			&i.ID_2,
-			&i.Email,
+			&i.Price,
 			&i.Name,
+			&i.Email,
 		); err != nil {
 			return nil, err
 		}

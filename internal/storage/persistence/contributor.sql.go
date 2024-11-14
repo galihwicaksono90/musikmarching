@@ -30,23 +30,20 @@ const getContributorById = `-- name: GetContributorById :one
 select 
   a.id,
   a.email,
-  p.id, 
-  p.name, 
-  c.isverified, 
+  a.name,
+  c.is_verified, 
   c.verified_at,
   c.created_at
 from contributor as c
-inner join profile as p on c.id = p.id
 inner join account as a on c.id = a.id
-where p.id = $1
+where c.id = $1
 `
 
 type GetContributorByIdRow struct {
 	ID         uuid.UUID          `db:"id" json:"id"`
 	Email      string             `db:"email" json:"email"`
-	ID_2       uuid.UUID          `db:"id_2" json:"id_2"`
-	Name       pgtype.Text        `db:"name" json:"name"`
-	Isverified pgtype.Bool        `db:"isverified" json:"isverified"`
+	Name       string             `db:"name" json:"name"`
+	IsVerified pgtype.Bool        `db:"is_verified" json:"is_verified"`
 	VerifiedAt pgtype.Timestamptz `db:"verified_at" json:"verified_at"`
 	CreatedAt  time.Time          `db:"created_at" json:"created_at"`
 }
@@ -57,9 +54,8 @@ func (q *Queries) GetContributorById(ctx context.Context, id uuid.UUID) (GetCont
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
-		&i.ID_2,
 		&i.Name,
-		&i.Isverified,
+		&i.IsVerified,
 		&i.VerifiedAt,
 		&i.CreatedAt,
 	)
@@ -67,8 +63,8 @@ func (q *Queries) GetContributorById(ctx context.Context, id uuid.UUID) (GetCont
 }
 
 const getUnverifiedContributors = `-- name: GetUnverifiedContributors :many
-select id, isverified, verified_at, created_at, updated_at, deleted_at from contributor as c
-where c.isverified = false
+select id, is_verified, verified_at, created_at, updated_at, deleted_at from contributor as c
+where c.is_verified = false
 `
 
 func (q *Queries) GetUnverifiedContributors(ctx context.Context) ([]Contributor, error) {
@@ -82,7 +78,7 @@ func (q *Queries) GetUnverifiedContributors(ctx context.Context) ([]Contributor,
 		var i Contributor
 		if err := rows.Scan(
 			&i.ID,
-			&i.Isverified,
+			&i.IsVerified,
 			&i.VerifiedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -100,8 +96,8 @@ func (q *Queries) GetUnverifiedContributors(ctx context.Context) ([]Contributor,
 
 const verifyContributor = `-- name: VerifyContributor :exec
 update contributor
-set isverified = true,
-    verifiedat = now()
+set is_verified = true,
+    verified_at = now()
 where id = $1
 `
 

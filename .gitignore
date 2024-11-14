@@ -4,3 +4,4 @@
 bin
 *_templ.go*
 tmp
+app.env
