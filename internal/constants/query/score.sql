@@ -23,3 +23,38 @@ inner join contributor c on c.id = s.contributor_id
 inner join account a  on a.id = s.contributor_id
 where s.is_verified = true and s.id = @id
 ; 
+
+-- name: GetScoreById :one
+select * from score s
+where s.id = @id
+; 
+
+-- name: CreateScore :one
+insert into score (
+  title,
+  price,
+  pdf_url,
+  music_url,
+  contributor_id
+) values (
+  @title,
+  @price,
+  @pdf_url,
+  @music_url,
+  @contributor_id
+) returning id;
+
+-- name: UpdateScore :exec
+update score set
+  title = COALESCE(sqlc.narg('title'), title),
+  price = COALESCE(sqlc.narg('price'), price),
+  updated_at = now()
+where id = @id
+;
+
+-- name: GetScoreByContributorId :many
+select * from score
+where contributor_id = @id
+;
+
+

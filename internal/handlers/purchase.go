@@ -11,21 +11,11 @@ import (
 func (h *Handler) HandlePurchaseScore(w http.ResponseWriter, r *http.Request) {
 	user, _ := h.auth.GetSessionUser(r)
 	
-	h.logger.Println("########yy")
-	h.logger.Println(user)
-	h.logger.Println("########yy")
-
-
 	scoreID, err := uuid.Parse(mux.Vars(r)["score_id"])
 	if err != nil {
 		h.logger.Errorln(err)
 		return
 	}
-
-	h.logger.Println("****")
-	h.logger.Println(user.ID)
-	h.logger.Println(scoreID)
-	h.logger.Println("****")
 
 	purchaseID, err := h.purchase.PurchaseScore(user.ID, scoreID)
 	if err != nil {
@@ -33,7 +23,7 @@ func (h *Handler) HandlePurchaseScore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.logger.Println(purchaseID)
+	h.logger.Printf("Purchase Score: %s", purchaseID)
 }
 
 func (h *Handler) HandleGetPurchases(w http.ResponseWriter, r *http.Request) {

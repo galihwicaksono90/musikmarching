@@ -1,8 +1,52 @@
 package components
 
+import (
+	"fmt"
+)
+
 templ CreateScoreForm() {
-	<form action="/createScore" method="POST">
+	<form
+		hx-post="/score/create"
+		hx-encoding="multipart/form-data"
+		hx-target="#create-score-result"
+		hx-swap="innerHTML"
+		class="flex flex-col gap-4"
+	>
+		<label for="title">Title</label>
 		<input type="text" name="title" placeholder="Title"/>
+		<label for="price">Price</label>
+		<input type="number" name="price" placeholder="Price"/>
+		<label for="pdf-file">PDF File</label>
+		<input type="file" name="pdf-file" placeholder=""/>
+		<label for="music-file">Music File</label>
+		<input type="file" name="music-file" placeholder="Music File"/>
 		<button type="submit" value="Submit">Submit</button>
 	</form>
+	<div id="create-score-result"></div>
+}
+
+type ScoreFormProps struct {
+	Title string
+	Price string
+}
+
+templ UpdateScoreForm(id string, values ScoreFormProps) {
+	<form
+		hx-put={ string(templ.URL(fmt.Sprintf("/score/update/%s", id))) }
+		hx-encoding="multipart/form-data"
+		hx-target="#update-score-result"
+		hx-swap="innerHTML"
+		class="flex flex-col gap-4"
+	>
+		<label for="title">Title</label>
+		<input type="text" name="title" placeholder="Title" value={values.Title}/>
+		<label for="price">Price</label>
+		<input type="number" name="price" placeholder="Price" value={values.Price}/>
+		<!-- <label for="pdf-file">PDF File</label> -->
+		<!-- <input type="file" name="pdf-file" placeholder=""/> -->
+		<!-- <label for="music-file">Music File</label> -->
+		<!-- <input type="file" name="music-file" placeholder="Music File"/> -->
+		<button type="submit" value="Submit">Submit</button>
+	</form>
+	<div id="update-score-result"></div>
 }

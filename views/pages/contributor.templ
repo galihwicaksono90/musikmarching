@@ -4,16 +4,15 @@ import (
 	"galihwicaksono90/musikmarching-be/internal/constants/model"
 	"galihwicaksono90/musikmarching-be/views/components"
 	"galihwicaksono90/musikmarching-be/views/layouts"
-	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 )
 
-templ HomePage(user model.SessionUser, purchases []db.Purchase) {
+templ ContributorPage(user model.SessionUser) {
 	@layouts.Index() {
 		@components.Header(user)
-		<div class="container mx-auto">
-			<h1>Home</h1>
+		<div>
+			<h1>Contributor</h1>
 			@components.ScoreList()
-			<div id="purchase-notification"></div>
+			@components.Button(components.ButtonProps{Text: "Create new", Href: "/contributor/score/create"})
 		</div>
 	}
 }
