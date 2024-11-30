@@ -25,3 +25,10 @@ type Account struct {
 	UpdatedAt time.Time   `json:"updated_at"`
 	DeletedAt time.Time   `json:"deleted_at"`
 }
+
+type FileLocation string
+
+const (
+    PDF_LOCATION FileLocation = "pdf"
+    MUSIC_LOCATION  FileLocation = "music"
+)

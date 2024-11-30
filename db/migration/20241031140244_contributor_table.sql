@@ -14,7 +14,7 @@ add CONSTRAINT fk_contributor_account
 FOREIGN KEY (id) REFERENCES account (id) deferrable initially deferred;
 
 insert into contributor (id, is_verified, verified_at)
-values ('291a7f36-69ab-4be1-ba91-064445349bbd', true, now());
+values ('ab48aeb7-51a1-4712-932b-fe64d98fec87', true, now());
 
 -- +goose StatementEnd
 

@@ -7,9 +7,10 @@ import (
 	"galihwicaksono90/musikmarching-be/internal/handlers"
 	"galihwicaksono90/musikmarching-be/internal/services/account"
 	"galihwicaksono90/musikmarching-be/internal/services/auth"
-	"galihwicaksono90/musikmarching-be/internal/services/score"
 	"galihwicaksono90/musikmarching-be/internal/services/purchase"
+	"galihwicaksono90/musikmarching-be/internal/services/score"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
+	fileStorage "galihwicaksono90/musikmarching-be/pkg/file-storage"
 	"log"
 	"net/http"
 
@@ -26,6 +27,8 @@ func Init() {
 	logger := logrus.New()
 
 	config, err := config.LoadConfig("./")
+
+	fileStorage := fileStorage.NewStorage(logger, config)
 
 	conn, err := pgx.Connect(ctx, config.DB_SOURCE)
 	if err != nil {
@@ -44,7 +47,7 @@ func Init() {
 	// services
 	authService := auth.NewAuthService(logger, sessionStore)
 	accountService := account.NewAccountService(logger, store)
-	scoreService := score.NewScoreService(logger, store)
+	scoreService := score.NewScoreService(logger, store, fileStorage)
 	purchaseService := purchase.NewPurchaseService(logger, store)
 
 	// initiate new handler
@@ -55,6 +58,7 @@ func Init() {
 		accountService,
 		scoreService,
 		purchaseService,
+		fileStorage,
 	)
 
 	// routings

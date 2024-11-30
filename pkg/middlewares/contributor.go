@@ -10,6 +10,7 @@ func ContributorMiddleware(next http.Handler) http.Handler {
 		session := GetSession(r)
 
 		if session == nil || session.RoleName != db.RolenameContributor {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
 			return
 		}
 

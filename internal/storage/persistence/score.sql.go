@@ -12,6 +12,104 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const createScore = `-- name: CreateScore :one
+insert into score (
+  title,
+  price,
+  pdf_url,
+  music_url,
+  contributor_id
+) values (
+  $1,
+  $2,
+  $3,
+  $4,
+  $5
+) returning id
+`
+
+type CreateScoreParams struct {
+	Title         string         `db:"title" json:"title"`
+	Price         pgtype.Numeric `db:"price" json:"price"`
+	PdfUrl        pgtype.Text    `db:"pdf_url" json:"pdf_url"`
+	MusicUrl      pgtype.Text    `db:"music_url" json:"music_url"`
+	ContributorID uuid.UUID      `db:"contributor_id" json:"contributor_id"`
+}
+
+func (q *Queries) CreateScore(ctx context.Context, arg CreateScoreParams) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, createScore,
+		arg.Title,
+		arg.Price,
+		arg.PdfUrl,
+		arg.MusicUrl,
+		arg.ContributorID,
+	)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
+const getScoreByContributorId = `-- name: GetScoreByContributorId :many
+select id, contributor_id, title, price, is_verified, verified_at, pdf_url, music_url, created_at, updated_at, deleted_at from score
+where contributor_id = $1
+`
+
+func (q *Queries) GetScoreByContributorId(ctx context.Context, id uuid.UUID) ([]Score, error) {
+	rows, err := q.db.Query(ctx, getScoreByContributorId, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Score{}
+	for rows.Next() {
+		var i Score
+		if err := rows.Scan(
+			&i.ID,
+			&i.ContributorID,
+			&i.Title,
+			&i.Price,
+			&i.IsVerified,
+			&i.VerifiedAt,
+			&i.PdfUrl,
+			&i.MusicUrl,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getScoreById = `-- name: GetScoreById :one
+select id, contributor_id, title, price, is_verified, verified_at, pdf_url, music_url, created_at, updated_at, deleted_at from score s
+where s.id = $1
+`
+
+func (q *Queries) GetScoreById(ctx context.Context, id uuid.UUID) (Score, error) {
+	row := q.db.QueryRow(ctx, getScoreById, id)
+	var i Score
+	err := row.Scan(
+		&i.ID,
+		&i.ContributorID,
+		&i.Title,
+		&i.Price,
+		&i.IsVerified,
+		&i.VerifiedAt,
+		&i.PdfUrl,
+		&i.MusicUrl,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
 const getVerifiedScoreById = `-- name: GetVerifiedScoreById :one
 select 
   s.id,
@@ -94,4 +192,23 @@ func (q *Queries) GetVerifiedScores(ctx context.Context, arg GetVerifiedScoresPa
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateScore = `-- name: UpdateScore :exec
+update score set
+  title = COALESCE($1, title),
+  price = COALESCE($2, price),
+  updated_at = now()
+where id = $3
+`
+
+type UpdateScoreParams struct {
+	Title pgtype.Text    `db:"title" json:"title"`
+	Price pgtype.Numeric `db:"price" json:"price"`
+	ID    uuid.UUID      `db:"id" json:"id"`
+}
+
+func (q *Queries) UpdateScore(ctx context.Context, arg UpdateScoreParams) error {
+	_, err := q.db.Exec(ctx, updateScore, arg.Title, arg.Price, arg.ID)
+	return err
 }
