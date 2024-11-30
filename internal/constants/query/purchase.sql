@@ -3,6 +3,10 @@ select * from purchase
 where account_id = @account_id and score_id = @score_id
 ;
 
+-- name: GetPurchaseById :one
+select * from purchase
+where id = @id
+;
 
 -- name: CreatePurchase :one
 insert into purchase (account_id, score_id, price, title)

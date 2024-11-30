@@ -35,7 +35,6 @@ func (h *Handler) HandleGetVerifiedScores(w http.ResponseWriter, r *http.Request
 
 	for index, score := range *scores {
 		s, _ := score.Price.Float64Value()
-		fmt.Println(s)
 		ss := fmt.Sprintf("%v", s.Float64)
 
 		verifiedScores[index] = components.VerifiedScoreProps{
