@@ -17,11 +17,18 @@ func (h *Handler) HandlePurchaseScore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	purchaseID, err := h.purchase.PurchaseScore(user.ID, scoreID)
+	purchaseID, err := h.purchase.PurchaseScore(user, scoreID)
 	if err != nil {
 		h.logger.Errorln(err)
 		return
 	}
+
+	if err != nil {
+		h.logger.Errorln(err)
+		return
+	}
+
+	h.email.SendPurchaseInvoice(user)
 
 	h.logger.Printf("Purchase Score: %s", purchaseID)
 }

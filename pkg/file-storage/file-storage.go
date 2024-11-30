@@ -5,7 +5,7 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/sirupsen/logrus"
 
-	"github.com/galihwicaksono90/musikmarching-be/pkg/config"
+	"galihwicaksono90/musikmarching-be/pkg/config"
 )
 
 func NewStorage(logger *logrus.Logger, config config.Config) *minio.Client {

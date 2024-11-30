@@ -2,6 +2,7 @@ package purchase
 
 import (
 	"context"
+	"galihwicaksono90/musikmarching-be/internal/constants/model"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 
 	"github.com/google/uuid"
@@ -9,13 +10,19 @@ import (
 )
 
 type PurchaseService interface {
-	PurchaseScore(accountID uuid.UUID, scoreID uuid.UUID) (uuid.UUID, error)
+	PurchaseScore(user model.SessionUser, scoreID uuid.UUID) (uuid.UUID, error)
 	GetPurchases(uuid.UUID) ([]db.Purchase, error)
+	GetPurchaseByID(uuid.UUID) (db.Purchase, error)
 }
 
 type purchaseService struct {
 	logger *logrus.Logger
 	store  db.Store
+}
+
+// GetPurchaseByID implements PurchaseService.
+func (p *purchaseService) GetPurchaseByID(id uuid.UUID) (db.Purchase, error) {
+	return p.store.GetPurchaseById(context.Background(), id)
 }
 
 // GetPurchases implements PurchaseService.
@@ -24,7 +31,7 @@ func (p *purchaseService) GetPurchases(id uuid.UUID) ([]db.Purchase, error) {
 }
 
 // PurchaseScore implements PurchaseService.
-func (p *purchaseService) PurchaseScore(accountID uuid.UUID, scoreID uuid.UUID) (uuid.UUID, error) {
+func (p *purchaseService) PurchaseScore(user model.SessionUser, scoreID uuid.UUID) (uuid.UUID, error) {
 	ctx := context.Background()
 	var purchaseId uuid.UUID
 
@@ -34,7 +41,7 @@ func (p *purchaseService) PurchaseScore(accountID uuid.UUID, scoreID uuid.UUID) 
 	}
 
 	params := &db.CreatePurchaseParams{
-		AccountID: accountID,
+		AccountID: user.ID,
 		Price:     score.Price,
 		Title:     score.Title,
 		ScoreID:   score.ID,

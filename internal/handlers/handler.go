@@ -6,6 +6,7 @@ import (
 	"galihwicaksono90/musikmarching-be/internal/services/purchase"
 	"galihwicaksono90/musikmarching-be/internal/services/score"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
+	"galihwicaksono90/musikmarching-be/pkg/email"
 	"galihwicaksono90/musikmarching-be/views/components"
 	"net/http"
 
@@ -21,6 +22,7 @@ type Handler struct {
   score score.ScoreService
   purchase purchase.PurchaseService
   fileStorage *minio.Client
+  email email.Email
 }
 
 func New(
@@ -31,6 +33,7 @@ func New(
   score score.ScoreService,
   purchase purchase.PurchaseService,
   fileStorage *minio.Client,
+  email email.Email,
 ) *Handler {
   return &Handler{
     logger,
@@ -40,6 +43,7 @@ func New(
     score,
     purchase,
     fileStorage,
+    email,
   }
 }
 

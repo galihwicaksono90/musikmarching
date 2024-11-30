@@ -20,6 +20,7 @@ type Querier interface {
 	GetAccounts(ctx context.Context) ([]GetAccountsRow, error)
 	GetContributorById(ctx context.Context, id uuid.UUID) (GetContributorByIdRow, error)
 	GetPurchaseByAccountAndScoreId(ctx context.Context, arg GetPurchaseByAccountAndScoreIdParams) (Purchase, error)
+	GetPurchaseById(ctx context.Context, id uuid.UUID) (Purchase, error)
 	GetPurchases(ctx context.Context, accountID uuid.UUID) ([]Purchase, error)
 	GetScoreByContributorId(ctx context.Context, id uuid.UUID) ([]Score, error)
 	GetScoreById(ctx context.Context, id uuid.UUID) (Score, error)

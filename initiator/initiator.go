@@ -10,6 +10,7 @@ import (
 	"galihwicaksono90/musikmarching-be/internal/services/purchase"
 	"galihwicaksono90/musikmarching-be/internal/services/score"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
+	"galihwicaksono90/musikmarching-be/pkg/email"
 	fileStorage "galihwicaksono90/musikmarching-be/pkg/file-storage"
 	"log"
 	"net/http"
@@ -19,7 +20,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/sirupsen/logrus"
 
-	"github.com/galihwicaksono90/musikmarching-be/pkg/config"
+	"galihwicaksono90/musikmarching-be/pkg/config"
 )
 
 func Init() {
@@ -27,8 +28,13 @@ func Init() {
 	logger := logrus.New()
 
 	config, err := config.LoadConfig("./")
+	if err != nil {
+		logger.Fatal(err)
+	}
 
 	fileStorage := fileStorage.NewStorage(logger, config)
+
+	email := email.New(config)
 
 	conn, err := pgx.Connect(ctx, config.DB_SOURCE)
 	if err != nil {
@@ -59,6 +65,7 @@ func Init() {
 		scoreService,
 		purchaseService,
 		fileStorage,
+		email,
 	)
 
 	// routings

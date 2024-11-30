@@ -66,6 +66,30 @@ func (q *Queries) GetPurchaseByAccountAndScoreId(ctx context.Context, arg GetPur
 	return i, err
 }
 
+const getPurchaseById = `-- name: GetPurchaseById :one
+select id, invoice_serial, account_id, score_id, price, title, is_verified, verifiedat, created_at, updated_at, deleted_at from purchase
+where id = $1
+`
+
+func (q *Queries) GetPurchaseById(ctx context.Context, id uuid.UUID) (Purchase, error) {
+	row := q.db.QueryRow(ctx, getPurchaseById, id)
+	var i Purchase
+	err := row.Scan(
+		&i.ID,
+		&i.InvoiceSerial,
+		&i.AccountID,
+		&i.ScoreID,
+		&i.Price,
+		&i.Title,
+		&i.IsVerified,
+		&i.Verifiedat,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
 const getPurchases = `-- name: GetPurchases :many
 select id, invoice_serial, account_id, score_id, price, title, is_verified, verifiedat, created_at, updated_at, deleted_at from purchase
 where account_id = $1
