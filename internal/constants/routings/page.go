@@ -15,4 +15,10 @@ func PageRouting(handler *handlers.Handler, router *mux.Router) {
 	contributorRouter.HandleFunc("", handler.HandleContributorPage).Methods("GET")
 	contributorRouter.HandleFunc("/score/create", handler.HandleScoreCreatePage).Methods("GET")
 	contributorRouter.HandleFunc("/score/update/{id}", handler.HandleScoreUpdatePage).Methods("GET")
+
+	adminRouter := router.PathPrefix("/admin").Subrouter()
+	adminRouter.Use(middlewares.AuthMiddleware, middlewares.AdminMiddleware)
+	adminRouter.HandleFunc("", handler.HandleAdminPage).Methods("GET")
+	adminRouter.HandleFunc("/scores", handler.HandleAdminScoresPage).Methods("GET")
+	adminRouter.HandleFunc("/score/{id}", handler.HandleAdminScorePage).Methods("GET")
 }

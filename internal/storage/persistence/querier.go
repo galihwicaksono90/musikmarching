@@ -24,6 +24,7 @@ type Querier interface {
 	GetPurchases(ctx context.Context, accountID uuid.UUID) ([]Purchase, error)
 	GetScoreByContributorId(ctx context.Context, id uuid.UUID) ([]Score, error)
 	GetScoreById(ctx context.Context, id uuid.UUID) (Score, error)
+	GetScores(ctx context.Context, arg GetScoresParams) ([]GetScoresRow, error)
 	GetUnverifiedContributors(ctx context.Context) ([]Contributor, error)
 	GetVerifiedScoreById(ctx context.Context, id uuid.UUID) (GetVerifiedScoreByIdRow, error)
 	GetVerifiedScores(ctx context.Context, arg GetVerifiedScoresParams) ([]GetVerifiedScoresRow, error)
@@ -31,6 +32,7 @@ type Querier interface {
 	UpdateAccountRole(ctx context.Context, arg UpdateAccountRoleParams) (uuid.UUID, error)
 	UpdateScore(ctx context.Context, arg UpdateScoreParams) error
 	VerifyContributor(ctx context.Context, id uuid.UUID) error
+	VerifyScore(ctx context.Context, id uuid.UUID) error
 }
 
 var _ Querier = (*Queries)(nil)

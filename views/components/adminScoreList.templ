@@ -1,0 +1,36 @@
+package components
+
+import (
+	"fmt"
+	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
+	"strconv"
+)
+
+templ AdminScoreItem(score db.GetScoresRow) {
+	<div class="flex gap-8 items-center">
+		<p>
+			{ score.Title } - { strconv.FormatBool(score.IsVerified) }
+		</p>
+		if !score.IsVerified {
+			<button
+				hx-post={ fmt.Sprintf("/admin/score/verify/%s", score.ID) }
+				hx-target="#score-list"
+				hx-swap="outerHTML"
+			>
+				Verify
+			</button>
+		}
+		@Button(ButtonProps{
+			Text: "Details",
+			Href: templ.SafeURL(fmt.Sprintf("/admin/score/%s", score.ID.String())),
+		})
+	</div>
+}
+
+templ AdminScoreList(scores []db.GetScoresRow) {
+	<div class="container p-16" id="score-list">
+		for _, score := range scores {
+			@AdminScoreItem(score)
+		}
+	</div>
+}

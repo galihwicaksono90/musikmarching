@@ -23,12 +23,28 @@ type ScoreService interface {
 	UploadPdfFile(*http.Request) (url string, err error)
 	UploadMusicFile(*http.Request) (url string, err error)
 	GetById(id uuid.UUID) (db.Score, error)
+	GetAll() ([]db.GetScoresRow, error)
+	Verify(id uuid.UUID) error
 }
 
 type scoreService struct {
 	logger      *logrus.Logger
 	store       db.Store
 	fileStorage *minio.Client
+}
+
+// VerifyScore implements ScoreService.
+func (s *scoreService) Verify(id uuid.UUID) error {
+	return s.store.VerifyScore(context.Background(), id)
+}
+
+// GetAll implements ScoreService.
+func (s *scoreService) GetAll() ([]db.GetScoresRow, error) {
+	ctx := context.Background()
+	return s.store.GetScores(ctx, db.GetScoresParams{
+		Pageoffset: 0,
+		Pagelimit:  10,
+	})
 }
 
 // GetScoreById implements ScoreService.

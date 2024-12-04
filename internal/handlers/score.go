@@ -138,3 +138,29 @@ func (h *Handler) HandleUpdateScore(w http.ResponseWriter, r *http.Request) {
 
 	components.Success("Score updated successfully").Render(r.Context(), w)
 }
+
+func (h *Handler) HandleVerifyScore(w http.ResponseWriter, r *http.Request) {
+	scoreID, err := uuid.Parse(mux.Vars(r)["id"])
+	if err != nil {
+		h.logger.Errorln(err)
+		return
+	}
+
+	h.logger.Println("======")
+	h.logger.Println(scoreID)
+	h.logger.Println("======")
+
+	if err :=  h.score.Verify(scoreID); err != nil {
+		h.logger.Errorln(err)
+		return
+	}
+
+	scores, err := h.score.GetAll()
+
+	if err != nil {
+		h.logger.Errorln(err)
+		return
+	}
+
+	components.AdminScoreList(scores).Render(r.Context(), w)
+}

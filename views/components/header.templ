@@ -1,6 +1,9 @@
 package components 
 
-import "galihwicaksono90/musikmarching-be/internal/constants/model"
+import (
+	"galihwicaksono90/musikmarching-be/internal/constants/model"
+	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
+)
 
 templ Header(user model.SessionUser) {
 	<header>
@@ -10,6 +13,9 @@ templ Header(user model.SessionUser) {
 			</a>
 			<div class="flex flex-1 items-center justify-end md:justify-between">
 				<nav aria-label="Global" class="hidden md:block">
+					if user.RoleName == db.RolenameContributor {
+						@Button(ButtonProps{Text: "Contributor", Href: "/contributor"})
+					}
 				</nav>
 				<div class="flex items-center gap-4">
 					if user.Email == "" {

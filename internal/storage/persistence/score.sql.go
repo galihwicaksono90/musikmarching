@@ -110,6 +110,62 @@ func (q *Queries) GetScoreById(ctx context.Context, id uuid.UUID) (Score, error)
 	return i, err
 }
 
+const getScores = `-- name: GetScores :many
+select 
+  s.id,
+  s.title,
+  s.is_verified,
+  s.price,
+  a.name,
+  a.email
+from score s
+inner join contributor c on c.id = s.contributor_id
+inner join account a  on a.id = s.contributor_id
+order by s.created_at desc
+limit $2::int offset $1::int
+`
+
+type GetScoresParams struct {
+	Pageoffset int32 `db:"pageoffset" json:"pageoffset"`
+	Pagelimit  int32 `db:"pagelimit" json:"pagelimit"`
+}
+
+type GetScoresRow struct {
+	ID         uuid.UUID      `db:"id" json:"id"`
+	Title      string         `db:"title" json:"title"`
+	IsVerified bool           `db:"is_verified" json:"is_verified"`
+	Price      pgtype.Numeric `db:"price" json:"price"`
+	Name       string         `db:"name" json:"name"`
+	Email      string         `db:"email" json:"email"`
+}
+
+func (q *Queries) GetScores(ctx context.Context, arg GetScoresParams) ([]GetScoresRow, error) {
+	rows, err := q.db.Query(ctx, getScores, arg.Pageoffset, arg.Pagelimit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetScoresRow{}
+	for rows.Next() {
+		var i GetScoresRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.IsVerified,
+			&i.Price,
+			&i.Name,
+			&i.Email,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getVerifiedScoreById = `-- name: GetVerifiedScoreById :one
 select 
   s.id,
@@ -210,5 +266,17 @@ type UpdateScoreParams struct {
 
 func (q *Queries) UpdateScore(ctx context.Context, arg UpdateScoreParams) error {
 	_, err := q.db.Exec(ctx, updateScore, arg.Title, arg.Price, arg.ID)
+	return err
+}
+
+const verifyScore = `-- name: VerifyScore :exec
+update score set
+  is_verified = true,
+  verified_at = now()
+where id = $1
+`
+
+func (q *Queries) VerifyScore(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, verifyScore, id)
 	return err
 }

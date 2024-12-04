@@ -75,6 +75,7 @@ func Init() {
 	routings.AuthRouting(handler, router)
 	routings.ScoreRouting(handler, router)
 	routings.PurchaseRouting(handler, router)
+	routings.AdminRouting(handler, router)
 
 	// serve static files
 	fs := http.FileServer(http.Dir("./static/"))
