@@ -3,23 +3,24 @@ module galihwicaksono90/musikmarching-be
 go 1.23.2
 
 require (
-	github.com/a-h/templ v0.2.778
-	github.com/galihwicaksono90/musikmarching-be v0.0.0-20241006050707-a551a134c6d9
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.6.2
 	github.com/gorilla/sessions v1.4.0
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/markbates/goth v1.80.0
+	github.com/minio/minio-go/v7 v7.0.80
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/viper v1.19.0
 )
 
 require (
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
+	github.com/a-h/templ v0.2.793 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
@@ -29,7 +30,6 @@ require (
 	github.com/klauspost/cpuid/v2 v2.2.8 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
-	github.com/minio/minio-go/v7 v7.0.80 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/rs/xid v1.6.0 // indirect

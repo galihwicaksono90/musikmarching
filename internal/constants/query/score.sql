@@ -1,62 +1,64 @@
 -- name: GetScores :many
-select 
-  s.id,
-  s.title,
-  s.is_verified,
-  s.price,
-  a.name,
-  a.email
+select s.id, s.title, s.is_verified, s.price, a.name, a.email
 from score s
 inner join contributor c on c.id = s.contributor_id
-inner join account a  on a.id = s.contributor_id
+inner join account a on a.id = s.contributor_id
 order by s.created_at desc
-limit @pageLimit::int offset @pageOffset::int
-; 
+limit @pagelimit::int
+offset @pageoffset::int
+;
 
 -- name: GetScoresPaginated :many
-SELECT * FROM score
-WHERE deleted_at IS NULL
-ORDER BY 
-  CASE 
-    WHEN $3 = 'price_asc' THEN price 
-    WHEN $3 = 'price_desc' THEN price END,
-  CASE 
-    WHEN $3 = 'created_at_asc' THEN created_at 
-    WHEN $3 = 'created_at_desc' THEN created_at END DESC
-LIMIT $1 OFFSET $2;
+select *
+from score
+where deleted_at is null
+order by
+    case when $3 = 'price_asc' then price when $3 = 'price_desc' then price end,
+    case
+        when $3 = 'created_at_asc'
+        then created_at
+        when $3 = 'created_at_desc'
+        then created_at
+    end desc
+limit $1
+offset $2
+;
 
-
--- name: GetVerifiedScores :many
-select 
-  s.id,
-  s.title,
-  s.price,
-  a.name,
-  a.email
+-- name: GetScoresByContributorID :many
+select s.id, s.title, s.is_verified, s.price, a.name, a.email
 from score s
 inner join contributor c on c.id = s.contributor_id
-inner join account a  on a.id = s.contributor_id
-where s.is_verified = true and c.is_verified = true 
-limit @pageLimit::int offset @pageOffset::int
-; 
+inner join account a on a.id = s.contributor_id
+where s.contributor_id = @id
+order by s.is_verified desc, s.created_at desc
+limit @pagelimit::int
+offset @pageoffset::int
+;
+
+-- name: GetVerifiedScores :many
+select s.id, s.title, s.price, a.name, a.email
+from score s
+inner join contributor c on c.id = s.contributor_id
+inner join account a on a.id = s.contributor_id
+where s.is_verified = true and c.is_verified = true
+limit @pagelimit::int
+offset @pageoffset::int
+;
 
 
 -- name: GetVerifiedScoreById :one
-select 
-  s.id,
-  s.title,
-  s.price,
-  a.name as contributor_name
+select s.id, s.title, s.price, a.name as contributor_name
 from score s
 inner join contributor c on c.id = s.contributor_id
-inner join account a  on a.id = s.contributor_id
+inner join account a on a.id = s.contributor_id
 where s.is_verified = true and s.id = @id
-; 
+;
 
 -- name: GetScoreById :one
-select * from score s
+select *
+from score s
 where s.id = @id
-; 
+;
 
 -- name: CreateScore :one
 insert into score (
@@ -89,8 +91,8 @@ where id = @id
 ;
 
 -- name: GetScoreByContributorId :many
-select * from score
+select *
+from score
 where contributor_id = @id
 ;
-
 

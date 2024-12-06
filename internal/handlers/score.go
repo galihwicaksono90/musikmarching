@@ -16,6 +16,8 @@ import (
 )
 
 func (h *Handler) HandleGetVerifiedScores(w http.ResponseWriter, r *http.Request) {
+	user, _ := h.auth.GetSessionUser(r)
+
 	limit, err := strconv.Atoi(r.FormValue("page_limit"))
 	if err != nil {
 		limit = 1
@@ -25,23 +27,29 @@ func (h *Handler) HandleGetVerifiedScores(w http.ResponseWriter, r *http.Request
 		offset = 0
 	}
 
-	scores := h.score.GetVerified(db.GetVerifiedScoresParams{
+	scores, err := h.score.GetByContirbutorID(db.GetScoresByContributorIDParams{
+		ID:         user.ID,
 		Pagelimit:  int32(limit),
 		Pageoffset: int32(offset),
 	})
+	if err != nil {
+		h.logger.Errorln(err)
+		return
+	}
 
-	verifiedScores := make([]components.VerifiedScoreProps, len(*scores))
+	verifiedScores := make([]components.VerifiedScoreProps, len(scores))
 	h.logger.Println(verifiedScores)
 
-	for index, score := range *scores {
+	for index, score := range scores {
 		s, _ := score.Price.Float64Value()
 		ss := fmt.Sprintf("%v", s.Float64)
 
 		verifiedScores[index] = components.VerifiedScoreProps{
-			ID:    score.ID.String(),
-			Title: score.Title,
-			Name:  score.Name,
-			Price: ss,
+			ID:         score.ID.String(),
+			Title:      score.Title,
+			Name:       score.Name,
+			Price:      ss,
+			IsVerified: score.IsVerified,
 		}
 	}
 
@@ -151,12 +159,12 @@ func (h *Handler) HandleVerifyScore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = h.score.GetAll()
+	scores, err := h.score.GetAll()
 
 	if err != nil {
 		h.logger.Errorln(err)
 		return
 	}
 
-	// components.AdminScoreList(scores).Render(r.Context(), w)
+	components.AdminScoreList(scores).Render(r.Context(), w)
 }

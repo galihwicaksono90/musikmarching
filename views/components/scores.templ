@@ -3,18 +3,19 @@ package components
 import "fmt"
 
 type VerifiedScoreProps struct {
-	ID    string
-	Title string
-	Name  string
-	Price string
+	ID         string
+	Title      string
+	Name       string
+	Price      string
+	IsVerified bool
 }
 
 templ ScoreList() {
 	<div
 		hx-get="/score/verified"
 		hx-trigger="load"
-		hx-vals='{"page_limit": 2, "page_offset": 0}'
-	/>
+		hx-vals='{"page_limit": 10, "page_offset": 0}'
+	></div>
 }
 
 templ VerifiedScores(scores []VerifiedScoreProps) {
@@ -23,7 +24,14 @@ templ VerifiedScores(scores []VerifiedScoreProps) {
 		<ul>
 			for _, score := range scores {
 				<li>
-					{ score.Title } - { score.Name } - { score.Price }
+					<p>
+						{ score.Title } - { score.Name } - { score.Price } - 
+						if score.IsVerified {
+							verified
+						} else {
+							not verified
+						}
+					</p>
 					<button
 						type="button"
 						class="btn btn-primary"

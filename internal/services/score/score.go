@@ -23,6 +23,7 @@ type ScoreService interface {
 	UploadPdfFile(*http.Request) (url string, err error)
 	UploadMusicFile(*http.Request) (url string, err error)
 	GetById(id uuid.UUID) (db.Score, error)
+	GetByContirbutorID(db.GetScoresByContributorIDParams) ([]db.GetScoresByContributorIDRow, error)
 	GetAll() ([]db.Score, error)
 	Verify(id uuid.UUID) error
 }
@@ -31,6 +32,11 @@ type scoreService struct {
 	logger      *logrus.Logger
 	store       db.Store
 	fileStorage *minio.Client
+}
+
+// GetByContirbutorID implements ScoreService.
+func (s *scoreService) GetByContirbutorID(params db.GetScoresByContributorIDParams) ([]db.GetScoresByContributorIDRow, error) {
+	return s.store.GetScoresByContributorID(context.Background(), params)
 }
 
 // VerifyScore implements ScoreService.
@@ -49,10 +55,6 @@ func (s *scoreService) GetAll() ([]db.Score, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	s.logger.Println("result=======================================================")
-	s.logger.Println(result)
-	s.logger.Println("end=======================================================")
 
 	return result, nil
 }

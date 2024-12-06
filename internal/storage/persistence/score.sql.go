@@ -50,7 +50,8 @@ func (q *Queries) CreateScore(ctx context.Context, arg CreateScoreParams) (uuid.
 }
 
 const getScoreByContributorId = `-- name: GetScoreByContributorId :many
-select id, contributor_id, title, price, is_verified, verified_at, pdf_url, music_url, created_at, updated_at, deleted_at from score
+select id, contributor_id, title, price, is_verified, verified_at, pdf_url, music_url, created_at, updated_at, deleted_at
+from score
 where contributor_id = $1
 `
 
@@ -87,7 +88,8 @@ func (q *Queries) GetScoreByContributorId(ctx context.Context, id uuid.UUID) ([]
 }
 
 const getScoreById = `-- name: GetScoreById :one
-select id, contributor_id, title, price, is_verified, verified_at, pdf_url, music_url, created_at, updated_at, deleted_at from score s
+select id, contributor_id, title, price, is_verified, verified_at, pdf_url, music_url, created_at, updated_at, deleted_at
+from score s
 where s.id = $1
 `
 
@@ -111,18 +113,13 @@ func (q *Queries) GetScoreById(ctx context.Context, id uuid.UUID) (Score, error)
 }
 
 const getScores = `-- name: GetScores :many
-select 
-  s.id,
-  s.title,
-  s.is_verified,
-  s.price,
-  a.name,
-  a.email
+select s.id, s.title, s.is_verified, s.price, a.name, a.email
 from score s
 inner join contributor c on c.id = s.contributor_id
-inner join account a  on a.id = s.contributor_id
+inner join account a on a.id = s.contributor_id
 order by s.created_at desc
-limit $2::int offset $1::int
+limit $2::int
+offset $1::int
 `
 
 type GetScoresParams struct {
@@ -166,17 +163,73 @@ func (q *Queries) GetScores(ctx context.Context, arg GetScoresParams) ([]GetScor
 	return items, nil
 }
 
+const getScoresByContributorID = `-- name: GetScoresByContributorID :many
+select s.id, s.title, s.is_verified, s.price, a.name, a.email
+from score s
+inner join contributor c on c.id = s.contributor_id
+inner join account a on a.id = s.contributor_id
+where s.contributor_id = $1
+order by s.is_verified desc, s.created_at desc
+limit $3::int
+offset $2::int
+`
+
+type GetScoresByContributorIDParams struct {
+	ID         uuid.UUID `db:"id" json:"id"`
+	Pageoffset int32     `db:"pageoffset" json:"pageoffset"`
+	Pagelimit  int32     `db:"pagelimit" json:"pagelimit"`
+}
+
+type GetScoresByContributorIDRow struct {
+	ID         uuid.UUID      `db:"id" json:"id"`
+	Title      string         `db:"title" json:"title"`
+	IsVerified bool           `db:"is_verified" json:"is_verified"`
+	Price      pgtype.Numeric `db:"price" json:"price"`
+	Name       string         `db:"name" json:"name"`
+	Email      string         `db:"email" json:"email"`
+}
+
+func (q *Queries) GetScoresByContributorID(ctx context.Context, arg GetScoresByContributorIDParams) ([]GetScoresByContributorIDRow, error) {
+	rows, err := q.db.Query(ctx, getScoresByContributorID, arg.ID, arg.Pageoffset, arg.Pagelimit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetScoresByContributorIDRow{}
+	for rows.Next() {
+		var i GetScoresByContributorIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.IsVerified,
+			&i.Price,
+			&i.Name,
+			&i.Email,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getScoresPaginated = `-- name: GetScoresPaginated :many
-SELECT id, contributor_id, title, price, is_verified, verified_at, pdf_url, music_url, created_at, updated_at, deleted_at FROM score
-WHERE deleted_at IS NULL
-ORDER BY 
-  CASE 
-    WHEN $3 = 'price_asc' THEN price 
-    WHEN $3 = 'price_desc' THEN price END,
-  CASE 
-    WHEN $3 = 'created_at_asc' THEN created_at 
-    WHEN $3 = 'created_at_desc' THEN created_at END DESC
-LIMIT $1 OFFSET $2
+select id, contributor_id, title, price, is_verified, verified_at, pdf_url, music_url, created_at, updated_at, deleted_at
+from score
+where deleted_at is null
+order by
+    case when $3 = 'price_asc' then price when $3 = 'price_desc' then price end,
+    case
+        when $3 = 'created_at_asc'
+        then created_at
+        when $3 = 'created_at_desc'
+        then created_at
+    end desc
+limit $1
+offset $2
 `
 
 type GetScoresPaginatedParams struct {
@@ -218,14 +271,10 @@ func (q *Queries) GetScoresPaginated(ctx context.Context, arg GetScoresPaginated
 }
 
 const getVerifiedScoreById = `-- name: GetVerifiedScoreById :one
-select 
-  s.id,
-  s.title,
-  s.price,
-  a.name as contributor_name
+select s.id, s.title, s.price, a.name as contributor_name
 from score s
 inner join contributor c on c.id = s.contributor_id
-inner join account a  on a.id = s.contributor_id
+inner join account a on a.id = s.contributor_id
 where s.is_verified = true and s.id = $1
 `
 
@@ -249,17 +298,13 @@ func (q *Queries) GetVerifiedScoreById(ctx context.Context, id uuid.UUID) (GetVe
 }
 
 const getVerifiedScores = `-- name: GetVerifiedScores :many
-select 
-  s.id,
-  s.title,
-  s.price,
-  a.name,
-  a.email
+select s.id, s.title, s.price, a.name, a.email
 from score s
 inner join contributor c on c.id = s.contributor_id
-inner join account a  on a.id = s.contributor_id
-where s.is_verified = true and c.is_verified = true 
-limit $2::int offset $1::int
+inner join account a on a.id = s.contributor_id
+where s.is_verified = true and c.is_verified = true
+limit $2::int
+offset $1::int
 `
 
 type GetVerifiedScoresParams struct {

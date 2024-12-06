@@ -40,7 +40,7 @@ func (h *Handler) HandleScoreCreatePage(w http.ResponseWriter, r *http.Request) 
 
 func (h *Handler) HandleScoreUpdatePage(w http.ResponseWriter, r *http.Request) {
 	user, _ := h.auth.GetSessionUser(r)
-	id := mux.Vars(r)["id"] 
+	id := mux.Vars(r)["id"]
 
 	scoreId, err := uuid.Parse(id)
 	if err != nil {
@@ -79,11 +79,11 @@ func (h *Handler) HandleAdminScoresPage(w http.ResponseWriter, r *http.Request) 
 		h.logger.Println(score)
 	}
 
-	// pages.AdminScoresPage(scores).Render(r.Context(), w)
+	pages.AdminScoresPage(scores).Render(r.Context(), w)
 }
 
 func (h *Handler) HandleAdminScorePage(w http.ResponseWriter, r *http.Request) {
-	id := mux.Vars(r)["id"] 
+	id := mux.Vars(r)["id"]
 
 	scoreId, err := uuid.Parse(id)
 	if err != nil {
