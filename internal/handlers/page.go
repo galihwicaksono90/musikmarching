@@ -17,9 +17,13 @@ func (h *Handler) HandleHomePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	purchases, _ := h.purchase.GetPurchases(user.ID)
+	scores, err := h.score.GetAll()
+	if err != nil {
+		h.logger.Errorln(err)
+		return
+	}
 
-	pages.HomePage(user, purchases).Render(r.Context(), w)
+	pages.HomePage(user, scores).Render(r.Context(), w)
 }
 
 func (h *Handler) HandleContributorPage(w http.ResponseWriter, r *http.Request) {
@@ -75,7 +79,7 @@ func (h *Handler) HandleAdminScoresPage(w http.ResponseWriter, r *http.Request) 
 		h.logger.Println(score)
 	}
 
-	pages.AdminScoresPage(scores).Render(r.Context(), w)
+	// pages.AdminScoresPage(scores).Render(r.Context(), w)
 }
 
 func (h *Handler) HandleAdminScorePage(w http.ResponseWriter, r *http.Request) {

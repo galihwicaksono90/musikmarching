@@ -13,6 +13,18 @@ order by s.created_at desc
 limit @pageLimit::int offset @pageOffset::int
 ; 
 
+-- name: GetScoresPaginated :many
+SELECT * FROM score
+WHERE deleted_at IS NULL
+ORDER BY 
+  CASE 
+    WHEN $3 = 'price_asc' THEN price 
+    WHEN $3 = 'price_desc' THEN price END,
+  CASE 
+    WHEN $3 = 'created_at_asc' THEN created_at 
+    WHEN $3 = 'created_at_desc' THEN created_at END DESC
+LIMIT $1 OFFSET $2;
+
 
 -- name: GetVerifiedScores :many
 select 

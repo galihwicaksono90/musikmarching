@@ -23,7 +23,7 @@ type ScoreService interface {
 	UploadPdfFile(*http.Request) (url string, err error)
 	UploadMusicFile(*http.Request) (url string, err error)
 	GetById(id uuid.UUID) (db.Score, error)
-	GetAll() ([]db.GetScoresRow, error)
+	GetAll() ([]db.Score, error)
 	Verify(id uuid.UUID) error
 }
 
@@ -39,12 +39,22 @@ func (s *scoreService) Verify(id uuid.UUID) error {
 }
 
 // GetAll implements ScoreService.
-func (s *scoreService) GetAll() ([]db.GetScoresRow, error) {
+func (s *scoreService) GetAll() ([]db.Score, error) {
 	ctx := context.Background()
-	return s.store.GetScores(ctx, db.GetScoresParams{
-		Pageoffset: 0,
-		Pagelimit:  10,
+	result, err := s.store.GetScoresPaginated(ctx, db.GetScoresPaginatedParams{
+		Limit:   2,
+		Offset:  0,
+		Column3: "price_desc",
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	s.logger.Println("result=======================================================")
+	s.logger.Println(result)
+	s.logger.Println("end=======================================================")
+
+	return result, nil
 }
 
 // GetScoreById implements ScoreService.

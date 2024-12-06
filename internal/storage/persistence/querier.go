@@ -25,6 +25,7 @@ type Querier interface {
 	GetScoreByContributorId(ctx context.Context, id uuid.UUID) ([]Score, error)
 	GetScoreById(ctx context.Context, id uuid.UUID) (Score, error)
 	GetScores(ctx context.Context, arg GetScoresParams) ([]GetScoresRow, error)
+	GetScoresPaginated(ctx context.Context, arg GetScoresPaginatedParams) ([]Score, error)
 	GetUnverifiedContributors(ctx context.Context) ([]Contributor, error)
 	GetVerifiedScoreById(ctx context.Context, id uuid.UUID) (GetVerifiedScoreByIdRow, error)
 	GetVerifiedScores(ctx context.Context, arg GetVerifiedScoresParams) ([]GetVerifiedScoresRow, error)

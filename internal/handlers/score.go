@@ -123,8 +123,8 @@ func (h *Handler) HandleUpdateScore(w http.ResponseWriter, r *http.Request) {
 		}
 
 		params.Price = pgtype.Numeric{
-			Int: price,
-			Valid:  true,
+			Int:   price,
+			Valid: true,
 		}
 	}
 
@@ -146,21 +146,17 @@ func (h *Handler) HandleVerifyScore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.logger.Println("======")
-	h.logger.Println(scoreID)
-	h.logger.Println("======")
-
-	if err :=  h.score.Verify(scoreID); err != nil {
+	if err := h.score.Verify(scoreID); err != nil {
 		h.logger.Errorln(err)
 		return
 	}
 
-	scores, err := h.score.GetAll()
+	_, err = h.score.GetAll()
 
 	if err != nil {
 		h.logger.Errorln(err)
 		return
 	}
 
-	components.AdminScoreList(scores).Render(r.Context(), w)
+	// components.AdminScoreList(scores).Render(r.Context(), w)
 }

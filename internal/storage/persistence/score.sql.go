@@ -166,6 +166,57 @@ func (q *Queries) GetScores(ctx context.Context, arg GetScoresParams) ([]GetScor
 	return items, nil
 }
 
+const getScoresPaginated = `-- name: GetScoresPaginated :many
+SELECT id, contributor_id, title, price, is_verified, verified_at, pdf_url, music_url, created_at, updated_at, deleted_at FROM score
+WHERE deleted_at IS NULL
+ORDER BY 
+  CASE 
+    WHEN $3 = 'price_asc' THEN price 
+    WHEN $3 = 'price_desc' THEN price END,
+  CASE 
+    WHEN $3 = 'created_at_asc' THEN created_at 
+    WHEN $3 = 'created_at_desc' THEN created_at END DESC
+LIMIT $1 OFFSET $2
+`
+
+type GetScoresPaginatedParams struct {
+	Limit   int32       `db:"limit" json:"limit"`
+	Offset  int32       `db:"offset" json:"offset"`
+	Column3 interface{} `db:"column_3" json:"column_3"`
+}
+
+func (q *Queries) GetScoresPaginated(ctx context.Context, arg GetScoresPaginatedParams) ([]Score, error) {
+	rows, err := q.db.Query(ctx, getScoresPaginated, arg.Limit, arg.Offset, arg.Column3)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Score{}
+	for rows.Next() {
+		var i Score
+		if err := rows.Scan(
+			&i.ID,
+			&i.ContributorID,
+			&i.Title,
+			&i.Price,
+			&i.IsVerified,
+			&i.VerifiedAt,
+			&i.PdfUrl,
+			&i.MusicUrl,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getVerifiedScoreById = `-- name: GetVerifiedScoreById :one
 select 
   s.id,
