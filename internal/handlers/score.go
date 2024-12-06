@@ -8,29 +8,21 @@ import (
 
 	"galihwicaksono90/musikmarching-be/views/components"
 	"net/http"
-	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-func (h *Handler) HandleGetVerifiedScores(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) HandleGetScoresByCotributorId(w http.ResponseWriter, r *http.Request) {
 	user, _ := h.auth.GetSessionUser(r)
 
-	limit, err := strconv.Atoi(r.FormValue("page_limit"))
-	if err != nil {
-		limit = 1
-	}
-	offset, err := strconv.Atoi(r.FormValue("page_offset"))
-	if err != nil {
-		offset = 0
-	}
+	limit, offset := utils.ParsePagination(r)
 
 	scores, err := h.score.GetByContirbutorID(db.GetScoresByContributorIDParams{
 		ID:         user.ID,
-		Pagelimit:  int32(limit),
-		Pageoffset: int32(offset),
+		Pagelimit:  limit,
+		Pageoffset: offset,
 	})
 	if err != nil {
 		h.logger.Errorln(err)
@@ -159,7 +151,13 @@ func (h *Handler) HandleVerifyScore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	scores, err := h.score.GetAll()
+	limit, offset := utils.ParsePagination(r)
+
+	scores, err := h.score.GetAll(db.GetScoresPaginatedParams{
+		Limit:   limit,
+		Offset:  offset,
+		Column3: nil,
+	})
 
 	if err != nil {
 		h.logger.Errorln(err)

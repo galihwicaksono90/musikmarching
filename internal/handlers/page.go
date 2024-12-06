@@ -2,6 +2,7 @@ package handlers
 
 import (
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
+	"galihwicaksono90/musikmarching-be/utils"
 	"galihwicaksono90/musikmarching-be/views/components"
 	"galihwicaksono90/musikmarching-be/views/pages"
 	"net/http"
@@ -17,7 +18,13 @@ func (h *Handler) HandleHomePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	scores, err := h.score.GetAll()
+	limit, offset := utils.ParsePagination(r)
+
+	scores, err := h.score.GetAll(db.GetScoresPaginatedParams{
+		Limit:   limit,
+		Offset:  offset,
+		Column3: nil,
+	})
 	if err != nil {
 		h.logger.Errorln(err)
 		return
@@ -69,7 +76,13 @@ func (h *Handler) HandleAdminPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) HandleAdminScoresPage(w http.ResponseWriter, r *http.Request) {
-	scores, err := h.score.GetAll()
+	limit, offset := utils.ParsePagination(r)
+
+	scores, err := h.score.GetAll(db.GetScoresPaginatedParams{
+		Limit:   limit,
+		Offset:  offset,
+		Column3: nil,
+	})
 	if err != nil {
 		h.logger.Errorln(err)
 		http.Redirect(w, r, "/admin", http.StatusSeeOther)
