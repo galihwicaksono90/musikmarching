@@ -114,3 +114,8 @@ func (h *Handler) HandleAdminScorePage(w http.ResponseWriter, r *http.Request) {
 
 	pages.AdminScorePage(score).Render(r.Context(), w)
 }
+
+func (h Handler) HandleTestPage(w http.ResponseWriter, r *http.Request) {
+	user, _ := h.auth.GetSessionUser(r)
+	pages.TestPage(user).Render(r.Context(), w)
+}

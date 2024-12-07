@@ -10,51 +10,55 @@ import (
 	"galihwicaksono90/musikmarching-be/views/components"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/minio/minio-go/v7"
 	"github.com/sirupsen/logrus"
 )
 
 type Handler struct {
-  logger *logrus.Logger
-  store *db.Store
-  auth auth.AuthService
-  account account.AccountService
-  score score.ScoreService
-  purchase purchase.PurchaseService
-  fileStorage *minio.Client
-  email email.Email
+	logger      *logrus.Logger
+	store       *db.Store
+	auth        auth.AuthService
+	account     account.AccountService
+	score       score.ScoreService
+	purchase    purchase.PurchaseService
+	fileStorage *minio.Client
+	email       email.Email
+	validate    *validator.Validate
 }
 
 func New(
-  logger * logrus.Logger, 
-  store *db.Store, 
-  auth auth.AuthService, 
-  account account.AccountService,
-  score score.ScoreService,
-  purchase purchase.PurchaseService,
-  fileStorage *minio.Client,
-  email email.Email,
+	logger *logrus.Logger,
+	store *db.Store,
+	auth auth.AuthService,
+	account account.AccountService,
+	score score.ScoreService,
+	purchase purchase.PurchaseService,
+	fileStorage *minio.Client,
+	email email.Email,
+	validate *validator.Validate,
 ) *Handler {
-  return &Handler{
-    logger,
-    store,
-    auth,
-    account,
-    score,
-    purchase,
-    fileStorage,
-    email,
-  }
+	return &Handler{
+		logger,
+		store,
+		auth,
+		account,
+		score,
+		purchase,
+		fileStorage,
+		email,
+		validate,
+	}
 }
 
 func hxRedirect(w http.ResponseWriter, url string) {
-  w.Header().Set("HX-Redirect", url)
-  w.WriteHeader(http.StatusOK) // OK response
+	w.Header().Set("HX-Redirect", url)
+	w.WriteHeader(http.StatusOK) // OK response
 }
 
 func hxRedirectWithToast(w http.ResponseWriter, r *http.Request, url string, message string) {
-  w.Header().Set("HX-Redirect", url)
-  w.WriteHeader(http.StatusOK) // OK response
+	w.Header().Set("HX-Redirect", url)
+	w.WriteHeader(http.StatusOK) // OK response
 
-  components.Success(message).Render(r.Context(), w)
+	components.Success(message).Render(r.Context(), w)
 }

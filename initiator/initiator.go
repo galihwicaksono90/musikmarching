@@ -12,6 +12,7 @@ import (
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 	"galihwicaksono90/musikmarching-be/pkg/email"
 	fileStorage "galihwicaksono90/musikmarching-be/pkg/file-storage"
+	"galihwicaksono90/musikmarching-be/pkg/validator"
 	"log"
 	"net/http"
 
@@ -26,6 +27,7 @@ import (
 func Init() {
 	ctx := context.Background()
 	logger := logrus.New()
+	validate := validator.New()
 
 	config, err := config.LoadConfig("./")
 	if err != nil {
@@ -66,6 +68,7 @@ func Init() {
 		purchaseService,
 		fileStorage,
 		email,
+		validate,
 	)
 
 	// routings

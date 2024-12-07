@@ -12,6 +12,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgtype"
+
+	_ "github.com/go-playground/validator/v10"
 )
 
 func (h *Handler) HandleGetScoresByCotributorId(w http.ResponseWriter, r *http.Request) {
@@ -165,4 +167,34 @@ func (h *Handler) HandleVerifyScore(w http.ResponseWriter, r *http.Request) {
 	}
 
 	components.AdminScoreList(scores).Render(r.Context(), w)
+}
+
+func validateForm(r *http.Request) map[string]string {
+	errors := make(map[string]string)
+
+	title := r.FormValue("titlee")
+	if title == "" {
+		errors["title"] = "Title is required"
+	} else if len(title) < 5 {
+		errors["title"] = "Length must be greater than 5"
+	} else if len(title) > 100 {
+		errors["title"] = "Length must be less than 100"
+	}
+
+	return errors
+}
+
+func (h *Handler) HandleTestForm(w http.ResponseWriter, r *http.Request) {
+	errors := validateForm(r)
+	values := make(map[string]string)
+
+	for k, v := range r.Form {
+		values[k] = v[0]
+	}
+
+	h.logger.Println("errors======")
+	h.logger.Println(errors)
+	h.logger.Println("errors======")
+
+	components.TestForm(values, errors).Render(r.Context(), w)
 }

@@ -1,0 +1,19 @@
+package pages
+
+import (
+	"galihwicaksono90/musikmarching-be/internal/constants/model"
+	"galihwicaksono90/musikmarching-be/views/components"
+	"galihwicaksono90/musikmarching-be/views/layouts"
+)
+
+templ TestPage(user model.SessionUser) {
+	@layouts.Index() {
+		@components.Header(user)
+		<div class="container mx-auto">
+			<h1>Test</h1>
+			<div>
+			</div>
+			@components.TestForm(map[string]string{}, map[string]string{})
+		</div>
+	}
+}

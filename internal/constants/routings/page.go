@@ -9,6 +9,7 @@ import (
 
 func PageRouting(handler *handlers.Handler, router *mux.Router) {
 	router.HandleFunc("/", handler.HandleHomePage).Methods("GET")
+	router.HandleFunc("/testtt", handler.HandleTestPage).Methods("GET")
 
 	contributorRouter := router.PathPrefix("/contributor").Subrouter()
 	contributorRouter.Use(middlewares.AuthMiddleware, middlewares.ContributorMiddleware)
