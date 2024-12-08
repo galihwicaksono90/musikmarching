@@ -2,6 +2,7 @@ package initiator
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"galihwicaksono90/musikmarching-be/internal/constants/routings"
 	"galihwicaksono90/musikmarching-be/internal/handlers"
@@ -12,6 +13,7 @@ import (
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 	"galihwicaksono90/musikmarching-be/pkg/email"
 	fileStorage "galihwicaksono90/musikmarching-be/pkg/file-storage"
+	"galihwicaksono90/musikmarching-be/pkg/middlewares"
 	"galihwicaksono90/musikmarching-be/pkg/validator"
 	"log"
 	"net/http"
@@ -73,12 +75,17 @@ func Init() {
 
 	// routings
 	router := mux.NewRouter()
-
-	routings.PageRouting(handler, router)
+	router.Use(middlewares.SessionMiddleware)
 	routings.AuthRouting(handler, router)
-	routings.ScoreRouting(handler, router)
-	routings.PurchaseRouting(handler, router)
-	routings.AdminRouting(handler, router)
+
+	router.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode("pong")
+	})
+
+	routings.Routings(handler, router)
+	// routings.ScoreRouting(handler, router)
+	// routings.PurchaseRouting(handler, router)
+	// routings.AdminRouting(handler, router)
 
 	// serve static files
 	fs := http.FileServer(http.Dir("./static/"))

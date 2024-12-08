@@ -7,10 +7,11 @@ import (
 )
 
 func AuthRouting(handler *handlers.Handler, router *mux.Router) {
-	r := router.PathPrefix("/oauth2").Subrouter()
+	authRouter := router.PathPrefix("/auth").Subrouter()
+	authRouter.HandleFunc("/me", handler.HandleMe).Methods("GET")
 
+	r := router.PathPrefix("/oauth2").Subrouter()
 	r.HandleFunc("/{provider}", handler.HandleProviderLogin).Methods("GET")
-	r.HandleFunc("/{provider}/callback", handler.HandleAuthCallbackFunction).Methods("GET")
 	r.HandleFunc("/{provider}/callback", handler.HandleAuthCallbackFunction).Methods("GET")
 	r.HandleFunc("/logout/{provider}", handler.HandleLogout).Methods("GET")
 }

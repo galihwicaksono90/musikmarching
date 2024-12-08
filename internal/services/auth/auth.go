@@ -15,7 +15,7 @@ import (
 )
 
 type AuthService interface {
-	GetSessionUser(r *http.Request) (model.SessionUser, error)
+	GetSessionUser(r *http.Request) (*model.SessionUser, error)
 	StoreUserSession(w http.ResponseWriter, r *http.Request, user *model.SessionUser) error
 	RemoveUserSession(w http.ResponseWriter, r *http.Request)
 }
@@ -25,24 +25,28 @@ type authService struct {
 }
 
 // GetSessionUser implements AuthService.
-func (a *authService) GetSessionUser(r *http.Request) (model.SessionUser, error) {
+func (a *authService) GetSessionUser(r *http.Request) (*model.SessionUser, error) {
 	session, err := gothic.Store.Get(r, SessionName)
 	if err != nil {
-		return model.SessionUser{}, err
+		a.logger.Println(err)
+		return nil, err
 	}
 
 	u := session.Values["user"]
+
 	if u == nil {
-		return model.SessionUser{}, fmt.Errorf("user is not authenticated! %v", u)
+		return nil, fmt.Errorf("user is not authenticated! %v", u)
 	}
 
-	return model.SessionUser{
+	sessionUser := model.SessionUser{
 		ID:         u.(model.SessionUser).ID,
 		Email:      u.(model.SessionUser).Email,
 		Name:       u.(model.SessionUser).Name,
 		RoleName:   u.(model.SessionUser).RoleName,
 		PictureUrl: u.(model.SessionUser).PictureUrl,
-	}, nil
+	}
+
+	return &sessionUser, nil
 }
 
 // RemoveUserSession implements AuthService.

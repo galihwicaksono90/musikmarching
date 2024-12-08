@@ -10,7 +10,7 @@ import (
 )
 
 type PurchaseService interface {
-	PurchaseScore(user model.SessionUser, scoreID uuid.UUID) (uuid.UUID, error)
+	PurchaseScore(user *model.SessionUser, scoreID uuid.UUID) (uuid.UUID, error)
 	GetPurchases(uuid.UUID) ([]db.Purchase, error)
 	GetPurchaseByID(uuid.UUID) (db.Purchase, error)
 }
@@ -31,7 +31,7 @@ func (p *purchaseService) GetPurchases(id uuid.UUID) ([]db.Purchase, error) {
 }
 
 // PurchaseScore implements PurchaseService.
-func (p *purchaseService) PurchaseScore(user model.SessionUser, scoreID uuid.UUID) (uuid.UUID, error) {
+func (p *purchaseService) PurchaseScore(user *model.SessionUser, scoreID uuid.UUID) (uuid.UUID, error) {
 	ctx := context.Background()
 	var purchaseId uuid.UUID
 

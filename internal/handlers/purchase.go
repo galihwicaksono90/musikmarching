@@ -10,7 +10,7 @@ import (
 
 func (h *Handler) HandlePurchaseScore(w http.ResponseWriter, r *http.Request) {
 	user, _ := h.auth.GetSessionUser(r)
-	
+
 	scoreID, err := uuid.Parse(mux.Vars(r)["score_id"])
 	if err != nil {
 		h.logger.Errorln(err)
