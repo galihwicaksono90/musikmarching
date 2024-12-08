@@ -6,6 +6,7 @@ type TextInputProps struct {
 	Name        string
 	Error       string
 	Value       string
+	Form        string
 }
 
 templ TextInput(props TextInputProps) {
@@ -26,6 +27,7 @@ templ TextInput(props TextInputProps) {
 			placeholder={ props.Placeholder }
 			autocomplete={ props.Name }
 			value={ props.Value }
+			form={ props.Form }
 		/>
 		if props.Error != "" {
 			<small class="pl-0.5 text-red-500">{ props.Error }</small>

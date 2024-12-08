@@ -169,10 +169,15 @@ func (h *Handler) HandleVerifyScore(w http.ResponseWriter, r *http.Request) {
 	components.AdminScoreList(scores).Render(r.Context(), w)
 }
 
-func validateForm(r *http.Request) map[string]string {
+func validateForm(r *http.Request) (map[string]string, map[string]string) {
 	errors := make(map[string]string)
+	values := make(map[string]string)
 
-	title := r.FormValue("titlee")
+	for k, v := range r.Form {
+		values[k] = v[0]
+	}
+
+	title := r.FormValue("title")
 	if title == "" {
 		errors["title"] = "Title is required"
 	} else if len(title) < 5 {
@@ -181,20 +186,22 @@ func validateForm(r *http.Request) map[string]string {
 		errors["title"] = "Length must be less than 100"
 	}
 
-	return errors
+	_, _, err := r.FormFile("pdf-file")
+	if err != nil {
+		errors["pdf-file"] = "PDF file is required"
+	}
+
+	return values, errors
 }
 
 func (h *Handler) HandleTestForm(w http.ResponseWriter, r *http.Request) {
-	errors := validateForm(r)
-	values := make(map[string]string)
-
-	for k, v := range r.Form {
-		values[k] = v[0]
+	err := r.ParseMultipartForm(32 << 20)
+	if err != nil {
+		h.logger.Errorln(err)
+		return
 	}
 
-	h.logger.Println("errors======")
-	h.logger.Println(errors)
-	h.logger.Println("errors======")
+	values, errors := validateForm(r)
 
-	components.TestForm(values, errors).Render(r.Context(), w)
+	components.TestForm(values, errors, true).Render(r.Context(), w)
 }

@@ -658,6 +658,10 @@ video {
   max-width: 20rem;
 }
 
+.max-w-md {
+  max-width: 28rem;
+}
+
 .flex-1 {
   flex: 1 1 0%;
 }
@@ -744,6 +748,11 @@ video {
 .border-red-300 {
   --tw-border-opacity: 1;
   border-color: rgb(252 165 165 / var(--tw-border-opacity));
+}
+
+.border-neutral-500 {
+  --tw-border-opacity: 1;
+  border-color: rgb(115 115 115 / var(--tw-border-opacity));
 }
 
 .bg-green-500 {
@@ -836,6 +845,16 @@ video {
   color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 
+.text-red-600 {
+  --tw-text-opacity: 1;
+  color: rgb(220 38 38 / var(--tw-text-opacity));
+}
+
+.text-neutral-500 {
+  --tw-text-opacity: 1;
+  color: rgb(115 115 115 / var(--tw-text-opacity));
+}
+
 .file\:mr-4::file-selector-button {
   margin-right: 1rem;
 }
@@ -870,6 +889,11 @@ video {
 .file\:text-neutral-900::file-selector-button {
   --tw-text-opacity: 1;
   color: rgb(23 23 23 / var(--tw-text-opacity));
+}
+
+.file\:text-neutral-100::file-selector-button {
+  --tw-text-opacity: 1;
+  color: rgb(245 245 245 / var(--tw-text-opacity));
 }
 
 .hover\:bg-transparent:hover {
@@ -951,14 +975,24 @@ video {
     border-color: rgb(64 64 64 / var(--tw-border-opacity));
   }
 
+  .dark\:border-red-500 {
+    --tw-border-opacity: 1;
+    border-color: rgb(239 68 68 / var(--tw-border-opacity));
+  }
+
   .dark\:border-red-700 {
     --tw-border-opacity: 1;
     border-color: rgb(185 28 28 / var(--tw-border-opacity));
   }
 
-  .dark\:border-red-500 {
+  .dark\:border-neutral-900 {
     --tw-border-opacity: 1;
-    border-color: rgb(239 68 68 / var(--tw-border-opacity));
+    border-color: rgb(23 23 23 / var(--tw-border-opacity));
+  }
+
+  .dark\:border-red-900 {
+    --tw-border-opacity: 1;
+    border-color: rgb(127 29 29 / var(--tw-border-opacity));
   }
 
   .dark\:bg-neutral-900\/50 {
@@ -968,6 +1002,11 @@ video {
   .dark\:text-neutral-300 {
     --tw-text-opacity: 1;
     color: rgb(212 212 212 / var(--tw-text-opacity));
+  }
+
+  .dark\:text-red-500 {
+    --tw-text-opacity: 1;
+    color: rgb(239 68 68 / var(--tw-text-opacity));
   }
 
   .dark\:file\:bg-neutral-900::file-selector-button {
