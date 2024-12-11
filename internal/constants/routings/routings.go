@@ -2,6 +2,7 @@ package routings
 
 import (
 	"galihwicaksono90/musikmarching-be/internal/handlers"
+	"galihwicaksono90/musikmarching-be/pkg/middlewares"
 
 	"github.com/gorilla/mux"
 )
@@ -13,4 +14,7 @@ func Routings(handler *handlers.Handler, baseRouter *mux.Router) {
 
 	scoreRouter.HandleFunc("", handler.HandleGetScores).Methods("GET")
 	scoreRouter.HandleFunc("/{id}", handler.HandleGetScoreById).Methods("GET")
+
+	scoreRouter.Use(middlewares.AuthMiddleware)
+	scoreRouter.HandleFunc("/purchase/{id}", handler.HandlePurchaseScore).Methods("POST")
 }

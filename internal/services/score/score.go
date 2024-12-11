@@ -18,7 +18,7 @@ type ScoreService interface {
 	GetManyByContributorId(account_id uuid.UUID) ([]db.Score, error)
 	Create(model.CreateScoreDTO) (uuid.UUID, error)
 	Update(uuid.UUID, model.UpdateScoreDTO) error
-	GetVerified(db.GetVerifiedScoresParams) *[]db.GetVerifiedScoresRow
+	GetManyVerified(db.GetVerifiedScoresParams) (*[]db.GetVerifiedScoresRow, error)
 	GetVerifiedById(id uuid.UUID) (db.GetVerifiedScoreByIdRow, error)
 	UploadPdfFile(*http.Request) (url string, err error)
 	UploadMusicFile(*http.Request) (url string, err error)
@@ -68,13 +68,14 @@ func (s *scoreService) GetManyByContributorId(account_id uuid.UUID) ([]db.Score,
 }
 
 // GetVerified implements ScoreService.
-func (s *scoreService) GetVerified(params db.GetVerifiedScoresParams) *[]db.GetVerifiedScoresRow {
+func (s *scoreService) GetManyVerified(params db.GetVerifiedScoresParams) (*[]db.GetVerifiedScoresRow, error) {
 	scores, err := s.store.GetVerifiedScores(context.Background(), params)
 
 	if err != nil {
-		return &[]db.GetVerifiedScoresRow{}
+		return &[]db.GetVerifiedScoresRow{}, err
 	}
-	return &scores
+
+	return &scores, err
 }
 
 // GetVerifiedById implements ScoreService.

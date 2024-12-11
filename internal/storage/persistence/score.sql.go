@@ -218,7 +218,7 @@ func (q *Queries) GetScoresByContributorID(ctx context.Context, arg GetScoresByC
 
 const getScoresPaginated = `-- name: GetScoresPaginated :many
 select id, contributor_id, title, price, is_verified, verified_at, pdf_url, music_url, created_at, updated_at, deleted_at
-from score
+from score s
 where deleted_at is null
 order by
     case when $3 = 'price_asc' then price when $3 = 'price_desc' then price end,
@@ -308,8 +308,8 @@ offset $1::int
 `
 
 type GetVerifiedScoresParams struct {
-	Pageoffset int32 `db:"pageoffset" json:"pageoffset"`
-	Pagelimit  int32 `db:"pagelimit" json:"pagelimit"`
+	PageOffset int32 `db:"page_offset" json:"page_offset"`
+	PageLimit  int32 `db:"page_limit" json:"page_limit"`
 }
 
 type GetVerifiedScoresRow struct {
@@ -321,7 +321,7 @@ type GetVerifiedScoresRow struct {
 }
 
 func (q *Queries) GetVerifiedScores(ctx context.Context, arg GetVerifiedScoresParams) ([]GetVerifiedScoresRow, error) {
-	rows, err := q.db.Query(ctx, getVerifiedScores, arg.Pageoffset, arg.Pagelimit)
+	rows, err := q.db.Query(ctx, getVerifiedScores, arg.PageOffset, arg.PageLimit)
 	if err != nil {
 		return nil, err
 	}

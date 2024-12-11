@@ -10,7 +10,7 @@ offset @pageoffset::int
 
 -- name: GetScoresPaginated :many
 select *
-from score
+from score s
 where deleted_at is null
 order by
     case when $3 = 'price_asc' then price when $3 = 'price_desc' then price end,
@@ -23,6 +23,7 @@ order by
 limit $1
 offset $2
 ;
+
 
 -- name: GetScoresByContributorID :many
 select s.id, s.title, s.is_verified, s.price, a.name, a.email
@@ -41,8 +42,8 @@ from score s
 inner join contributor c on c.id = s.contributor_id
 inner join account a on a.id = s.contributor_id
 where s.is_verified = true and c.is_verified = true
-limit @pagelimit::int
-offset @pageoffset::int
+limit @page_limit::int
+offset @page_offset::int
 ;
 
 
