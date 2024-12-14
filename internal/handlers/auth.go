@@ -1,10 +1,8 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"galihwicaksono90/musikmarching-be/internal/constants/model"
-	// "galihwicaksono90/musikmarching-be/internal/services/auth"
 	"galihwicaksono90/musikmarching-be/pkg/middlewares"
 	"net/http"
 
@@ -62,7 +60,7 @@ func (h *Handler) HandleAuthCallbackFunction(w http.ResponseWriter, r *http.Requ
 
 func (h *Handler) HandleMe(w http.ResponseWriter, r *http.Request) {
 	u := h.getSessionUser(r)
-	json.NewEncoder(w).Encode(u)
+	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), u)
 }
 
 func (h *Handler) getSessionUser(r *http.Request) *model.SessionUser {

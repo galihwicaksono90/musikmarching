@@ -29,6 +29,7 @@ import (
 func Init() {
 	ctx := context.Background()
 	logger := logrus.New()
+	// logger.Formatter = &logrus.JSONFormatter{}
 	validate := validator.New()
 
 	config, err := config.LoadConfig("./")

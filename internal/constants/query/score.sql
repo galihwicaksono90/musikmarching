@@ -36,6 +36,16 @@ limit @pagelimit::int
 offset @pageoffset::int
 ;
 
+-- name: GetScoreByContributorID :one
+select s.id, s.title, s.is_verified, s.price, a.name, a.email
+from score s
+inner join contributor c on c.id = s.contributor_id
+inner join account a on a.id = s.contributor_id
+where s.id = @score_id
+and s.contributor_id = @contributor_id
+;
+
+
 -- name: GetVerifiedScores :many
 select s.id, s.title, s.price, a.name, a.email
 from score s

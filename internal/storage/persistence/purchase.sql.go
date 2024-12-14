@@ -38,7 +38,7 @@ func (q *Queries) CreatePurchase(ctx context.Context, arg CreatePurchaseParams) 
 }
 
 const getPurchaseByAccountAndScoreId = `-- name: GetPurchaseByAccountAndScoreId :one
-select id, invoice_serial, account_id, score_id, price, title, is_verified, verifiedat, created_at, updated_at, deleted_at from purchase
+select id, invoice_serial, account_id, score_id, price, title, is_verified, verified_at, created_at, updated_at, deleted_at from purchase
 where account_id = $1 and score_id = $2
 `
 
@@ -58,7 +58,7 @@ func (q *Queries) GetPurchaseByAccountAndScoreId(ctx context.Context, arg GetPur
 		&i.Price,
 		&i.Title,
 		&i.IsVerified,
-		&i.Verifiedat,
+		&i.VerifiedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -67,12 +67,17 @@ func (q *Queries) GetPurchaseByAccountAndScoreId(ctx context.Context, arg GetPur
 }
 
 const getPurchaseById = `-- name: GetPurchaseById :one
-select id, invoice_serial, account_id, score_id, price, title, is_verified, verifiedat, created_at, updated_at, deleted_at from purchase
-where id = $1
+select id, invoice_serial, account_id, score_id, price, title, is_verified, verified_at, created_at, updated_at, deleted_at from purchase
+where id = $1 and account_id = $2
 `
 
-func (q *Queries) GetPurchaseById(ctx context.Context, id uuid.UUID) (Purchase, error) {
-	row := q.db.QueryRow(ctx, getPurchaseById, id)
+type GetPurchaseByIdParams struct {
+	ScoreID   uuid.UUID `db:"score_id" json:"score_id"`
+	AccountID uuid.UUID `db:"account_id" json:"account_id"`
+}
+
+func (q *Queries) GetPurchaseById(ctx context.Context, arg GetPurchaseByIdParams) (Purchase, error) {
+	row := q.db.QueryRow(ctx, getPurchaseById, arg.ScoreID, arg.AccountID)
 	var i Purchase
 	err := row.Scan(
 		&i.ID,
@@ -82,7 +87,7 @@ func (q *Queries) GetPurchaseById(ctx context.Context, id uuid.UUID) (Purchase, 
 		&i.Price,
 		&i.Title,
 		&i.IsVerified,
-		&i.Verifiedat,
+		&i.VerifiedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -90,14 +95,14 @@ func (q *Queries) GetPurchaseById(ctx context.Context, id uuid.UUID) (Purchase, 
 	return i, err
 }
 
-const getPurchases = `-- name: GetPurchases :many
-select id, invoice_serial, account_id, score_id, price, title, is_verified, verifiedat, created_at, updated_at, deleted_at from purchase
+const getPurchasesByAccountId = `-- name: GetPurchasesByAccountId :many
+select id, invoice_serial, account_id, score_id, price, title, is_verified, verified_at, created_at, updated_at, deleted_at from purchase
 where account_id = $1
 order by created_at desc
 `
 
-func (q *Queries) GetPurchases(ctx context.Context, accountID uuid.UUID) ([]Purchase, error) {
-	rows, err := q.db.Query(ctx, getPurchases, accountID)
+func (q *Queries) GetPurchasesByAccountId(ctx context.Context, accountID uuid.UUID) ([]Purchase, error) {
+	rows, err := q.db.Query(ctx, getPurchasesByAccountId, accountID)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +118,7 @@ func (q *Queries) GetPurchases(ctx context.Context, accountID uuid.UUID) ([]Purc
 			&i.Price,
 			&i.Title,
 			&i.IsVerified,
-			&i.Verifiedat,
+			&i.VerifiedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,

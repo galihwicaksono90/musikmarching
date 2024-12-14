@@ -49,6 +49,43 @@ func (q *Queries) CreateScore(ctx context.Context, arg CreateScoreParams) (uuid.
 	return id, err
 }
 
+const getScoreByContributorID = `-- name: GetScoreByContributorID :one
+select s.id, s.title, s.is_verified, s.price, a.name, a.email
+from score s
+inner join contributor c on c.id = s.contributor_id
+inner join account a on a.id = s.contributor_id
+where s.id = $1
+and s.contributor_id = $2
+`
+
+type GetScoreByContributorIDParams struct {
+	ScoreID       uuid.UUID `db:"score_id" json:"score_id"`
+	ContributorID uuid.UUID `db:"contributor_id" json:"contributor_id"`
+}
+
+type GetScoreByContributorIDRow struct {
+	ID         uuid.UUID      `db:"id" json:"id"`
+	Title      string         `db:"title" json:"title"`
+	IsVerified bool           `db:"is_verified" json:"is_verified"`
+	Price      pgtype.Numeric `db:"price" json:"price"`
+	Name       string         `db:"name" json:"name"`
+	Email      string         `db:"email" json:"email"`
+}
+
+func (q *Queries) GetScoreByContributorID(ctx context.Context, arg GetScoreByContributorIDParams) (GetScoreByContributorIDRow, error) {
+	row := q.db.QueryRow(ctx, getScoreByContributorID, arg.ScoreID, arg.ContributorID)
+	var i GetScoreByContributorIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.IsVerified,
+		&i.Price,
+		&i.Name,
+		&i.Email,
+	)
+	return i, err
+}
+
 const getScoreByContributorId = `-- name: GetScoreByContributorId :many
 select id, contributor_id, title, price, is_verified, verified_at, pdf_url, music_url, created_at, updated_at, deleted_at
 from score

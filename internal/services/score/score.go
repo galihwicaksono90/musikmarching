@@ -23,7 +23,8 @@ type ScoreService interface {
 	UploadPdfFile(*http.Request) (url string, err error)
 	UploadMusicFile(*http.Request) (url string, err error)
 	GetById(id uuid.UUID) (db.Score, error)
-	GetByContirbutorID(db.GetScoresByContributorIDParams) ([]db.GetScoresByContributorIDRow, error)
+	GetManyByContirbutorID(db.GetScoresByContributorIDParams) ([]db.GetScoresByContributorIDRow, error)
+	GetOneByContributorID(db.GetScoreByContributorIDParams) (db.GetScoreByContributorIDRow, error)
 	GetAll(db.GetScoresPaginatedParams) ([]db.Score, error)
 	Verify(id uuid.UUID) error
 }
@@ -34,8 +35,13 @@ type scoreService struct {
 	fileStorage *minio.Client
 }
 
+// GetOneByContributorID implements ScoreService.
+func (s *scoreService) GetOneByContributorID(params db.GetScoreByContributorIDParams) (db.GetScoreByContributorIDRow, error) {
+	return s.store.GetScoreByContributorID(context.Background(), params)
+}
+
 // GetByContirbutorID implements ScoreService.
-func (s *scoreService) GetByContirbutorID(params db.GetScoresByContributorIDParams) ([]db.GetScoresByContributorIDRow, error) {
+func (s *scoreService) GetManyByContirbutorID(params db.GetScoresByContributorIDParams) ([]db.GetScoresByContributorIDRow, error) {
 	return s.store.GetScoresByContributorID(context.Background(), params)
 }
 
