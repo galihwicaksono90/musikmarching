@@ -24,4 +24,6 @@ func Routings(handler *handlers.Handler, baseRouter *mux.Router) {
 	contributorRouter.Use(middlewares.AuthMiddleware, middlewares.ContributorMiddleware)
 	contributorRouter.HandleFunc("/scores", handler.HandleGetContributorScores).Methods("GET")
 	contributorRouter.HandleFunc("/score/{id}", handler.HandleGetContributorScore).Methods("GET")
+	contributorRouter.HandleFunc("/score", handler.HandleCreateContributorScore).Methods("POST")
+	contributorRouter.HandleFunc("/score/{id}", handler.HandleCreateContributorScore).Methods("PUT")
 }

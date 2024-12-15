@@ -20,8 +20,8 @@ type ScoreService interface {
 	Update(uuid.UUID, model.UpdateScoreDTO) error
 	GetManyVerified(db.GetVerifiedScoresParams) (*[]db.GetVerifiedScoresRow, error)
 	GetVerifiedById(id uuid.UUID) (db.GetVerifiedScoreByIdRow, error)
-	UploadPdfFile(*http.Request) (url string, err error)
-	UploadMusicFile(*http.Request) (url string, err error)
+	UploadPdfFile(*http.Request, string) (url string, err error)
+	UploadMusicFile(*http.Request, string) (url string, err error)
 	GetById(id uuid.UUID) (db.Score, error)
 	GetManyByContirbutorID(db.GetScoresByContributorIDParams) ([]db.GetScoresByContributorIDRow, error)
 	GetOneByContributorID(db.GetScoreByContributorIDParams) (db.GetScoreByContributorIDRow, error)
@@ -90,8 +90,8 @@ func (s *scoreService) GetVerifiedById(id uuid.UUID) (db.GetVerifiedScoreByIdRow
 }
 
 // UploadPdfFile implements ScoreService.
-func (s *scoreService) UploadPdfFile(r *http.Request) (url string, err error) {
-	file, header, err := r.FormFile("pdf-file")
+func (s *scoreService) UploadPdfFile(r *http.Request, name string) (url string, err error) {
+	file, header, err := r.FormFile(name)
 	if err != nil {
 		s.logger.Errorln(err)
 		return "", err
@@ -107,8 +107,8 @@ func (s *scoreService) UploadPdfFile(r *http.Request) (url string, err error) {
 }
 
 // UploadMusicFile implements ScoreService.
-func (s *scoreService) UploadMusicFile(r *http.Request) (url string, err error) {
-	file, header, err := r.FormFile("music-file")
+func (s *scoreService) UploadMusicFile(r *http.Request, name string) (url string, err error) {
+	file, header, err := r.FormFile(name)
 	if err != nil {
 		s.logger.Errorln(err)
 		return "", err
