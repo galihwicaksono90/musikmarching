@@ -105,8 +105,8 @@ type Score struct {
 	Price         pgtype.Numeric     `db:"price" json:"price"`
 	IsVerified    bool               `db:"is_verified" json:"is_verified"`
 	VerifiedAt    pgtype.Timestamptz `db:"verified_at" json:"verified_at"`
-	PdfUrl        pgtype.Text        `db:"pdf_url" json:"pdf_url"`
-	MusicUrl      pgtype.Text        `db:"music_url" json:"music_url"`
+	PdfUrl        string             `db:"pdf_url" json:"pdf_url"`
+	AudioUrl      string             `db:"audio_url" json:"audio_url"`
 	CreatedAt     time.Time          `db:"created_at" json:"created_at"`
 	UpdatedAt     pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 	DeletedAt     pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`

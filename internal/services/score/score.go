@@ -21,7 +21,7 @@ type ScoreService interface {
 	GetManyVerified(db.GetVerifiedScoresParams) (*[]db.GetVerifiedScoresRow, error)
 	GetVerifiedById(id uuid.UUID) (db.GetVerifiedScoreByIdRow, error)
 	UploadPdfFile(*http.Request, string) (url string, err error)
-	UploadMusicFile(*http.Request, string) (url string, err error)
+	UploadAudioFile(*http.Request, string) (url string, err error)
 	GetById(id uuid.UUID) (db.Score, error)
 	GetManyByContirbutorID(db.GetScoresByContributorIDParams) ([]db.GetScoresByContributorIDRow, error)
 	GetOneByContributorID(db.GetScoreByContributorIDParams) (db.GetScoreByContributorIDRow, error)
@@ -106,15 +106,15 @@ func (s *scoreService) UploadPdfFile(r *http.Request, name string) (url string, 
 	return pdfUploadInfo.Location, nil
 }
 
-// UploadMusicFile implements ScoreService.
-func (s *scoreService) UploadMusicFile(r *http.Request, name string) (url string, err error) {
+// UploadAudioFile implements ScoreService.
+func (s *scoreService) UploadAudioFile(r *http.Request, name string) (url string, err error) {
 	file, header, err := r.FormFile(name)
 	if err != nil {
 		s.logger.Errorln(err)
 		return "", err
 	}
 
-	pdfUploadInfo, err := utils.UploadFile(s.fileStorage, file, header, model.MUSIC_LOCATION)
+	pdfUploadInfo, err := utils.UploadFile(s.fileStorage, file, header, model.AUDIO_LOCATION)
 	if err != nil {
 		s.logger.Errorln(err)
 		return "", err
@@ -133,14 +133,8 @@ func (s *scoreService) Create(params model.CreateScoreDTO) (uuid.UUID, error) {
 			Int:   params.Price,
 			Valid: true,
 		},
-		PdfUrl: pgtype.Text{
-			String: params.PdfUrl,
-			Valid:  true,
-		},
-		MusicUrl: pgtype.Text{
-			String: params.MusicUrl,
-			Valid:  true,
-		},
+		PdfUrl: params.PdfUrl,
+		AudioUrl: params.AudioUrl,
 		ContributorID: params.ContributorID,
 	})
 }
@@ -155,13 +149,15 @@ func (s *scoreService) Update(scoreId uuid.UUID, params model.UpdateScoreDTO) er
 	}
 
 	if scoreCheck.ContributorID != params.ContributorID {
-		return errors.New("you are not the owner of this score")
+		return errors.New("You are not the owner of this score")
 	}
 
 	if err := s.store.UpdateScore(ctx, db.UpdateScoreParams{
-		Title: params.Title,
-		Price: params.Price,
-		ID:    scoreId,
+		Title:    params.Title,
+		Price:    params.Price,
+		PdfUrl:   params.PdfUrl,
+		AudioUrl: params.AudioUrl,
+		ID:       scoreId,
 	}); err != nil {
 		return err
 	}

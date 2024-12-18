@@ -30,5 +30,5 @@ type FileLocation string
 
 const (
     PDF_LOCATION FileLocation = "pdf"
-    MUSIC_LOCATION  FileLocation = "music"
+    AUDIO_LOCATION  FileLocation = "audio"
 )

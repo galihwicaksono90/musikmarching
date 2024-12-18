@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (h *Handler) HandleGetContributorScores(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +66,7 @@ func (h *Handler) HandleCreateContributorScore(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	musicUrl, err := h.score.UploadMusicFile(r, "music_file")
+	audioUrl, err := h.score.UploadAudioFile(r, "audio_file")
 	if err != nil {
 		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
 		return
@@ -83,7 +84,7 @@ func (h *Handler) HandleCreateContributorScore(w http.ResponseWriter, r *http.Re
 		Title:         title,
 		Price:         price,
 		PdfUrl:        pdfUrl,
-		MusicUrl:      musicUrl,
+		AudioUrl:      audioUrl,
 	})
 
 	if err != nil {
@@ -101,4 +102,51 @@ func (h *Handler) HandleCreateContributorScore(w http.ResponseWriter, r *http.Re
 
 func (h *Handler) HandleUpdateContributorScore(w http.ResponseWriter, r *http.Request) {
 	user := h.getSessionUser(r)
+
+	scoreID, err := uuid.Parse(mux.Vars(r)["id"])
+	if err != nil {
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
+		return
+	}
+
+	price, ok := utils.StringToBigInt(r.FormValue("price"))
+	if !ok {
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "invalid price")
+		return
+	}
+
+	params := model.UpdateScoreDTO{
+		ContributorID: user.ID,
+		Title: pgtype.Text{
+			String: r.FormValue("title"),
+			Valid:  true,
+		},
+		Price: pgtype.Numeric{
+			Int:   price,
+			Valid: true,
+		},
+	}
+
+	pdfUrl, _ := h.score.UploadPdfFile(r, "pdf_file")
+	if pdfUrl != "" {
+		params.PdfUrl = pgtype.Text{
+			String: pdfUrl,
+			Valid:  true,
+		}
+	}
+
+	audioUrl, _ := h.score.UploadAudioFile(r, "audio_file")
+	if audioUrl != "" {
+		params.AudioUrl = pgtype.Text{
+			String: audioUrl,
+			Valid:  true,
+		}
+	}
+
+	if err := h.score.Update(scoreID, params); err != nil {
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), false)
+		return
+	}
+
+	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), true)
 }

@@ -17,7 +17,7 @@ insert into score (
   title,
   price,
   pdf_url,
-  music_url,
+  audio_url,
   contributor_id
 ) values (
   $1,
@@ -31,8 +31,8 @@ insert into score (
 type CreateScoreParams struct {
 	Title         string         `db:"title" json:"title"`
 	Price         pgtype.Numeric `db:"price" json:"price"`
-	PdfUrl        pgtype.Text    `db:"pdf_url" json:"pdf_url"`
-	MusicUrl      pgtype.Text    `db:"music_url" json:"music_url"`
+	PdfUrl        string         `db:"pdf_url" json:"pdf_url"`
+	AudioUrl      string         `db:"audio_url" json:"audio_url"`
 	ContributorID uuid.UUID      `db:"contributor_id" json:"contributor_id"`
 }
 
@@ -41,7 +41,7 @@ func (q *Queries) CreateScore(ctx context.Context, arg CreateScoreParams) (uuid.
 		arg.Title,
 		arg.Price,
 		arg.PdfUrl,
-		arg.MusicUrl,
+		arg.AudioUrl,
 		arg.ContributorID,
 	)
 	var id uuid.UUID
@@ -50,7 +50,7 @@ func (q *Queries) CreateScore(ctx context.Context, arg CreateScoreParams) (uuid.
 }
 
 const getScoreByContributorID = `-- name: GetScoreByContributorID :one
-select s.id, s.title, s.is_verified, s.price, a.name, a.email
+select s.id, s.title, s.is_verified, s.price, a.name, a.email, s.pdf_url, s.audio_url
 from score s
 inner join contributor c on c.id = s.contributor_id
 inner join account a on a.id = s.contributor_id
@@ -70,6 +70,8 @@ type GetScoreByContributorIDRow struct {
 	Price      pgtype.Numeric `db:"price" json:"price"`
 	Name       string         `db:"name" json:"name"`
 	Email      string         `db:"email" json:"email"`
+	PdfUrl     string         `db:"pdf_url" json:"pdf_url"`
+	AudioUrl   string         `db:"audio_url" json:"audio_url"`
 }
 
 func (q *Queries) GetScoreByContributorID(ctx context.Context, arg GetScoreByContributorIDParams) (GetScoreByContributorIDRow, error) {
@@ -82,12 +84,14 @@ func (q *Queries) GetScoreByContributorID(ctx context.Context, arg GetScoreByCon
 		&i.Price,
 		&i.Name,
 		&i.Email,
+		&i.PdfUrl,
+		&i.AudioUrl,
 	)
 	return i, err
 }
 
 const getScoreByContributorId = `-- name: GetScoreByContributorId :many
-select id, contributor_id, title, price, is_verified, verified_at, pdf_url, music_url, created_at, updated_at, deleted_at
+select id, contributor_id, title, price, is_verified, verified_at, pdf_url, audio_url, created_at, updated_at, deleted_at
 from score
 where contributor_id = $1
 `
@@ -109,7 +113,7 @@ func (q *Queries) GetScoreByContributorId(ctx context.Context, id uuid.UUID) ([]
 			&i.IsVerified,
 			&i.VerifiedAt,
 			&i.PdfUrl,
-			&i.MusicUrl,
+			&i.AudioUrl,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -125,7 +129,7 @@ func (q *Queries) GetScoreByContributorId(ctx context.Context, id uuid.UUID) ([]
 }
 
 const getScoreById = `-- name: GetScoreById :one
-select id, contributor_id, title, price, is_verified, verified_at, pdf_url, music_url, created_at, updated_at, deleted_at
+select id, contributor_id, title, price, is_verified, verified_at, pdf_url, audio_url, created_at, updated_at, deleted_at
 from score s
 where s.id = $1
 `
@@ -141,7 +145,7 @@ func (q *Queries) GetScoreById(ctx context.Context, id uuid.UUID) (Score, error)
 		&i.IsVerified,
 		&i.VerifiedAt,
 		&i.PdfUrl,
-		&i.MusicUrl,
+		&i.AudioUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -254,7 +258,7 @@ func (q *Queries) GetScoresByContributorID(ctx context.Context, arg GetScoresByC
 }
 
 const getScoresPaginated = `-- name: GetScoresPaginated :many
-select id, contributor_id, title, price, is_verified, verified_at, pdf_url, music_url, created_at, updated_at, deleted_at
+select id, contributor_id, title, price, is_verified, verified_at, pdf_url, audio_url, created_at, updated_at, deleted_at
 from score s
 where deleted_at is null
 order by
@@ -292,7 +296,7 @@ func (q *Queries) GetScoresPaginated(ctx context.Context, arg GetScoresPaginated
 			&i.IsVerified,
 			&i.VerifiedAt,
 			&i.PdfUrl,
-			&i.MusicUrl,
+			&i.AudioUrl,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -387,18 +391,28 @@ const updateScore = `-- name: UpdateScore :exec
 update score set
   title = COALESCE($1, title),
   price = COALESCE($2, price),
+  pdf_url = COALESCE($3, pdf_url),
+  audio_url = COALESCE($4, audio_url),
   updated_at = now()
-where id = $3
+where id = $5
 `
 
 type UpdateScoreParams struct {
-	Title pgtype.Text    `db:"title" json:"title"`
-	Price pgtype.Numeric `db:"price" json:"price"`
-	ID    uuid.UUID      `db:"id" json:"id"`
+	Title    pgtype.Text    `db:"title" json:"title"`
+	Price    pgtype.Numeric `db:"price" json:"price"`
+	PdfUrl   pgtype.Text    `db:"pdf_url" json:"pdf_url"`
+	AudioUrl pgtype.Text    `db:"audio_url" json:"audio_url"`
+	ID       uuid.UUID      `db:"id" json:"id"`
 }
 
 func (q *Queries) UpdateScore(ctx context.Context, arg UpdateScoreParams) error {
-	_, err := q.db.Exec(ctx, updateScore, arg.Title, arg.Price, arg.ID)
+	_, err := q.db.Exec(ctx, updateScore,
+		arg.Title,
+		arg.Price,
+		arg.PdfUrl,
+		arg.AudioUrl,
+		arg.ID,
+	)
 	return err
 }
 
