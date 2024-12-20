@@ -5,6 +5,7 @@ import (
 	"galihwicaksono90/musikmarching-be/internal/constants/model"
 	"galihwicaksono90/musikmarching-be/internal/services/account"
 	"galihwicaksono90/musikmarching-be/internal/services/auth"
+	"galihwicaksono90/musikmarching-be/internal/services/file"
 	"galihwicaksono90/musikmarching-be/internal/services/purchase"
 	"galihwicaksono90/musikmarching-be/internal/services/score"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
@@ -12,7 +13,6 @@ import (
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/minio/minio-go/v7"
 	"github.com/sirupsen/logrus"
 )
 
@@ -23,7 +23,7 @@ type Handler struct {
 	account     account.AccountService
 	score       score.ScoreService
 	purchase    purchase.PurchaseService
-	fileStorage *minio.Client
+	file        file.FileService
 	email       email.Email
 	validate    *validator.Validate
 }
@@ -35,7 +35,7 @@ func New(
 	account account.AccountService,
 	score score.ScoreService,
 	purchase purchase.PurchaseService,
-	fileStorage *minio.Client,
+	file file.FileService,
 	email email.Email,
 	validate *validator.Validate,
 ) *Handler {
@@ -46,7 +46,7 @@ func New(
 		account,
 		score,
 		purchase,
-		fileStorage,
+		file,
 		email,
 		validate,
 	}

@@ -5,6 +5,7 @@ import (
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 	"galihwicaksono90/musikmarching-be/utils"
 	"net/http"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -60,13 +61,23 @@ func (h *Handler) HandleGetContributorScore(w http.ResponseWriter, r *http.Reque
 func (h *Handler) HandleCreateContributorScore(w http.ResponseWriter, r *http.Request) {
 	user := h.getSessionUser(r)
 
-	pdfUrl, err := h.score.UploadPdfFile(r, "pdf_file")
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	pdfUrl, images, err := h.file.UploadPdfFile(r, "pdf_file")
+
+	for index, image := range images {
+		h.logger.Infoln(image + strconv.Itoa(index))
+	}
+
 	if err != nil {
 		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
 		return
 	}
 
-	audioUrl, err := h.score.UploadAudioFile(r, "audio_file")
+	audioUrl, err := h.file.UploadAudioFile(r, "audio_file")
 	if err != nil {
 		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
 		return
@@ -84,6 +95,7 @@ func (h *Handler) HandleCreateContributorScore(w http.ResponseWriter, r *http.Re
 		Title:         title,
 		Price:         price,
 		PdfUrl:        pdfUrl,
+		PdfImageUrls:  images,
 		AudioUrl:      audioUrl,
 	})
 
@@ -100,8 +112,17 @@ func (h *Handler) HandleCreateContributorScore(w http.ResponseWriter, r *http.Re
 	h.handleResponse(w, http.StatusCreated, http.StatusText(http.StatusCreated), score)
 }
 
+func (h *Handler) HandleTesting(w http.ResponseWriter, r *http.Request) {
+	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), "hello")
+}
+
 func (h *Handler) HandleUpdateContributorScore(w http.ResponseWriter, r *http.Request) {
 	user := h.getSessionUser(r)
+
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		return
+	}
 
 	scoreID, err := uuid.Parse(mux.Vars(r)["id"])
 	if err != nil {
@@ -127,15 +148,16 @@ func (h *Handler) HandleUpdateContributorScore(w http.ResponseWriter, r *http.Re
 		},
 	}
 
-	pdfUrl, _ := h.score.UploadPdfFile(r, "pdf_file")
+	pdfUrl, images, err := h.file.UploadPdfFile(r, "pdf_file")
 	if pdfUrl != "" {
 		params.PdfUrl = pgtype.Text{
 			String: pdfUrl,
 			Valid:  true,
 		}
+		params.PdfImageUrls = images
 	}
 
-	audioUrl, _ := h.score.UploadAudioFile(r, "audio_file")
+	audioUrl, _ := h.file.UploadAudioFile(r, "audio_file")
 	if audioUrl != "" {
 		params.AudioUrl = pgtype.Text{
 			String: audioUrl,
@@ -148,5 +170,5 @@ func (h *Handler) HandleUpdateContributorScore(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), true)
+	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), user)
 }

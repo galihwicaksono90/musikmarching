@@ -37,7 +37,7 @@ offset @pageoffset::int
 ;
 
 -- name: GetScoreByContributorID :one
-select s.id, s.title, s.is_verified, s.price, a.name, a.email, s.pdf_url, s.audio_url
+select s.id, s.title, s.is_verified, s.price, a.name, a.email, s.pdf_url, s.audio_url, s.pdf_image_urls
 from score s
 inner join contributor c on c.id = s.contributor_id
 inner join account a on a.id = s.contributor_id
@@ -76,12 +76,14 @@ insert into score (
   title,
   price,
   pdf_url,
+  pdf_image_urls,
   audio_url,
   contributor_id
 ) values (
   @title,
   @price,
   @pdf_url,
+  @pdf_image_urls,
   @audio_url,
   @contributor_id
 ) returning id;
@@ -91,6 +93,7 @@ update score set
   title = COALESCE(sqlc.narg('title'), title),
   price = COALESCE(sqlc.narg('price'), price),
   pdf_url = COALESCE(sqlc.narg('pdf_url'), pdf_url),
+  pdf_image_urls = COALESCE(sqlc.narg('pdf_image_urls'), pdf_image_urls),
   audio_url = COALESCE(sqlc.narg('audio_url'), audio_url),
   updated_at = now()
 where id = @id

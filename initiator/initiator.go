@@ -8,6 +8,7 @@ import (
 	"galihwicaksono90/musikmarching-be/internal/handlers"
 	"galihwicaksono90/musikmarching-be/internal/services/account"
 	"galihwicaksono90/musikmarching-be/internal/services/auth"
+	"galihwicaksono90/musikmarching-be/internal/services/file"
 	"galihwicaksono90/musikmarching-be/internal/services/purchase"
 	"galihwicaksono90/musikmarching-be/internal/services/score"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
@@ -29,7 +30,12 @@ import (
 func Init() {
 	ctx := context.Background()
 	logger := logrus.New()
-	// logger.Formatter = &logrus.JSONFormatter{}
+	// logger.SetFormatter(&logrus.JSONFormatter{
+	// 	PrettyPrint: true,
+	// })
+	// logger.WithFields(logrus.Fields{
+	// 	"key": "value",
+	// }).Info("This is JSON Formatter with additional fields.")
 	validate := validator.New()
 
 	config, err := config.LoadConfig("./")
@@ -58,8 +64,9 @@ func Init() {
 	// services
 	authService := auth.NewAuthService(logger, sessionStore)
 	accountService := account.NewAccountService(logger, store)
-	scoreService := score.NewScoreService(logger, store, fileStorage)
+	scoreService := score.NewScoreService(logger, store)
 	purchaseService := purchase.NewPurchaseService(logger, store)
+	fileService := file.NewFileService(logger, fileStorage)
 
 	// initiate new handler
 	handler := handlers.New(
@@ -69,7 +76,7 @@ func Init() {
 		accountService,
 		scoreService,
 		purchaseService,
-		fileStorage,
+		fileService,
 		email,
 		validate,
 	)
@@ -84,9 +91,6 @@ func Init() {
 	})
 
 	routings.Routings(handler, router)
-	// routings.ScoreRouting(handler, router)
-	// routings.PurchaseRouting(handler, router)
-	// routings.AdminRouting(handler, router)
 
 	// serve static files
 	fs := http.FileServer(http.Dir("./static/"))

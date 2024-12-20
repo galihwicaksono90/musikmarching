@@ -106,6 +106,7 @@ type Score struct {
 	IsVerified    bool               `db:"is_verified" json:"is_verified"`
 	VerifiedAt    pgtype.Timestamptz `db:"verified_at" json:"verified_at"`
 	PdfUrl        string             `db:"pdf_url" json:"pdf_url"`
+	PdfImageUrls  []string           `db:"pdf_image_urls" json:"pdf_image_urls"`
 	AudioUrl      string             `db:"audio_url" json:"audio_url"`
 	CreatedAt     time.Time          `db:"created_at" json:"created_at"`
 	UpdatedAt     pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
