@@ -5,6 +5,7 @@ import (
 	"galihwicaksono90/musikmarching-be/internal/constants/model"
 	"galihwicaksono90/musikmarching-be/internal/services/account"
 	"galihwicaksono90/musikmarching-be/internal/services/auth"
+	"galihwicaksono90/musikmarching-be/internal/services/contributor"
 	"galihwicaksono90/musikmarching-be/internal/services/file"
 	"galihwicaksono90/musikmarching-be/internal/services/purchase"
 	"galihwicaksono90/musikmarching-be/internal/services/score"
@@ -23,6 +24,7 @@ type Handler struct {
 	account     account.AccountService
 	score       score.ScoreService
 	purchase    purchase.PurchaseService
+	contributor contributor.ContributorService
 	file        file.FileService
 	email       email.Email
 	validate    *validator.Validate
@@ -35,6 +37,7 @@ func New(
 	account account.AccountService,
 	score score.ScoreService,
 	purchase purchase.PurchaseService,
+	contributor contributor.ContributorService,
 	file file.FileService,
 	email email.Email,
 	validate *validator.Validate,
@@ -46,6 +49,7 @@ func New(
 		account,
 		score,
 		purchase,
+		contributor,
 		file,
 		email,
 		validate,

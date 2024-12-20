@@ -20,7 +20,7 @@ type ScoreService interface {
 	GetById(id uuid.UUID) (db.Score, error)
 	GetManyByContirbutorID(db.GetScoresByContributorIDParams) ([]db.GetScoresByContributorIDRow, error)
 	GetOneByContributorID(db.GetScoreByContributorIDParams) (db.GetScoreByContributorIDRow, error)
-	GetAll(db.GetScoresPaginatedParams) ([]db.Score, error)
+	GetAll() ([]db.Score, error)
 	Verify(id uuid.UUID) error
 }
 
@@ -45,10 +45,9 @@ func (s *scoreService) Verify(id uuid.UUID) error {
 }
 
 // GetAll implements ScoreService.
-func (s *scoreService) GetAll(params db.GetScoresPaginatedParams) ([]db.Score, error) {
+func (s *scoreService) GetAll() ([]db.Score, error) {
 	ctx := context.Background()
-
-	result, err := s.store.GetScoresPaginated(ctx, params)
+	result, err := s.store.GetScoresPaginated(ctx)
 	if err != nil {
 		return nil, err
 	}

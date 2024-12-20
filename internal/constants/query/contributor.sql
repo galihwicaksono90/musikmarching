@@ -4,16 +4,15 @@ select
   a.email,
   a.name,
   c.is_verified, 
-  c.verified_at,
-  c.created_at
+  c.verified_at
 from contributor as c
 inner join account as a on c.id = a.id
 where c.id = @id
 ;
 
 -- name: CreateContributor :one
-insert into contributor as c (id)
-values (@id)
+insert into contributor as c (id, full_name)
+values (@id, @full_name)
 on conflict do nothing
 returning c.id
 ;

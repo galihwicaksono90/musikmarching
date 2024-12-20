@@ -10,18 +10,8 @@ offset @pageoffset::int
 
 -- name: GetScoresPaginated :many
 select *
-from score s
+from score
 where deleted_at is null
-order by
-    case when $3 = 'price_asc' then price when $3 = 'price_desc' then price end,
-    case
-        when $3 = 'created_at_asc'
-        then created_at
-        when $3 = 'created_at_desc'
-        then created_at
-    end desc
-limit $1
-offset $2
 ;
 
 

@@ -10,9 +10,16 @@ import (
 func Routings(handler *handlers.Handler, baseRouter *mux.Router) {
 	router := baseRouter.PathPrefix("/api/v1").Subrouter()
 
+	authRouter := router.PathPrefix("/auth").Subrouter()
+	authRouter.HandleFunc("/me", handler.HandleMe).Methods("GET")
+
 	scoreRouter := router.PathPrefix("/score").Subrouter()
 	scoreRouter.HandleFunc("", handler.HandleGetScores).Methods("GET")
 	scoreRouter.HandleFunc("/{id}", handler.HandleGetScoreById).Methods("GET")
+
+	accountRouter := router.PathPrefix("/account").Subrouter()
+	accountRouter.Use(middlewares.AuthMiddleware)
+	accountRouter.HandleFunc("/contributor-request", handler.HandleCreateContributor).Methods("POST")
 
 	purchaseRouter := router.PathPrefix("/purchase").Subrouter()
 	purchaseRouter.Use(middlewares.AuthMiddleware)

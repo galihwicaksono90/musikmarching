@@ -2,7 +2,7 @@
 // versions:
 //   sqlc v1.27.0
 
-package db
+package persistence
 
 import (
 	"database/sql/driver"
@@ -70,6 +70,7 @@ type Account struct {
 type Contributor struct {
 	ID         uuid.UUID          `db:"id" json:"id"`
 	IsVerified pgtype.Bool        `db:"is_verified" json:"is_verified"`
+	FullName   string             `db:"full_name" json:"full_name"`
 	VerifiedAt pgtype.Timestamptz `db:"verified_at" json:"verified_at"`
 	CreatedAt  time.Time          `db:"created_at" json:"created_at"`
 	UpdatedAt  pgtype.Timestamptz `db:"updated_at" json:"updated_at"`

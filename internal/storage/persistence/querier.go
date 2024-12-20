@@ -2,7 +2,7 @@
 // versions:
 //   sqlc v1.27.0
 
-package db
+package persistence
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 
 type Querier interface {
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (CreateAccountRow, error)
-	CreateContributor(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	CreateContributor(ctx context.Context, arg CreateContributorParams) (uuid.UUID, error)
 	CreatePurchase(ctx context.Context, arg CreatePurchaseParams) (uuid.UUID, error)
 	CreateScore(ctx context.Context, arg CreateScoreParams) (uuid.UUID, error)
 	GetAccountByEmail(ctx context.Context, email string) (GetAccountByEmailRow, error)
@@ -27,7 +27,7 @@ type Querier interface {
 	GetScoreById(ctx context.Context, id uuid.UUID) (Score, error)
 	GetScores(ctx context.Context, arg GetScoresParams) ([]GetScoresRow, error)
 	GetScoresByContributorID(ctx context.Context, arg GetScoresByContributorIDParams) ([]GetScoresByContributorIDRow, error)
-	GetScoresPaginated(ctx context.Context, arg GetScoresPaginatedParams) ([]Score, error)
+	GetScoresPaginated(ctx context.Context) ([]Score, error)
 	GetUnverifiedContributors(ctx context.Context) ([]Contributor, error)
 	GetVerifiedScoreById(ctx context.Context, id uuid.UUID) (GetVerifiedScoreByIdRow, error)
 	GetVerifiedScores(ctx context.Context, arg GetVerifiedScoresParams) ([]GetVerifiedScoresRow, error)

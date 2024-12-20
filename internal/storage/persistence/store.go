@@ -1,4 +1,4 @@
-package db
+package persistence
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Store interface {
@@ -13,12 +14,12 @@ type Store interface {
 }
 
 type SQLStore struct {
-	db *pgx.Conn
+	db *pgxpool.Pool
 	mu sync.Mutex
 	*Queries
 }
 
-func NewStore(db *pgx.Conn) Store {
+func NewStore(db *pgxpool.Pool) Store {
 	return &SQLStore{
 		db:      db,
 		Queries: New(db),
@@ -26,7 +27,7 @@ func NewStore(db *pgx.Conn) Store {
 }
 
 // ExecTx executes a function within a database transaction
-func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
+func (store *SQLStore) ExecTx(ctx context.Context, fn func(*Queries) error) error {
 	store.mu.Lock()
 	defer store.mu.Unlock()
 	tx, err := store.db.BeginTx(ctx, pgx.TxOptions{})

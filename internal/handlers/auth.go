@@ -3,8 +3,10 @@ package handlers
 import (
 	"fmt"
 	"galihwicaksono90/musikmarching-be/internal/constants/model"
+	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 	"galihwicaksono90/musikmarching-be/pkg/middlewares"
 	"net/http"
+	"reflect"
 
 	"github.com/markbates/goth/gothic"
 	"github.com/spf13/viper"
@@ -60,7 +62,31 @@ func (h *Handler) HandleAuthCallbackFunction(w http.ResponseWriter, r *http.Requ
 
 func (h *Handler) HandleMe(w http.ResponseWriter, r *http.Request) {
 	u := h.getSessionUser(r)
-	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), u)
+	if u == nil {
+		h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), u)
+		return
+	}
+
+	if u.RoleName != db.RolenameContributor {
+		h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), u)
+		return
+	}
+
+	c, err := h.contributor.GetByID(u.ID)
+	if err != nil {
+		h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), u)
+		return
+	}
+
+	user := make(map[string]interface{})
+	user["id"] = u.ID
+	user["email"] = u.Email
+	user["name"] = u.Name
+	user["role_name"] = u.RoleName
+	user["is_verified"] = c.IsVerified
+	user["verified_at"] = c.VerifiedAt
+
+	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), user)
 }
 
 func (h *Handler) getSessionUser(r *http.Request) *model.SessionUser {
@@ -75,4 +101,16 @@ func (h *Handler) getSessionUser(r *http.Request) *model.SessionUser {
 	}
 
 	return user
+}
+
+func structToMap(obj interface{}) map[string]interface{} {
+	result := make(map[string]interface{})
+	val := reflect.ValueOf(obj)
+	typ := val.Type()
+
+	for i := 0; i < val.NumField(); i++ {
+		field := val.Field(i)
+		result[typ.Field(i).Name] = field.Interface()
+	}
+	return result
 }

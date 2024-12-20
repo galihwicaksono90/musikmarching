@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"galihwicaksono90/musikmarching-be/internal/constants/model"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 	"galihwicaksono90/musikmarching-be/utils"
@@ -112,10 +113,6 @@ func (h *Handler) HandleCreateContributorScore(w http.ResponseWriter, r *http.Re
 	h.handleResponse(w, http.StatusCreated, http.StatusText(http.StatusCreated), score)
 }
 
-func (h *Handler) HandleTesting(w http.ResponseWriter, r *http.Request) {
-	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), "hello")
-}
-
 func (h *Handler) HandleUpdateContributorScore(w http.ResponseWriter, r *http.Request) {
 	user := h.getSessionUser(r)
 
@@ -171,4 +168,45 @@ func (h *Handler) HandleUpdateContributorScore(w http.ResponseWriter, r *http.Re
 	}
 
 	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), user)
+}
+
+type HandleCreateContributorInput struct {
+	FullName string `json:"full_name"`
+}
+
+func (h *Handler) HandleCreateContributor(w http.ResponseWriter, r *http.Request) {
+	user := h.getSessionUser(r)
+	var input HandleCreateContributorInput
+
+	if user.RoleName == db.RolenameContributor {
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "This user is already a contributor")
+	}
+
+	if user.RoleName != db.RolenameUser {
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "This user is not allowed")
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&input)
+	if err != nil {
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
+		return
+	}
+
+	params := db.CreateContributorParams{
+		ID:       user.ID,
+		FullName: input.FullName,
+	}
+
+	if _, err = h.contributor.Create(params); err != nil {
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
+		return
+	}
+
+	err = h.account.UpdateRole(user.ID, db.RolenameContributor)
+	if err != nil {
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
+		return
+	}
+
+	h.handleResponse(w, http.StatusCreated, http.StatusText(http.StatusCreated), input)
 }

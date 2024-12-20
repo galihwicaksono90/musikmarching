@@ -3,7 +3,7 @@
 //   sqlc v1.27.0
 // source: score.sql
 
-package db
+package persistence
 
 import (
 	"context"
@@ -267,28 +267,12 @@ func (q *Queries) GetScoresByContributorID(ctx context.Context, arg GetScoresByC
 
 const getScoresPaginated = `-- name: GetScoresPaginated :many
 select id, contributor_id, title, price, is_verified, verified_at, pdf_url, pdf_image_urls, audio_url, created_at, updated_at, deleted_at
-from score s
+from score
 where deleted_at is null
-order by
-    case when $3 = 'price_asc' then price when $3 = 'price_desc' then price end,
-    case
-        when $3 = 'created_at_asc'
-        then created_at
-        when $3 = 'created_at_desc'
-        then created_at
-    end desc
-limit $1
-offset $2
 `
 
-type GetScoresPaginatedParams struct {
-	Limit   int32       `db:"limit" json:"limit"`
-	Offset  int32       `db:"offset" json:"offset"`
-	Column3 interface{} `db:"column_3" json:"column_3"`
-}
-
-func (q *Queries) GetScoresPaginated(ctx context.Context, arg GetScoresPaginatedParams) ([]Score, error) {
-	rows, err := q.db.Query(ctx, getScoresPaginated, arg.Limit, arg.Offset, arg.Column3)
+func (q *Queries) GetScoresPaginated(ctx context.Context) ([]Score, error) {
+	rows, err := q.db.Query(ctx, getScoresPaginated)
 	if err != nil {
 		return nil, err
 	}

@@ -1,19 +1,21 @@
 package initiator
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"galihwicaksono90/musikmarching-be/internal/constants/routings"
 	"galihwicaksono90/musikmarching-be/internal/handlers"
 	"galihwicaksono90/musikmarching-be/internal/services/account"
 	"galihwicaksono90/musikmarching-be/internal/services/auth"
+	"galihwicaksono90/musikmarching-be/internal/services/contributor"
 	"galihwicaksono90/musikmarching-be/internal/services/file"
 	"galihwicaksono90/musikmarching-be/internal/services/purchase"
 	"galihwicaksono90/musikmarching-be/internal/services/score"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
+	"galihwicaksono90/musikmarching-be/pkg/dbpool"
 	"galihwicaksono90/musikmarching-be/pkg/email"
 	fileStorage "galihwicaksono90/musikmarching-be/pkg/file-storage"
+	"galihwicaksono90/musikmarching-be/pkg/logger"
 	"galihwicaksono90/musikmarching-be/pkg/middlewares"
 	"galihwicaksono90/musikmarching-be/pkg/validator"
 	"log"
@@ -21,38 +23,29 @@ import (
 
 	mux "github.com/gorilla/mux"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/sirupsen/logrus"
-
 	"galihwicaksono90/musikmarching-be/pkg/config"
 )
 
 func Init() {
-	ctx := context.Background()
-	logger := logrus.New()
-	// logger.SetFormatter(&logrus.JSONFormatter{
-	// 	PrettyPrint: true,
-	// })
-	// logger.WithFields(logrus.Fields{
-	// 	"key": "value",
-	// }).Info("This is JSON Formatter with additional fields.")
+	logger := logger.NewLogger()
 	validate := validator.New()
 
+	// load env config
 	config, err := config.LoadConfig("./")
 	if err != nil {
 		logger.Fatal(err)
 	}
 
+	// file storage (minio)
 	fileStorage := fileStorage.NewStorage(logger, config)
+	email := email.NewEmail(config)
 
-	email := email.New(config)
-
-	conn, err := pgx.Connect(ctx, config.DB_SOURCE)
+	pool, err := dbpool.NewDBPool(config)
 	if err != nil {
 		logger.Fatal(err)
 	}
 
-	store := db.NewStore(conn)
+	store := db.NewStore(pool)
 
 	sessionStore := auth.NewSessionStore(auth.SessionOptions{
 		CookiesKey: "secretkey",
@@ -66,6 +59,7 @@ func Init() {
 	accountService := account.NewAccountService(logger, store)
 	scoreService := score.NewScoreService(logger, store)
 	purchaseService := purchase.NewPurchaseService(logger, store)
+	contributorService := contributor.NewContributorService(logger, store)
 	fileService := file.NewFileService(logger, fileStorage)
 
 	// initiate new handler
@@ -76,6 +70,7 @@ func Init() {
 		accountService,
 		scoreService,
 		purchaseService,
+		contributorService,
 		fileService,
 		email,
 		validate,
