@@ -3,13 +3,12 @@
 //   sqlc v1.27.0
 // source: contributor.sql
 
-package persistence
+package db
 
 import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createContributor = `-- name: CreateContributor :one
@@ -31,35 +30,58 @@ func (q *Queries) CreateContributor(ctx context.Context, arg CreateContributorPa
 	return id, err
 }
 
-const getContributorById = `-- name: GetContributorById :one
-select 
-  a.id,
-  a.email,
-  a.name,
-  c.is_verified, 
-  c.verified_at
-from contributor as c
-inner join account as a on c.id = a.id
-where c.id = $1
+const getAllContributors = `-- name: GetAllContributors :many
+select id, is_verified, full_name, verified_at, created_at, updated_at, deleted_at, email, scores from contributor_account_scores as cas
 `
 
-type GetContributorByIdRow struct {
-	ID         uuid.UUID          `db:"id" json:"id"`
-	Email      string             `db:"email" json:"email"`
-	Name       string             `db:"name" json:"name"`
-	IsVerified pgtype.Bool        `db:"is_verified" json:"is_verified"`
-	VerifiedAt pgtype.Timestamptz `db:"verified_at" json:"verified_at"`
+func (q *Queries) GetAllContributors(ctx context.Context) ([]ContributorAccountScore, error) {
+	rows, err := q.db.Query(ctx, getAllContributors)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ContributorAccountScore{}
+	for rows.Next() {
+		var i ContributorAccountScore
+		if err := rows.Scan(
+			&i.ID,
+			&i.IsVerified,
+			&i.FullName,
+			&i.VerifiedAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.Email,
+			&i.Scores,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
-func (q *Queries) GetContributorById(ctx context.Context, id uuid.UUID) (GetContributorByIdRow, error) {
+const getContributorById = `-- name: GetContributorById :one
+select id, is_verified, full_name, verified_at, created_at, updated_at, deleted_at, email, scores from contributor_account_scores as cas
+where cas.id = $1
+`
+
+func (q *Queries) GetContributorById(ctx context.Context, id uuid.UUID) (ContributorAccountScore, error) {
 	row := q.db.QueryRow(ctx, getContributorById, id)
-	var i GetContributorByIdRow
+	var i ContributorAccountScore
 	err := row.Scan(
 		&i.ID,
-		&i.Email,
-		&i.Name,
 		&i.IsVerified,
+		&i.FullName,
 		&i.VerifiedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.Email,
+		&i.Scores,
 	)
 	return i, err
 }

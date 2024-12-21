@@ -81,7 +81,7 @@ func (h *Handler) HandleMe(w http.ResponseWriter, r *http.Request) {
 	user := make(map[string]interface{})
 	user["id"] = u.ID
 	user["email"] = u.Email
-	user["name"] = u.Name
+	user["name"] = c.FullName
 	user["role_name"] = u.RoleName
 	user["is_verified"] = c.IsVerified
 	user["verified_at"] = c.VerifiedAt

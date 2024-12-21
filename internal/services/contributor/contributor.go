@@ -10,7 +10,9 @@ import (
 
 type ContributorService interface {
 	Create(db.CreateContributorParams) (uuid.UUID, error)
-	GetByID(uuid.UUID) (db.GetContributorByIdRow, error)
+	GetByID(uuid.UUID) (db.ContributorAccountScore, error)
+	GetAll() ([]db.ContributorAccountScore, error)
+	Verify(uuid.UUID) error
 }
 
 type contributorService struct {
@@ -18,8 +20,20 @@ type contributorService struct {
 	store  db.Store
 }
 
+// Verify implements ContributorService.
+func (c *contributorService) Verify(id uuid.UUID) error {
+	ctx := context.Background()
+	return c.store.VerifyContributor(ctx, id)
+}
+
+// GetAll implements ContributorService.
+func (c *contributorService) GetAll() ([]db.ContributorAccountScore, error) {
+	ctx := context.Background()
+	return c.store.GetAllContributors(ctx)
+}
+
 // GetByID implements ContributorService.
-func (c *contributorService) GetByID(id uuid.UUID) (db.GetContributorByIdRow, error) {
+func (c *contributorService) GetByID(id uuid.UUID) (db.ContributorAccountScore, error) {
 	ctx := context.Background()
 	return c.store.GetContributorById(ctx, id)
 }
@@ -28,7 +42,7 @@ func (c *contributorService) GetByID(id uuid.UUID) (db.GetContributorByIdRow, er
 func (c *contributorService) Create(params db.CreateContributorParams) (uuid.UUID, error) {
 	ctx := context.Background()
 
-	_, err :=  c.store.CreateContributor(ctx, params)
+	_, err := c.store.CreateContributor(ctx, params)
 
 	if err != nil {
 		return uuid.UUID{}, err

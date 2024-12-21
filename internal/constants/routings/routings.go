@@ -33,4 +33,11 @@ func Routings(handler *handlers.Handler, baseRouter *mux.Router) {
 	contributorRouter.HandleFunc("/score/{id}", handler.HandleGetContributorScore).Methods("GET")
 	contributorRouter.HandleFunc("/score", handler.HandleCreateContributorScore).Methods("POST")
 	contributorRouter.HandleFunc("/score/{id}", handler.HandleUpdateContributorScore).Methods("PUT")
+
+	adminRouter := router.PathPrefix("/admin").Subrouter()
+	adminRouter.Use(middlewares.AuthMiddleware, middlewares.AdminMiddleware)
+	adminRouter.HandleFunc("/scores", handler.HandleAdminGetScores).Methods("GET")
+	adminRouter.HandleFunc("/score/verify/{id}", handler.HandleAdminVerifyScore).Methods("POST")
+	adminRouter.HandleFunc("/contributors", handler.HandleAdminGetContributors).Methods("GET")
+	adminRouter.HandleFunc("/contributor/verify/{id}", handler.HandleAdminVerifyContributor).Methods("POST")
 }

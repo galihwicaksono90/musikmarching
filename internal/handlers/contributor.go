@@ -202,11 +202,5 @@ func (h *Handler) HandleCreateContributor(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = h.account.UpdateRole(user.ID, db.RolenameContributor)
-	if err != nil {
-		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
-		return
-	}
-
 	h.handleResponse(w, http.StatusCreated, http.StatusText(http.StatusCreated), input)
 }

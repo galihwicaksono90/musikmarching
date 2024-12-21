@@ -2,7 +2,7 @@
 // versions:
 //   sqlc v1.27.0
 
-package persistence
+package db
 
 import (
 	"context"
@@ -18,7 +18,8 @@ type Querier interface {
 	GetAccountByEmail(ctx context.Context, email string) (GetAccountByEmailRow, error)
 	GetAccountById(ctx context.Context, id uuid.UUID) (GetAccountByIdRow, error)
 	GetAccounts(ctx context.Context) ([]GetAccountsRow, error)
-	GetContributorById(ctx context.Context, id uuid.UUID) (GetContributorByIdRow, error)
+	GetAllContributors(ctx context.Context) ([]ContributorAccountScore, error)
+	GetContributorById(ctx context.Context, id uuid.UUID) (ContributorAccountScore, error)
 	GetPurchaseByAccountAndScoreId(ctx context.Context, arg GetPurchaseByAccountAndScoreIdParams) (Purchase, error)
 	GetPurchaseById(ctx context.Context, arg GetPurchaseByIdParams) (Purchase, error)
 	GetPurchasesByAccountId(ctx context.Context, accountID uuid.UUID) ([]Purchase, error)

@@ -3,7 +3,7 @@
 //   sqlc v1.27.0
 // source: score.sql
 
-package persistence
+package db
 
 import (
 	"context"
