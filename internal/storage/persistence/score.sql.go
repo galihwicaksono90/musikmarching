@@ -17,22 +17,25 @@ insert into score (
   title,
   price,
   pdf_url,
-  music_url,
+  pdf_image_urls,
+  audio_url,
   contributor_id
 ) values (
   $1,
   $2,
   $3,
   $4,
-  $5
+  $5,
+  $6
 ) returning id
 `
 
 type CreateScoreParams struct {
 	Title         string         `db:"title" json:"title"`
 	Price         pgtype.Numeric `db:"price" json:"price"`
-	PdfUrl        pgtype.Text    `db:"pdf_url" json:"pdf_url"`
-	MusicUrl      pgtype.Text    `db:"music_url" json:"music_url"`
+	PdfUrl        string         `db:"pdf_url" json:"pdf_url"`
+	PdfImageUrls  []string       `db:"pdf_image_urls" json:"pdf_image_urls"`
+	AudioUrl      string         `db:"audio_url" json:"audio_url"`
 	ContributorID uuid.UUID      `db:"contributor_id" json:"contributor_id"`
 }
 
@@ -41,7 +44,8 @@ func (q *Queries) CreateScore(ctx context.Context, arg CreateScoreParams) (uuid.
 		arg.Title,
 		arg.Price,
 		arg.PdfUrl,
-		arg.MusicUrl,
+		arg.PdfImageUrls,
+		arg.AudioUrl,
 		arg.ContributorID,
 	)
 	var id uuid.UUID
@@ -49,8 +53,51 @@ func (q *Queries) CreateScore(ctx context.Context, arg CreateScoreParams) (uuid.
 	return id, err
 }
 
+const getScoreByContributorID = `-- name: GetScoreByContributorID :one
+select s.id, s.title, s.is_verified, s.price, a.name, a.email, s.pdf_url, s.audio_url, s.pdf_image_urls
+from score s
+inner join contributor c on c.id = s.contributor_id
+inner join account a on a.id = s.contributor_id
+where s.id = $1
+and s.contributor_id = $2
+`
+
+type GetScoreByContributorIDParams struct {
+	ScoreID       uuid.UUID `db:"score_id" json:"score_id"`
+	ContributorID uuid.UUID `db:"contributor_id" json:"contributor_id"`
+}
+
+type GetScoreByContributorIDRow struct {
+	ID           uuid.UUID      `db:"id" json:"id"`
+	Title        string         `db:"title" json:"title"`
+	IsVerified   bool           `db:"is_verified" json:"is_verified"`
+	Price        pgtype.Numeric `db:"price" json:"price"`
+	Name         string         `db:"name" json:"name"`
+	Email        string         `db:"email" json:"email"`
+	PdfUrl       string         `db:"pdf_url" json:"pdf_url"`
+	AudioUrl     string         `db:"audio_url" json:"audio_url"`
+	PdfImageUrls []string       `db:"pdf_image_urls" json:"pdf_image_urls"`
+}
+
+func (q *Queries) GetScoreByContributorID(ctx context.Context, arg GetScoreByContributorIDParams) (GetScoreByContributorIDRow, error) {
+	row := q.db.QueryRow(ctx, getScoreByContributorID, arg.ScoreID, arg.ContributorID)
+	var i GetScoreByContributorIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.IsVerified,
+		&i.Price,
+		&i.Name,
+		&i.Email,
+		&i.PdfUrl,
+		&i.AudioUrl,
+		&i.PdfImageUrls,
+	)
+	return i, err
+}
+
 const getScoreByContributorId = `-- name: GetScoreByContributorId :many
-select id, contributor_id, title, price, is_verified, verified_at, pdf_url, music_url, created_at, updated_at, deleted_at
+select id, contributor_id, title, price, is_verified, verified_at, pdf_url, pdf_image_urls, audio_url, created_at, updated_at, deleted_at
 from score
 where contributor_id = $1
 `
@@ -72,7 +119,8 @@ func (q *Queries) GetScoreByContributorId(ctx context.Context, id uuid.UUID) ([]
 			&i.IsVerified,
 			&i.VerifiedAt,
 			&i.PdfUrl,
-			&i.MusicUrl,
+			&i.PdfImageUrls,
+			&i.AudioUrl,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -88,7 +136,7 @@ func (q *Queries) GetScoreByContributorId(ctx context.Context, id uuid.UUID) ([]
 }
 
 const getScoreById = `-- name: GetScoreById :one
-select id, contributor_id, title, price, is_verified, verified_at, pdf_url, music_url, created_at, updated_at, deleted_at
+select id, contributor_id, title, price, is_verified, verified_at, pdf_url, pdf_image_urls, audio_url, created_at, updated_at, deleted_at
 from score s
 where s.id = $1
 `
@@ -104,7 +152,8 @@ func (q *Queries) GetScoreById(ctx context.Context, id uuid.UUID) (Score, error)
 		&i.IsVerified,
 		&i.VerifiedAt,
 		&i.PdfUrl,
-		&i.MusicUrl,
+		&i.PdfImageUrls,
+		&i.AudioUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -217,29 +266,13 @@ func (q *Queries) GetScoresByContributorID(ctx context.Context, arg GetScoresByC
 }
 
 const getScoresPaginated = `-- name: GetScoresPaginated :many
-select id, contributor_id, title, price, is_verified, verified_at, pdf_url, music_url, created_at, updated_at, deleted_at
+select id, contributor_id, title, price, is_verified, verified_at, pdf_url, pdf_image_urls, audio_url, created_at, updated_at, deleted_at
 from score
 where deleted_at is null
-order by
-    case when $3 = 'price_asc' then price when $3 = 'price_desc' then price end,
-    case
-        when $3 = 'created_at_asc'
-        then created_at
-        when $3 = 'created_at_desc'
-        then created_at
-    end desc
-limit $1
-offset $2
 `
 
-type GetScoresPaginatedParams struct {
-	Limit   int32       `db:"limit" json:"limit"`
-	Offset  int32       `db:"offset" json:"offset"`
-	Column3 interface{} `db:"column_3" json:"column_3"`
-}
-
-func (q *Queries) GetScoresPaginated(ctx context.Context, arg GetScoresPaginatedParams) ([]Score, error) {
-	rows, err := q.db.Query(ctx, getScoresPaginated, arg.Limit, arg.Offset, arg.Column3)
+func (q *Queries) GetScoresPaginated(ctx context.Context) ([]Score, error) {
+	rows, err := q.db.Query(ctx, getScoresPaginated)
 	if err != nil {
 		return nil, err
 	}
@@ -255,7 +288,8 @@ func (q *Queries) GetScoresPaginated(ctx context.Context, arg GetScoresPaginated
 			&i.IsVerified,
 			&i.VerifiedAt,
 			&i.PdfUrl,
-			&i.MusicUrl,
+			&i.PdfImageUrls,
+			&i.AudioUrl,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -308,8 +342,8 @@ offset $1::int
 `
 
 type GetVerifiedScoresParams struct {
-	Pageoffset int32 `db:"pageoffset" json:"pageoffset"`
-	Pagelimit  int32 `db:"pagelimit" json:"pagelimit"`
+	PageOffset int32 `db:"page_offset" json:"page_offset"`
+	PageLimit  int32 `db:"page_limit" json:"page_limit"`
 }
 
 type GetVerifiedScoresRow struct {
@@ -321,7 +355,7 @@ type GetVerifiedScoresRow struct {
 }
 
 func (q *Queries) GetVerifiedScores(ctx context.Context, arg GetVerifiedScoresParams) ([]GetVerifiedScoresRow, error) {
-	rows, err := q.db.Query(ctx, getVerifiedScores, arg.Pageoffset, arg.Pagelimit)
+	rows, err := q.db.Query(ctx, getVerifiedScores, arg.PageOffset, arg.PageLimit)
 	if err != nil {
 		return nil, err
 	}
@@ -350,18 +384,31 @@ const updateScore = `-- name: UpdateScore :exec
 update score set
   title = COALESCE($1, title),
   price = COALESCE($2, price),
+  pdf_url = COALESCE($3, pdf_url),
+  pdf_image_urls = COALESCE($4, pdf_image_urls),
+  audio_url = COALESCE($5, audio_url),
   updated_at = now()
-where id = $3
+where id = $6
 `
 
 type UpdateScoreParams struct {
-	Title pgtype.Text    `db:"title" json:"title"`
-	Price pgtype.Numeric `db:"price" json:"price"`
-	ID    uuid.UUID      `db:"id" json:"id"`
+	Title        pgtype.Text    `db:"title" json:"title"`
+	Price        pgtype.Numeric `db:"price" json:"price"`
+	PdfUrl       pgtype.Text    `db:"pdf_url" json:"pdf_url"`
+	PdfImageUrls []string       `db:"pdf_image_urls" json:"pdf_image_urls"`
+	AudioUrl     pgtype.Text    `db:"audio_url" json:"audio_url"`
+	ID           uuid.UUID      `db:"id" json:"id"`
 }
 
 func (q *Queries) UpdateScore(ctx context.Context, arg UpdateScoreParams) error {
-	_, err := q.db.Exec(ctx, updateScore, arg.Title, arg.Price, arg.ID)
+	_, err := q.db.Exec(ctx, updateScore,
+		arg.Title,
+		arg.Price,
+		arg.PdfUrl,
+		arg.PdfImageUrls,
+		arg.AudioUrl,
+		arg.ID,
+	)
 	return err
 }
 

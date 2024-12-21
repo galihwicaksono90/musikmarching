@@ -1,17 +1,19 @@
 package handlers
 
 import (
+	"encoding/json"
+	"galihwicaksono90/musikmarching-be/internal/constants/model"
 	"galihwicaksono90/musikmarching-be/internal/services/account"
 	"galihwicaksono90/musikmarching-be/internal/services/auth"
+	"galihwicaksono90/musikmarching-be/internal/services/contributor"
+	"galihwicaksono90/musikmarching-be/internal/services/file"
 	"galihwicaksono90/musikmarching-be/internal/services/purchase"
 	"galihwicaksono90/musikmarching-be/internal/services/score"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 	"galihwicaksono90/musikmarching-be/pkg/email"
-	"galihwicaksono90/musikmarching-be/views/components"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/minio/minio-go/v7"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,7 +24,8 @@ type Handler struct {
 	account     account.AccountService
 	score       score.ScoreService
 	purchase    purchase.PurchaseService
-	fileStorage *minio.Client
+	contributor contributor.ContributorService
+	file        file.FileService
 	email       email.Email
 	validate    *validator.Validate
 }
@@ -34,7 +37,8 @@ func New(
 	account account.AccountService,
 	score score.ScoreService,
 	purchase purchase.PurchaseService,
-	fileStorage *minio.Client,
+	contributor contributor.ContributorService,
+	file file.FileService,
 	email email.Email,
 	validate *validator.Validate,
 ) *Handler {
@@ -45,20 +49,15 @@ func New(
 		account,
 		score,
 		purchase,
-		fileStorage,
+		contributor,
+		file,
 		email,
 		validate,
 	}
 }
 
-func hxRedirect(w http.ResponseWriter, url string) {
-	w.Header().Set("HX-Redirect", url)
-	w.WriteHeader(http.StatusOK) // OK response
-}
-
-func hxRedirectWithToast(w http.ResponseWriter, r *http.Request, url string, message string) {
-	w.Header().Set("HX-Redirect", url)
-	w.WriteHeader(http.StatusOK) // OK response
-
-	components.Success(message).Render(r.Context(), w)
+func (h *Handler) handleResponse(w http.ResponseWriter, code uint, message string, data interface{}) {
+	response := model.Response(code, message, data)
+	json.NewEncoder(w).Encode(response)
+	h.logger.Info(data)
 }

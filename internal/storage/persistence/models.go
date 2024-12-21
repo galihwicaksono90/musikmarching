@@ -70,10 +70,23 @@ type Account struct {
 type Contributor struct {
 	ID         uuid.UUID          `db:"id" json:"id"`
 	IsVerified pgtype.Bool        `db:"is_verified" json:"is_verified"`
+	FullName   string             `db:"full_name" json:"full_name"`
 	VerifiedAt pgtype.Timestamptz `db:"verified_at" json:"verified_at"`
 	CreatedAt  time.Time          `db:"created_at" json:"created_at"`
 	UpdatedAt  pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 	DeletedAt  pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
+}
+
+type ContributorAccountScore struct {
+	ID         uuid.UUID          `db:"id" json:"id"`
+	IsVerified pgtype.Bool        `db:"is_verified" json:"is_verified"`
+	FullName   string             `db:"full_name" json:"full_name"`
+	VerifiedAt pgtype.Timestamptz `db:"verified_at" json:"verified_at"`
+	CreatedAt  time.Time          `db:"created_at" json:"created_at"`
+	UpdatedAt  pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	DeletedAt  pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
+	Email      string             `db:"email" json:"email"`
+	Scores     []Score            `db:"scores" json:"scores"`
 }
 
 type Purchase struct {
@@ -84,7 +97,7 @@ type Purchase struct {
 	Price         pgtype.Numeric     `db:"price" json:"price"`
 	Title         string             `db:"title" json:"title"`
 	IsVerified    bool               `db:"is_verified" json:"is_verified"`
-	Verifiedat    pgtype.Timestamptz `db:"verifiedat" json:"verifiedat"`
+	VerifiedAt    pgtype.Timestamptz `db:"verified_at" json:"verified_at"`
 	CreatedAt     time.Time          `db:"created_at" json:"created_at"`
 	UpdatedAt     pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 	DeletedAt     pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
@@ -105,8 +118,9 @@ type Score struct {
 	Price         pgtype.Numeric     `db:"price" json:"price"`
 	IsVerified    bool               `db:"is_verified" json:"is_verified"`
 	VerifiedAt    pgtype.Timestamptz `db:"verified_at" json:"verified_at"`
-	PdfUrl        pgtype.Text        `db:"pdf_url" json:"pdf_url"`
-	MusicUrl      pgtype.Text        `db:"music_url" json:"music_url"`
+	PdfUrl        string             `db:"pdf_url" json:"pdf_url"`
+	PdfImageUrls  []string           `db:"pdf_image_urls" json:"pdf_image_urls"`
+	AudioUrl      string             `db:"audio_url" json:"audio_url"`
 	CreatedAt     time.Time          `db:"created_at" json:"created_at"`
 	UpdatedAt     pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 	DeletedAt     pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`

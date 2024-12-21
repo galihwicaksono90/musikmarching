@@ -1,6 +1,10 @@
 package auth
 
-import "github.com/gorilla/sessions"
+import (
+	"net/http"
+
+	"github.com/gorilla/sessions"
+)
 
 const (
 	SessionName = "user-session"
@@ -8,18 +12,19 @@ const (
 
 type SessionOptions struct {
 	CookiesKey string
-	MaxAge int
-	HttpOnly bool
-	Secure bool
+	MaxAge     int
+	HttpOnly   bool
+	Secure     bool
 }
 
-func NewSessionStore(opts SessionOptions) *sessions.CookieStore{
+func NewSessionStore(opts SessionOptions) *sessions.CookieStore {
 	store := sessions.NewCookieStore([]byte(opts.CookiesKey))
 
 	store.MaxAge(opts.MaxAge)
 	store.Options.Path = "/"
 	store.Options.HttpOnly = opts.HttpOnly
 	store.Options.Secure = opts.Secure
+	store.Options.SameSite = http.SameSiteLaxMode
 
 	return store
 }

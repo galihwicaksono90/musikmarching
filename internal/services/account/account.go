@@ -14,11 +14,21 @@ import (
 type AccountService interface {
 	GetUserByEmail(string) (*model.Account, error)
 	UpsertAccount(goth.User) (*model.SessionUser, error)
+	UpdateRole(uuid.UUID, db.Rolename) error
 }
 
 type accountService struct {
 	logger *logrus.Logger
 	store  db.Store
+}
+
+// UpdateRole implements AccountService.
+func (s *accountService) UpdateRole(id uuid.UUID, role db.Rolename) error {
+	_, err :=  s.store.UpdateAccountRole(context.Background(), db.UpdateAccountRoleParams{
+		ID:       id,
+		Rolename: role,
+	})
+	return err
 }
 
 // CreateOrUpdateAccount implements AccountService.

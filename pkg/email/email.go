@@ -7,7 +7,7 @@ import (
 )
 
 type Email interface {
-	SendPurchaseInvoice(user model.SessionUser) error
+	SendPurchaseInvoice(user *model.SessionUser) error
 }
 
 type email struct {
@@ -15,7 +15,7 @@ type email struct {
 }
 
 // SendInvoice implements Email.
-func (e *email) SendPurchaseInvoice(user model.SessionUser) error {
+func (e *email) SendPurchaseInvoice(user *model.SessionUser) error {
 	subject := "Invoice"
 	body := "Invoice body"
 
@@ -41,7 +41,7 @@ func (e *email) sendEmail(to string, subject string, body string) error {
 	)
 }
 
-func New(config config.Config) Email {
+func NewEmail(config config.Config) Email {
 	return &email{
 		config,
 	}

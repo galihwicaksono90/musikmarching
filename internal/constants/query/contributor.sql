@@ -1,19 +1,11 @@
 -- name: GetContributorById :one
-select 
-  a.id,
-  a.email,
-  a.name,
-  c.is_verified, 
-  c.verified_at,
-  c.created_at
-from contributor as c
-inner join account as a on c.id = a.id
-where c.id = @id
+select * from contributor_account_scores as cas
+where cas.id = @id
 ;
 
 -- name: CreateContributor :one
-insert into contributor as c (id)
-values (@id)
+insert into contributor as c (id, full_name)
+values (@id, @full_name)
 on conflict do nothing
 returning c.id
 ;
@@ -21,6 +13,10 @@ returning c.id
 -- name: GetUnverifiedContributors :many
 select * from contributor as c
 where c.is_verified = false;
+;
+
+-- name: GetAllContributors :many
+select * from contributor_account_scores as cas
 ;
 
 -- name: VerifyContributor :exec

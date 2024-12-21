@@ -12,14 +12,15 @@ type CreateScoreDTO struct {
 	Title         string    `json:"title"`
 	Price         *big.Int  `json:"price"`
 	PdfUrl        string    `json:"pdf_url"`
-	MusicUrl      string    `json:"music_url"`
+	PdfImageUrls  []string  `json:"pdf_image_urls"`
+	AudioUrl      string    `json:"audio_url"`
 }
 
 type UpdateScoreDTO struct {
-	ContributorID uuid.UUID   `json:"contributor_id"`
-	Title pgtype.Text    `db:"title" json:"title"`
-	Price pgtype.Numeric `db:"price" json:"price"`
-	// Price         *big.Int   `json:"price"`
-	// PdfUrl        string   `json:"pdf_url"`
-	// MusicUrl      string   `json:"music_url"`
+	ContributorID uuid.UUID      `json:"contributor_id"`
+	Title         pgtype.Text    `db:"title" json:"title"`
+	Price         pgtype.Numeric `db:"price" json:"price"`
+	PdfUrl        pgtype.Text    `json:"pdf_url"`
+	PdfImageUrls  []string       `json:"pdf_image_urls"`
+	AudioUrl      pgtype.Text    `json:"audio_url"`
 }

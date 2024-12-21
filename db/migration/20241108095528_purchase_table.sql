@@ -8,7 +8,7 @@ CREATE TABLE Purchase (
   price DECIMAL(10,2) NOT NULL,
   title VARCHAR(255) NOT NULL,
   is_verified BOOLEAN NOT NULL DEFAULT false,
-  verifiedAt TIMESTAMPTZ,
+  verified_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ,
   deleted_at TIMESTAMPTZ

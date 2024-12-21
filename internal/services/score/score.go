@@ -5,12 +5,9 @@ import (
 	"errors"
 	"galihwicaksono90/musikmarching-be/internal/constants/model"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
-	"galihwicaksono90/musikmarching-be/utils"
-	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/minio/minio-go/v7"
 	"github.com/sirupsen/logrus"
 )
 
@@ -18,24 +15,27 @@ type ScoreService interface {
 	GetManyByContributorId(account_id uuid.UUID) ([]db.Score, error)
 	Create(model.CreateScoreDTO) (uuid.UUID, error)
 	Update(uuid.UUID, model.UpdateScoreDTO) error
-	GetVerified(db.GetVerifiedScoresParams) *[]db.GetVerifiedScoresRow
+	GetManyVerified(db.GetVerifiedScoresParams) (*[]db.GetVerifiedScoresRow, error)
 	GetVerifiedById(id uuid.UUID) (db.GetVerifiedScoreByIdRow, error)
-	UploadPdfFile(*http.Request) (url string, err error)
-	UploadMusicFile(*http.Request) (url string, err error)
 	GetById(id uuid.UUID) (db.Score, error)
-	GetByContirbutorID(db.GetScoresByContributorIDParams) ([]db.GetScoresByContributorIDRow, error)
-	GetAll(db.GetScoresPaginatedParams) ([]db.Score, error)
+	GetManyByContirbutorID(db.GetScoresByContributorIDParams) ([]db.GetScoresByContributorIDRow, error)
+	GetOneByContributorID(db.GetScoreByContributorIDParams) (db.GetScoreByContributorIDRow, error)
+	GetAll() ([]db.Score, error)
 	Verify(id uuid.UUID) error
 }
 
 type scoreService struct {
-	logger      *logrus.Logger
-	store       db.Store
-	fileStorage *minio.Client
+	logger *logrus.Logger
+	store  db.Store
+}
+
+// GetOneByContributorID implements ScoreService.
+func (s *scoreService) GetOneByContributorID(params db.GetScoreByContributorIDParams) (db.GetScoreByContributorIDRow, error) {
+	return s.store.GetScoreByContributorID(context.Background(), params)
 }
 
 // GetByContirbutorID implements ScoreService.
-func (s *scoreService) GetByContirbutorID(params db.GetScoresByContributorIDParams) ([]db.GetScoresByContributorIDRow, error) {
+func (s *scoreService) GetManyByContirbutorID(params db.GetScoresByContributorIDParams) ([]db.GetScoresByContributorIDRow, error) {
 	return s.store.GetScoresByContributorID(context.Background(), params)
 }
 
@@ -45,10 +45,9 @@ func (s *scoreService) Verify(id uuid.UUID) error {
 }
 
 // GetAll implements ScoreService.
-func (s *scoreService) GetAll(params db.GetScoresPaginatedParams) ([]db.Score, error) {
+func (s *scoreService) GetAll() ([]db.Score, error) {
 	ctx := context.Background()
-
-	result, err := s.store.GetScoresPaginated(ctx, params)
+	result, err := s.store.GetScoresPaginated(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -68,52 +67,19 @@ func (s *scoreService) GetManyByContributorId(account_id uuid.UUID) ([]db.Score,
 }
 
 // GetVerified implements ScoreService.
-func (s *scoreService) GetVerified(params db.GetVerifiedScoresParams) *[]db.GetVerifiedScoresRow {
+func (s *scoreService) GetManyVerified(params db.GetVerifiedScoresParams) (*[]db.GetVerifiedScoresRow, error) {
 	scores, err := s.store.GetVerifiedScores(context.Background(), params)
 
 	if err != nil {
-		return &[]db.GetVerifiedScoresRow{}
+		return &[]db.GetVerifiedScoresRow{}, err
 	}
-	return &scores
+
+	return &scores, err
 }
 
 // GetVerifiedById implements ScoreService.
 func (s *scoreService) GetVerifiedById(id uuid.UUID) (db.GetVerifiedScoreByIdRow, error) {
 	return s.store.GetVerifiedScoreById(context.Background(), id)
-}
-
-// UploadPdfFile implements ScoreService.
-func (s *scoreService) UploadPdfFile(r *http.Request) (url string, err error) {
-	file, header, err := r.FormFile("pdf-file")
-	if err != nil {
-		s.logger.Errorln(err)
-		return "", err
-	}
-
-	pdfUploadInfo, err := utils.UploadFile(s.fileStorage, file, header, model.PDF_LOCATION)
-	if err != nil {
-		s.logger.Errorln(err)
-		return "", err
-	}
-
-	return pdfUploadInfo.Location, nil
-}
-
-// UploadMusicFile implements ScoreService.
-func (s *scoreService) UploadMusicFile(r *http.Request) (url string, err error) {
-	file, header, err := r.FormFile("music-file")
-	if err != nil {
-		s.logger.Errorln(err)
-		return "", err
-	}
-
-	pdfUploadInfo, err := utils.UploadFile(s.fileStorage, file, header, model.MUSIC_LOCATION)
-	if err != nil {
-		s.logger.Errorln(err)
-		return "", err
-	}
-
-	return pdfUploadInfo.Location, nil
 }
 
 // CreateScore implements ScoreService.
@@ -126,14 +92,9 @@ func (s *scoreService) Create(params model.CreateScoreDTO) (uuid.UUID, error) {
 			Int:   params.Price,
 			Valid: true,
 		},
-		PdfUrl: pgtype.Text{
-			String: params.PdfUrl,
-			Valid:  true,
-		},
-		MusicUrl: pgtype.Text{
-			String: params.MusicUrl,
-			Valid:  true,
-		},
+		PdfUrl:        params.PdfUrl,
+		PdfImageUrls:  params.PdfImageUrls,
+		AudioUrl:      params.AudioUrl,
 		ContributorID: params.ContributorID,
 	})
 }
@@ -148,13 +109,16 @@ func (s *scoreService) Update(scoreId uuid.UUID, params model.UpdateScoreDTO) er
 	}
 
 	if scoreCheck.ContributorID != params.ContributorID {
-		return errors.New("you are not the owner of this score")
+		return errors.New("You are not the owner of this score")
 	}
 
 	if err := s.store.UpdateScore(ctx, db.UpdateScoreParams{
-		Title: params.Title,
-		Price: params.Price,
-		ID:    scoreId,
+		Title:        params.Title,
+		Price:        params.Price,
+		PdfUrl:       params.PdfUrl,
+		PdfImageUrls: params.PdfImageUrls,
+		AudioUrl:     params.AudioUrl,
+		ID:           scoreId,
 	}); err != nil {
 		return err
 	}
@@ -167,10 +131,9 @@ func (s *scoreService) GetScoresByContributorId(account_id uuid.UUID) ([]db.Scor
 	panic("unimplemented")
 }
 
-func NewScoreService(logger *logrus.Logger, store db.Store, fileStorage *minio.Client) ScoreService {
+func NewScoreService(logger *logrus.Logger, store db.Store) ScoreService {
 	return &scoreService{
 		logger,
 		store,
-		fileStorage,
 	}
 }
