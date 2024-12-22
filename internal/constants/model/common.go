@@ -32,4 +32,5 @@ const (
     PDF_LOCATION FileLocation = "pdf"
     AUDIO_LOCATION  FileLocation = "audio"
     PDF_IMAGE_LOCATION  FileLocation = "pdf_image"
+    PAYMENT_PROOF_IMAGE_LOCATION  FileLocation = "payment_proof"
 )

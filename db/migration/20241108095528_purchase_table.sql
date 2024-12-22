@@ -7,6 +7,8 @@ CREATE TABLE Purchase (
   score_id UUID NOT NULL references score (id) deferrable initially deferred,
   price DECIMAL(10,2) NOT NULL,
   title VARCHAR(255) NOT NULL,
+  payment_proof_url VARCHAR(255),
+  paid_at TIMESTAMPTZ,
   is_verified BOOLEAN NOT NULL DEFAULT false,
   verified_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

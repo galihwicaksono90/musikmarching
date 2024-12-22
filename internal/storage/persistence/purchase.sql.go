@@ -37,8 +37,46 @@ func (q *Queries) CreatePurchase(ctx context.Context, arg CreatePurchaseParams) 
 	return id, err
 }
 
+const getAllPurchases = `-- name: GetAllPurchases :many
+select id, invoice_serial, account_id, score_id, price, title, payment_proof_url, paid_at, is_verified, verified_at, created_at, updated_at, deleted_at from purchase
+`
+
+func (q *Queries) GetAllPurchases(ctx context.Context) ([]Purchase, error) {
+	rows, err := q.db.Query(ctx, getAllPurchases)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Purchase{}
+	for rows.Next() {
+		var i Purchase
+		if err := rows.Scan(
+			&i.ID,
+			&i.InvoiceSerial,
+			&i.AccountID,
+			&i.ScoreID,
+			&i.Price,
+			&i.Title,
+			&i.PaymentProofUrl,
+			&i.PaidAt,
+			&i.IsVerified,
+			&i.VerifiedAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPurchaseByAccountAndScoreId = `-- name: GetPurchaseByAccountAndScoreId :one
-select id, invoice_serial, account_id, score_id, price, title, is_verified, verified_at, created_at, updated_at, deleted_at from purchase
+select id, invoice_serial, account_id, score_id, price, title, payment_proof_url, paid_at, is_verified, verified_at, created_at, updated_at, deleted_at from purchase
 where account_id = $1 and score_id = $2
 `
 
@@ -57,6 +95,8 @@ func (q *Queries) GetPurchaseByAccountAndScoreId(ctx context.Context, arg GetPur
 		&i.ScoreID,
 		&i.Price,
 		&i.Title,
+		&i.PaymentProofUrl,
+		&i.PaidAt,
 		&i.IsVerified,
 		&i.VerifiedAt,
 		&i.CreatedAt,
@@ -67,17 +107,17 @@ func (q *Queries) GetPurchaseByAccountAndScoreId(ctx context.Context, arg GetPur
 }
 
 const getPurchaseById = `-- name: GetPurchaseById :one
-select id, invoice_serial, account_id, score_id, price, title, is_verified, verified_at, created_at, updated_at, deleted_at from purchase
+select id, invoice_serial, account_id, score_id, price, title, payment_proof_url, paid_at, is_verified, verified_at, created_at, updated_at, deleted_at from purchase
 where id = $1 and account_id = $2
 `
 
 type GetPurchaseByIdParams struct {
-	ScoreID   uuid.UUID `db:"score_id" json:"score_id"`
+	ID        uuid.UUID `db:"id" json:"id"`
 	AccountID uuid.UUID `db:"account_id" json:"account_id"`
 }
 
 func (q *Queries) GetPurchaseById(ctx context.Context, arg GetPurchaseByIdParams) (Purchase, error) {
-	row := q.db.QueryRow(ctx, getPurchaseById, arg.ScoreID, arg.AccountID)
+	row := q.db.QueryRow(ctx, getPurchaseById, arg.ID, arg.AccountID)
 	var i Purchase
 	err := row.Scan(
 		&i.ID,
@@ -86,6 +126,8 @@ func (q *Queries) GetPurchaseById(ctx context.Context, arg GetPurchaseByIdParams
 		&i.ScoreID,
 		&i.Price,
 		&i.Title,
+		&i.PaymentProofUrl,
+		&i.PaidAt,
 		&i.IsVerified,
 		&i.VerifiedAt,
 		&i.CreatedAt,
@@ -96,7 +138,7 @@ func (q *Queries) GetPurchaseById(ctx context.Context, arg GetPurchaseByIdParams
 }
 
 const getPurchasesByAccountId = `-- name: GetPurchasesByAccountId :many
-select id, invoice_serial, account_id, score_id, price, title, is_verified, verified_at, created_at, updated_at, deleted_at from purchase
+select id, invoice_serial, account_id, score_id, price, title, payment_proof_url, paid_at, is_verified, verified_at, created_at, updated_at, deleted_at from purchase
 where account_id = $1
 order by created_at desc
 `
@@ -117,6 +159,8 @@ func (q *Queries) GetPurchasesByAccountId(ctx context.Context, accountID uuid.UU
 			&i.ScoreID,
 			&i.Price,
 			&i.Title,
+			&i.PaymentProofUrl,
+			&i.PaidAt,
 			&i.IsVerified,
 			&i.VerifiedAt,
 			&i.CreatedAt,
@@ -131,4 +175,34 @@ func (q *Queries) GetPurchasesByAccountId(ctx context.Context, accountID uuid.UU
 		return nil, err
 	}
 	return items, nil
+}
+
+const updatePurchaseProof = `-- name: UpdatePurchaseProof :exec
+update purchase set 
+payment_proof_url = $1, 
+paid_at = now(), updated_at = now()
+where id = $2 and account_id = $3
+`
+
+type UpdatePurchaseProofParams struct {
+	PaymentProofUrl pgtype.Text `db:"payment_proof_url" json:"payment_proof_url"`
+	ID              uuid.UUID   `db:"id" json:"id"`
+	AccountID       uuid.UUID   `db:"account_id" json:"account_id"`
+}
+
+func (q *Queries) UpdatePurchaseProof(ctx context.Context, arg UpdatePurchaseProofParams) error {
+	_, err := q.db.Exec(ctx, updatePurchaseProof, arg.PaymentProofUrl, arg.ID, arg.AccountID)
+	return err
+}
+
+const verifyPurchase = `-- name: VerifyPurchase :exec
+update purchase set
+is_verified = true,
+verified_at = now()
+where id = $1
+`
+
+func (q *Queries) VerifyPurchase(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, verifyPurchase, id)
+	return err
 }

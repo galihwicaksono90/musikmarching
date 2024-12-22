@@ -67,7 +67,7 @@ func (h *Handler) HandleCreateContributorScore(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	pdfUrl, images, err := h.file.UploadPdfFile(r, "pdf_file")
+	pdfUrl, images, err := h.file.UploadPdfFile(r, "pdf_file", 1)
 
 	for index, image := range images {
 		h.logger.Infoln(image + strconv.Itoa(index))
@@ -145,7 +145,7 @@ func (h *Handler) HandleUpdateContributorScore(w http.ResponseWriter, r *http.Re
 		},
 	}
 
-	pdfUrl, images, err := h.file.UploadPdfFile(r, "pdf_file")
+	pdfUrl, images, err := h.file.UploadPdfFile(r, "pdf_file", 1)
 	if pdfUrl != "" {
 		params.PdfUrl = pgtype.Text{
 			String: pdfUrl,

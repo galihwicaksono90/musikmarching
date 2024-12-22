@@ -90,17 +90,19 @@ type ContributorAccountScore struct {
 }
 
 type Purchase struct {
-	ID            uuid.UUID          `db:"id" json:"id"`
-	InvoiceSerial int32              `db:"invoice_serial" json:"invoice_serial"`
-	AccountID     uuid.UUID          `db:"account_id" json:"account_id"`
-	ScoreID       uuid.UUID          `db:"score_id" json:"score_id"`
-	Price         pgtype.Numeric     `db:"price" json:"price"`
-	Title         string             `db:"title" json:"title"`
-	IsVerified    bool               `db:"is_verified" json:"is_verified"`
-	VerifiedAt    pgtype.Timestamptz `db:"verified_at" json:"verified_at"`
-	CreatedAt     time.Time          `db:"created_at" json:"created_at"`
-	UpdatedAt     pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
-	DeletedAt     pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
+	ID              uuid.UUID          `db:"id" json:"id"`
+	InvoiceSerial   int32              `db:"invoice_serial" json:"invoice_serial"`
+	AccountID       uuid.UUID          `db:"account_id" json:"account_id"`
+	ScoreID         uuid.UUID          `db:"score_id" json:"score_id"`
+	Price           pgtype.Numeric     `db:"price" json:"price"`
+	Title           string             `db:"title" json:"title"`
+	PaymentProofUrl pgtype.Text        `db:"payment_proof_url" json:"payment_proof_url"`
+	PaidAt          pgtype.Timestamptz `db:"paid_at" json:"paid_at"`
+	IsVerified      bool               `db:"is_verified" json:"is_verified"`
+	VerifiedAt      pgtype.Timestamptz `db:"verified_at" json:"verified_at"`
+	CreatedAt       time.Time          `db:"created_at" json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	DeletedAt       pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
 }
 
 type Role struct {

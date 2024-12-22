@@ -24,8 +24,9 @@ import (
 )
 
 type FileService interface {
-	UploadPdfFile(*http.Request, string) (url string, images []string, err error)
-	UploadAudioFile(*http.Request, string) (url string, err error)
+	UploadPdfFile(*http.Request, string, int) (string, []string, error)
+	UploadAudioFile(*http.Request, string) (string, error)
+	UploadPaymentProof(*http.Request, string) (string, error)
 }
 
 type fileService struct {
@@ -34,7 +35,7 @@ type fileService struct {
 }
 
 // UploadPdfFile implements ScoreService.
-func (s *fileService) UploadPdfFile(r *http.Request, name string) (string, []string, error) {
+func (s *fileService) UploadPdfFile(r *http.Request, name string, pages int) (string, []string, error) {
 	file, header, err := r.FormFile(name)
 	if err != nil || file == nil {
 		s.logger.Errorln(err)
@@ -42,13 +43,13 @@ func (s *fileService) UploadPdfFile(r *http.Request, name string) (string, []str
 	}
 	defer file.Close()
 
-	pdfUploadInfo, err := uploadFile(s.fileStorage, file, header, model.PDF_LOCATION)
+	fileName := s.generateFileName(model.PDF_LOCATION, header.Filename)
+	pdfUploadInfo, err := s.uploadFile(file, fileName, header.Header.Get("Content-Type"))
 	if err != nil {
 		s.logger.Errorln(err)
 		return "", []string{}, err
 	}
 
-	pages := 2
 	images, err := s.pdfToImages(file, header.Filename, pages)
 	if err != nil {
 		s.logger.Errorln(err)
@@ -100,22 +101,13 @@ func (s *fileService) pdfToImages(file multipart.File, fileName string, pages in
 			return images, fmt.Errorf("Failed to encode image %v", err)
 		}
 
-		bucketName := viper.GetString("MINIO_BUCKET_NAME")
-		result, err := s.fileStorage.PutObject(
-			context.Background(),
-			bucketName,
-			fmt.Sprintf("%s-page%d.png", fileName, i+1),
-			imgBuffer,
-			-1,
-			minio.PutObjectOptions{
-				ContentType: "image/png",
-			},
-		)
+		fileName := fmt.Sprintf("%s-page%d.png", fileName, i+1)
+		res, err := s.uploadFile(imgBuffer, fileName, "image/png")
 		if err != nil {
 			return images, fmt.Errorf("Failed to upload image %v", err)
 		}
 
-		images = append(images, result.Location)
+		images = append(images, res.Location)
 	}
 
 	return images, nil
@@ -130,7 +122,8 @@ func (s *fileService) UploadAudioFile(r *http.Request, name string) (url string,
 	}
 	defer file.Close()
 
-	pdfUploadInfo, err := uploadFile(s.fileStorage, file, header, model.AUDIO_LOCATION)
+	fileName := s.generateFileName(model.AUDIO_LOCATION, header.Filename)
+	pdfUploadInfo, err := s.uploadFile(file, fileName, header.Header.Get("Content-Type"))
 	if err != nil {
 		s.logger.Errorln(err)
 		return "", err
@@ -139,26 +132,42 @@ func (s *fileService) UploadAudioFile(r *http.Request, name string) (url string,
 	return pdfUploadInfo.Location, nil
 }
 
-func uploadFile(fileStorage *minio.Client, file multipart.File, header *multipart.FileHeader, location model.FileLocation) (minio.UploadInfo, error) {
-	bucketName := viper.GetString("MINIO_BUCKET_NAME")
-	ctx := context.Background()
-
-	id := uuid.New()
-	timestamp := time.Now().Format("2006-01-02")
-	fileName := fmt.Sprintf("%s/%s/%s/%s", location, timestamp, id, header.Filename)
-
-	options := minio.PutObjectOptions{
-		ContentType: header.Header.Get("Content-Type"),
+func (s *fileService) UploadPaymentProof(r *http.Request, name string) (string, error) {
+	file, header, err := r.FormFile(name)
+	if err != nil {
+		s.logger.Errorln(err)
+		return "", err
 	}
+	defer file.Close()
 
-	return fileStorage.PutObject(
-		ctx,
+	fileType := header.Header.Get("Content-Type")
+	fileName := s.generateFileName(model.PAYMENT_PROOF_IMAGE_LOCATION, header.Filename)
+
+	result, err := s.uploadFile(file, fileName, fileType)
+
+	return result.Location, err
+}
+
+func (s *fileService) uploadFile(file io.Reader, fileName string, fileType string) (minio.UploadInfo, error) {
+	bucketName := viper.GetString("MINIO_BUCKET_NAME")
+
+	return s.fileStorage.PutObject(
+		context.Background(),
 		bucketName,
 		fileName,
 		file,
 		-1,
-		options,
+		minio.PutObjectOptions{
+			ContentType: fileType,
+		},
 	)
+}
+
+func (s *fileService) generateFileName(location model.FileLocation, fileName string) string {
+	id := uuid.New()
+	timestamp := time.Now().Format("2006-01-02")
+	name := fmt.Sprintf("%s/%s/%s/%s", location, timestamp, id, fileName)
+	return name
 }
 
 func NewFileService(logger *logrus.Logger, fileStorage *minio.Client) FileService {

@@ -26,6 +26,7 @@ func Routings(handler *handlers.Handler, baseRouter *mux.Router) {
 	purchaseRouter.HandleFunc("", handler.HandleGetPurchasesByAccountID).Methods("GET")
 	purchaseRouter.HandleFunc("/{id}", handler.HandleGetPurchaseByID).Methods("GET")
 	purchaseRouter.HandleFunc("/{id}", handler.HandlePurchaseScore).Methods("POST")
+	purchaseRouter.HandleFunc("/upload-proof/{id}", handler.HandleUploadPaymentProof).Methods("PUT")
 
 	contributorRouter := router.PathPrefix("/contributor").Subrouter()
 	contributorRouter.Use(middlewares.AuthMiddleware, middlewares.ContributorMiddleware)
@@ -40,4 +41,6 @@ func Routings(handler *handlers.Handler, baseRouter *mux.Router) {
 	adminRouter.HandleFunc("/score/verify/{id}", handler.HandleAdminVerifyScore).Methods("POST")
 	adminRouter.HandleFunc("/contributors", handler.HandleAdminGetContributors).Methods("GET")
 	adminRouter.HandleFunc("/contributor/verify/{id}", handler.HandleAdminVerifyContributor).Methods("POST")
+	adminRouter.HandleFunc("/purchases", handler.HandleAdminGetPurchases).Methods("GET")
+	adminRouter.HandleFunc("/purchase/verify/{id}", handler.HandleAdminVerifyPurchase).Methods("POST")
 }

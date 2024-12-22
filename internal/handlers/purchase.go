@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (h *Handler) HandleGetPurchasesByAccountID(w http.ResponseWriter, r *http.Request) {
@@ -22,19 +23,22 @@ func (h *Handler) HandleGetPurchasesByAccountID(w http.ResponseWriter, r *http.R
 }
 
 func (h *Handler) HandleGetPurchaseByID(w http.ResponseWriter, r *http.Request) {
-	user, _ := h.auth.GetSessionUser(r)
+	user := h.getSessionUser(r)
 
-	scoreID, err := uuid.Parse(mux.Vars(r)["id"])
+	purchaseID, err := uuid.Parse(mux.Vars(r)["id"])
 	if err != nil {
 		h.handleResponse(w, http.StatusBadRequest, "Not a valid id", err)
 		return
 	}
 
-	purchase, err := h.purchase.GetPurchaseByID(db.GetPurchaseByIdParams{
-		ScoreID:   scoreID,
+	params := db.GetPurchaseByIdParams{
+		ID:        purchaseID,
 		AccountID: user.ID,
-	})
+	}
 
+	h.logger.Println(params, purchaseID)
+
+	purchase, err := h.purchase.GetPurchaseByID(params)
 	if err != nil {
 		h.handleResponse(w, http.StatusInternalServerError, "Purchase not found", err)
 		return
@@ -49,7 +53,7 @@ func (h *Handler) HandlePurchaseScore(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	scoreId, err := uuid.Parse(id)
 	if err != nil {
-		h.handleResponse(w, http.StatusInternalServerError, "Score not found3", err)
+		h.handleResponse(w, http.StatusInternalServerError, "Score not found", err)
 		return
 	}
 
@@ -62,4 +66,38 @@ func (h *Handler) HandlePurchaseScore(w http.ResponseWriter, r *http.Request) {
 	h.email.SendPurchaseInvoice(user)
 
 	h.handleResponse(w, http.StatusCreated, http.StatusText(http.StatusCreated), purchaseID)
+}
+
+func (h *Handler) HandleUploadPaymentProof(w http.ResponseWriter, r *http.Request) {
+	user := h.getSessionUser(r)
+
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	paymentID, err := uuid.Parse(mux.Vars(r)["id"])
+	if err != nil {
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
+		return
+	}
+
+	paymentProofUrl, err := h.file.UploadPaymentProof(r, "image_file")
+	if err != nil {
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
+		return
+	}
+
+	if err := h.purchase.UpdatePurchaseProof(db.UpdatePurchaseProofParams{
+		PaymentProofUrl: pgtype.Text{
+			String: paymentProofUrl,
+			Valid:  true,
+		},
+		ID:        paymentID,
+		AccountID: user.ID,
+	}); err != nil {
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
+	}
+
+	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), true)
 }
