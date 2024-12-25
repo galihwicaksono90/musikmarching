@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -51,6 +52,75 @@ func (q *Queries) CreateScore(ctx context.Context, arg CreateScoreParams) (uuid.
 	var id uuid.UUID
 	err := row.Scan(&id)
 	return id, err
+}
+
+const getAllPublicScores = `-- name: GetAllPublicScores :many
+select
+  s.id,
+  s.title,
+  s.is_verified,
+  s.price,
+  s.pdf_image_urls,
+  s.audio_url,
+  s.created_at,
+  a.email,
+  c.full_name
+from score s
+join contributor c on c.id = s.contributor_id
+join account a on a.id = s.contributor_id
+where s.deleted_at is null
+and s.is_verified = true
+and c.is_verified = true
+order by s.created_at desc
+limit $2::int
+offset $1::int
+`
+
+type GetAllPublicScoresParams struct {
+	Pageoffset int32 `db:"pageoffset" json:"pageoffset"`
+	Pagelimit  int32 `db:"pagelimit" json:"pagelimit"`
+}
+
+type GetAllPublicScoresRow struct {
+	ID           uuid.UUID      `db:"id" json:"id"`
+	Title        string         `db:"title" json:"title"`
+	IsVerified   bool           `db:"is_verified" json:"is_verified"`
+	Price        pgtype.Numeric `db:"price" json:"price"`
+	PdfImageUrls []string       `db:"pdf_image_urls" json:"pdf_image_urls"`
+	AudioUrl     string         `db:"audio_url" json:"audio_url"`
+	CreatedAt    time.Time      `db:"created_at" json:"created_at"`
+	Email        string         `db:"email" json:"email"`
+	FullName     string         `db:"full_name" json:"full_name"`
+}
+
+func (q *Queries) GetAllPublicScores(ctx context.Context, arg GetAllPublicScoresParams) ([]GetAllPublicScoresRow, error) {
+	rows, err := q.db.Query(ctx, getAllPublicScores, arg.Pageoffset, arg.Pagelimit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetAllPublicScoresRow{}
+	for rows.Next() {
+		var i GetAllPublicScoresRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.IsVerified,
+			&i.Price,
+			&i.PdfImageUrls,
+			&i.AudioUrl,
+			&i.CreatedAt,
+			&i.Email,
+			&i.FullName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getScoreByContributorID = `-- name: GetScoreByContributorID :one

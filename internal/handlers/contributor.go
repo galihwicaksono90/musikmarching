@@ -145,7 +145,7 @@ func (h *Handler) HandleUpdateContributorScore(w http.ResponseWriter, r *http.Re
 		},
 	}
 
-	pdfUrl, images, err := h.file.UploadPdfFile(r, "pdf_file", 1)
+	pdfUrl, images, err := h.file.UploadPdfFile(r, "pdf_file", 2)
 	if pdfUrl != "" {
 		params.PdfUrl = pgtype.Text{
 			String: pdfUrl,

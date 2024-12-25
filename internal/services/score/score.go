@@ -12,6 +12,7 @@ import (
 )
 
 type ScoreService interface {
+	GetAllPublic() ([]db.GetAllPublicScoresRow, error)
 	GetManyByContributorId(account_id uuid.UUID) ([]db.Score, error)
 	Create(model.CreateScoreDTO) (uuid.UUID, error)
 	Update(uuid.UUID, model.UpdateScoreDTO) error
@@ -27,6 +28,14 @@ type ScoreService interface {
 type scoreService struct {
 	logger *logrus.Logger
 	store  db.Store
+}
+
+// GetAllPublicScores implements ScoreService.
+func (s *scoreService) GetAllPublic() ([]db.GetAllPublicScoresRow, error) {
+	return s.store.GetAllPublicScores(context.Background(), db.GetAllPublicScoresParams{
+		Pageoffset: 0,
+		Pagelimit:  100,
+	})
 }
 
 // GetOneByContributorID implements ScoreService.
@@ -49,6 +58,8 @@ func (s *scoreService) GetAll() ([]db.Score, error) {
 	ctx := context.Background()
 	result, err := s.store.GetScoresPaginated(ctx)
 	if err != nil {
+		{
+		}
 		return nil, err
 	}
 

@@ -1,3 +1,26 @@
+-- name: GetAllPublicScores :many
+select
+  s.id,
+  s.title,
+  s.is_verified,
+  s.price,
+  s.pdf_image_urls,
+  s.audio_url,
+  s.created_at,
+  a.email,
+  c.full_name
+from score s
+join contributor c on c.id = s.contributor_id
+join account a on a.id = s.contributor_id
+where s.deleted_at is null
+and s.is_verified = true
+and c.is_verified = true
+order by s.created_at desc
+limit @pagelimit::int
+offset @pageoffset::int
+;
+
+
 -- name: GetScores :many
 select s.id, s.title, s.is_verified, s.price, a.name, a.email
 from score s
