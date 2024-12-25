@@ -35,7 +35,6 @@ func LoadConfig() (config Config, err error) {
 	// Add multiple config paths in order of priority
 	viper.AddConfigPath(".")              // First look in current directory
 	viper.AddConfigPath(execPath)         // Then in the binary's directory
-	viper.AddConfigPath("/home/galih/Documents/musikmarching-be/")  // Then in /etc/yourapp
 
 	viper.AutomaticEnv()
 
