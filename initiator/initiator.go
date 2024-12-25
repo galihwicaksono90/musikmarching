@@ -31,7 +31,7 @@ func Init() {
 	validate := validator.New()
 
 	// load env config
-	config, err := config.LoadConfig("./")
+	config, err := config.LoadConfig()
 	if err != nil {
 		logger.Fatal(err)
 	}

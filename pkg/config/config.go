@@ -1,6 +1,9 @@
 package config
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/spf13/viper"
 )
 
@@ -19,10 +22,20 @@ type Config struct {
 	SmtpFromPassword string `mapstructure:"SMTP_FROM_EMAIL_PASSWORD"`
 }
 
-func LoadConfig(path string) (config Config, err error) {
-	viper.AddConfigPath(path)
-	viper.SetConfigName("app")
+func LoadConfig() (config Config, err error) {
+	ex, err := os.Executable()
+	if err != nil {
+		return 
+	}
+	execPath := filepath.Dir(ex)
+
+	viper.SetConfigName(".env")
 	viper.SetConfigType("env")
+
+	// Add multiple config paths in order of priority
+	viper.AddConfigPath(".")              // First look in current directory
+	viper.AddConfigPath(execPath)         // Then in the binary's directory
+	viper.AddConfigPath("/home/galih/Documents/musikmarching-be/")  // Then in /etc/yourapp
 
 	viper.AutomaticEnv()
 
