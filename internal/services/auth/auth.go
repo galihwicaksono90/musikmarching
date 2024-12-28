@@ -69,12 +69,23 @@ func (a *authService) RemoveUserSession(w http.ResponseWriter, r *http.Request) 
 func (a *authService) StoreUserSession(w http.ResponseWriter, r *http.Request, user *model.SessionUser) error {
 	session, _ := gothic.Store.Get(r, SessionName)
 
+	a.logger.Println("StoreUserSession======")
 	a.logger.Println(session)
+	a.logger.Println("======StoreUserSession")
 
 	session.Values["user"] = user
 
+	a.logger.Println("SessionValues======")
+	a.logger.Println(session.Values)
+	a.logger.Println(r.URL.Path)
+	a.logger.Println("======SessionValues")
+
 	err := session.Save(r, w)
+	a.logger.Println("StoreUserSessionError======error")
+	a.logger.Println(session)
+	a.logger.Println("error======StoreUserSession")
 	if err != nil {
+		a.logger.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return err
 	}
