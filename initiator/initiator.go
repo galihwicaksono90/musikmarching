@@ -12,6 +12,7 @@ import (
 	"galihwicaksono90/musikmarching-be/internal/services/purchase"
 	"galihwicaksono90/musikmarching-be/internal/services/score"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
+	"galihwicaksono90/musikmarching-be/pkg/cors"
 	"galihwicaksono90/musikmarching-be/pkg/dbpool"
 	"galihwicaksono90/musikmarching-be/pkg/email"
 	fileStorage "galihwicaksono90/musikmarching-be/pkg/file-storage"
@@ -29,6 +30,8 @@ import (
 func Init() {
 	logger := logger.NewLogger()
 	validate := validator.New()
+
+	cors := cors.NewCorsHandler()
 
 	// load env config
 	config, err := config.LoadConfig()
@@ -95,5 +98,5 @@ func Init() {
 
 	fmt.Printf("listening to port %s \n", port)
 
-	log.Fatalln(http.ListenAndServe(port, router))
+	log.Fatalln(http.ListenAndServe(port, cors(router)))
 }
