@@ -23,8 +23,9 @@ func NewSessionStore(opts SessionOptions) *sessions.CookieStore {
 	store.MaxAge(opts.MaxAge)
 	store.Options.Path = "/"
 	store.Options.HttpOnly = opts.HttpOnly
-	store.Options.Secure = false
+	store.Options.Secure = opts.Secure
 	store.Options.SameSite = http.SameSiteLaxMode
+	store.Options.Domain = "musikmarching.com"
 	// store.Options.Secure = opts.Secure
 	// store.Options.SameSite = http.SameSiteNoneMode
 
