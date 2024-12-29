@@ -19,6 +19,7 @@ type Config struct {
 	CookiesKey       string `mapstructure:"COOKIES_KEY"`
 	MinioAccessKey   string `mapstructure:"MINIO_ACCESS_KEY"`
 	MinioAddress     string `mapstructure:"MINIO_ADDRESS"`
+	MinioSecure      bool   `mapstructure:"MINIO_SECURE"`
 	MinioSecretKey   string `mapstructure:"MINIO_SECRET_KEY"`
 	MinioBucketName  string `mapstructure:"MINIO_BUCKET_NAME"`
 	SmptPort         string `mapstructure:"SMTP_PORT"`
