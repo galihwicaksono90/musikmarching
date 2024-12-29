@@ -8,10 +8,14 @@ import (
 )
 
 type Config struct {
-	Enviroment       string `mapstructure:"ENVIRONMENT"`
-	DB_SOURCE        string `mapstructure:"DB_SOURCE"`
-	DBDriver         string `mapstructure:"DB_DRIVER"`
-	PORT             string `mapstructure:"PORT"`
+	Enviroment string `mapstructure:"ENVIRONMENT"`
+	DB_SOURCE        string `mapstructure:"POSTGRES_SOURCE"`
+	DBUser           string `mapstructure:"POSTGRES_USER"`
+	DBPassword       string `mapstructure:"POSTGRES_PASSWORD"`
+	DBHost           string `mapstructure:"POSTGRES_HOST"`
+	DBPort           string `mapstructure:"POSTGRES_PORT"`
+	DBName           string `mapstructure:"POSTGRES_DB"`
+	Port             string `mapstructure:"PORT"`
 	CookiesKey       string `mapstructure:"COOKIES_KEY"`
 	MinioAccessKey   string `mapstructure:"MINIO_ACCESS_KEY"`
 	MinioSecretKey   string `mapstructure:"MINIO_SECRET_KEY"`
@@ -25,7 +29,7 @@ type Config struct {
 func LoadConfig() (config Config, err error) {
 	ex, err := os.Executable()
 	if err != nil {
-		return 
+		return
 	}
 	execPath := filepath.Dir(ex)
 
@@ -33,8 +37,8 @@ func LoadConfig() (config Config, err error) {
 	viper.SetConfigType("env")
 
 	// Add multiple config paths in order of priority
-	viper.AddConfigPath(".")              // First look in current directory
-	viper.AddConfigPath(execPath)         // Then in the binary's directory
+	viper.AddConfigPath(".")      // First look in current directory
+	viper.AddConfigPath(execPath) // Then in the binary's directory
 
 	viper.AutomaticEnv()
 

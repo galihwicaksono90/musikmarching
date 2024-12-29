@@ -1,22 +1,29 @@
 package dbpool
 
 import (
-  "context"
-  "time"
+	"context"
 	"fmt"
 	"galihwicaksono90/musikmarching-be/pkg/config"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"time"
 )
 
 func NewDBPool(cfg config.Config) (*pgxpool.Pool, error) {
 	// Construct connection string
 	// connString := fmt.Sprintf(
+	//
 	// 	"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 	// 	cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName,
 	// )
+	connString := fmt.Sprintf(
+		"postgresql://%s:%s@%s:%s/%s?sslmode=disable",
+		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName,
+	)
+
+	fmt.Println(connString)
 
 	// Create a connection pool configuration
-	poolConfig, err := pgxpool.ParseConfig(cfg.DB_SOURCE)
+	poolConfig, err := pgxpool.ParseConfig(connString)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing pool config: %v", err)
 	}

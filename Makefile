@@ -1,5 +1,6 @@
-DB_URL=postgres://admin:root@localhost:5432/musikmarching-db?sslmode=disable
-DB_DIR=./db/migration
+include .env
+
+DB_URL="postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable"
 
 .PHONY: migration-new 
 migration-new:
@@ -21,26 +22,10 @@ migration-down:
 migration-status:
 	goose -dir "$(DB_DIR)" postgres "$(DB_URL)" status
 
-.PHONY: dev
-dev:
-	air
-
-.PHONY: tailwind-watch
-tailwind-watch:
-	tailwindcss -i ./static/css/input.css -o ./static/css/style.css --watch
-
-.PHONY: tailwind-build
-tailwind-build:
-	./tailwindcss -i ./static/css/input.css -o ./static/css/style.min.css --minify
-
-.PHONY: templ-watch
-templ-watch:
-	templ generate -watch
-
-.PHONY: templ
-templ:
-	templ generate
-
 .PHONY: sqlc-generate
 sqlc-generate:
 	sqlc generate
+
+.PHONY: dev
+dev:
+	air

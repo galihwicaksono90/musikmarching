@@ -94,7 +94,7 @@ func Init() {
 	fs := http.FileServer(http.Dir("./static/"))
 	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 
-	port := fmt.Sprintf(":%s", config.PORT)
+	port := fmt.Sprintf(":%s", config.Port)
 
 	fmt.Printf("listening to port %s \n", port)
 
