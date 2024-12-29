@@ -15,6 +15,8 @@ type SessionOptions struct {
 	MaxAge     int
 	HttpOnly   bool
 	Secure     bool
+	Domain     string
+	SameSite   http.SameSite
 }
 
 func NewSessionStore(opts SessionOptions) *sessions.CookieStore {
@@ -22,12 +24,12 @@ func NewSessionStore(opts SessionOptions) *sessions.CookieStore {
 
 	store.MaxAge(opts.MaxAge)
 	store.Options.Path = "/"
-	store.Options.HttpOnly = true
-	store.Options.Secure = true
+	store.Options.HttpOnly = opts.HttpOnly
+	store.Options.Secure = opts.Secure
 	store.Options.SameSite = http.SameSiteLaxMode
-	// store.Options.Domain = "musikmarching.com"
-	// store.Options.Secure = opts.Secure
-	// store.Options.SameSite = http.SameSiteNoneMode
+	if opts.Domain != "" {
+		store.Options.Domain = opts.Domain
+	}
 
 	return store
 }

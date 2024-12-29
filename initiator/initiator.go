@@ -51,10 +51,11 @@ func Init() {
 	store := db.NewStore(pool)
 
 	sessionStore := auth.NewSessionStore(auth.SessionOptions{
-		CookiesKey: "secretkey",
+		CookiesKey: config.SessionSecret,
 		MaxAge:     60 * 60 * 24 * 4,
 		HttpOnly:   true,
 		Secure:     true,
+		Domain:     config.SessionDomain,
 	})
 
 	// services

@@ -16,7 +16,8 @@ type Config struct {
 	DBPort           string `mapstructure:"POSTGRES_PORT"`
 	DBName           string `mapstructure:"POSTGRES_DB"`
 	Port             string `mapstructure:"PORT"`
-	CookiesKey       string `mapstructure:"COOKIES_KEY"`
+	SessionSecret    string `mapstructure:"SESSION_SECRET"`
+	SessionDomain    string `mapstructure:"SESSION_DOMAIN"`
 	MinioAccessKey   string `mapstructure:"MINIO_ACCESS_KEY"`
 	MinioAddress     string `mapstructure:"MINIO_ADDRESS"`
 	MinioSecure      bool   `mapstructure:"MINIO_SECURE"`
