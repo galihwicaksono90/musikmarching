@@ -13,6 +13,7 @@ import (
 )
 
 func (h *Handler) HandleLogout(w http.ResponseWriter, r *http.Request) {
+	rerouteUrl := viper.GetString("GOOGLE_REROUTE_URL")
 	h.logger.Println("Logout")
 
 	err := gothic.Logout(w, r)
@@ -23,7 +24,7 @@ func (h *Handler) HandleLogout(w http.ResponseWriter, r *http.Request) {
 
 	h.auth.RemoveUserSession(w, r)
 
-	w.Header().Set("Location", "http://localhost:5173")
+	w.Header().Set("Location", rerouteUrl)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 

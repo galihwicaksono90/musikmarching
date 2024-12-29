@@ -4,28 +4,28 @@ DB_URL="postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POST
 
 .PHONY: migration-new 
 migration-new:
-	goose -dir "$(DB_DIR)" postgres "$(DB_URL)" create "$(title)" sql
+	@goose -dir "$(DB_DIR)" postgres "$(DB_URL)" create "$(title)" sql
 
 .PHONY: migration-reset 
 migration-reset:
-	goose -dir "$(DB_DIR)" postgres "$(DB_URL)" reset
+	@goose -dir "$(DB_DIR)" postgres "$(DB_URL)" reset
 
 .PHONY: migration-up
 migration-up:
-	goose -dir "$(DB_DIR)" postgres "$(DB_URL)" up
+	@goose -dir "$(DB_DIR)" postgres "$(DB_URL)" up
 
 .PHONY: migration-down
 migration-down:
-	goose -dir "$(DB_DIR)" postgres "$(DB_URL)" down
+	@goose -dir "$(DB_DIR)" postgres "$(DB_URL)" down
 
 .PHONY: migration-status
 migration-status:
-	goose -dir "$(DB_DIR)" postgres "$(DB_URL)" status
+	@goose -dir "$(DB_DIR)" postgres "$(DB_URL)" status
 
 .PHONY: sqlc-generate
 sqlc-generate:
-	sqlc generate
+	@sqlc generate
 
 .PHONY: dev
 dev:
-	air
+	@air
