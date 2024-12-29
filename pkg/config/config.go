@@ -8,7 +8,7 @@ import (
 )
 
 type Config struct {
-	Enviroment string `mapstructure:"ENVIRONMENT"`
+	Enviroment       string `mapstructure:"ENVIRONMENT"`
 	DB_SOURCE        string `mapstructure:"POSTGRES_SOURCE"`
 	DBUser           string `mapstructure:"POSTGRES_USER"`
 	DBPassword       string `mapstructure:"POSTGRES_PASSWORD"`
@@ -18,6 +18,7 @@ type Config struct {
 	Port             string `mapstructure:"PORT"`
 	CookiesKey       string `mapstructure:"COOKIES_KEY"`
 	MinioAccessKey   string `mapstructure:"MINIO_ACCESS_KEY"`
+	MinioAddress     string `mapstructure:"MINIO_ADDRESS"`
 	MinioSecretKey   string `mapstructure:"MINIO_SECRET_KEY"`
 	MinioBucketName  string `mapstructure:"MINIO_BUCKET_NAME"`
 	SmptPort         string `mapstructure:"SMTP_PORT"`

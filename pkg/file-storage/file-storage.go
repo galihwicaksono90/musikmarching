@@ -9,9 +9,9 @@ import (
 )
 
 func NewStorage(logger *logrus.Logger, config config.Config) *minio.Client {
-	minioClient, err := minio.New("localhost:9000", &minio.Options{
+	minioClient, err := minio.New(config.MinioAddress, &minio.Options{
 		Creds:  credentials.NewStaticV4(config.MinioAccessKey, config.MinioSecretKey, ""),
-		Secure: false,
+		Secure: true,
 	})
 
 	if err != nil {
