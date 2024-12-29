@@ -42,6 +42,7 @@ func (h *Handler) HandleAuthCallbackFunction(w http.ResponseWriter, r *http.Requ
 	u, err := gothic.CompleteUserAuth(w, r)
 	h.logger.Println("HandleAuthCallbackFunction======")
 	h.logger.Println(u)
+	h.logger.Println("redirectUrl", redirectUrl)
 	h.logger.Println("======HandleAuthCallbackFunction")
 
 	if err != nil {
