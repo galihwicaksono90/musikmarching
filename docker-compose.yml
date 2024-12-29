@@ -1,12 +1,13 @@
 services:
-  # app:
-  #   bild: .
-  #   ports:
-  #     - "8080:8080"
-  #   restart: unless-stopped
-  #   depends_on: 
-  #     - postgres
-  #     - minio
+  app:
+    container_name: musikmarching-be
+    bild: .
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    depends_on: 
+      - postgres
+      - minio
 
   minio:
     container_name: musikmarching-minio
@@ -16,9 +17,6 @@ services:
       - "9001:9001"
     env_file:
       - ".env"
-    environment:
-      MINIO_ROOT_USER: musikmarching
-      MINIO_ROOT_PASSWORD: jembut
     volumes:
       - ~/minio/data:/data
     command: server /data --console-address ":9001"
@@ -30,10 +28,6 @@ services:
       - "5432:5432"
     env_file:
       - ".env"
-    # environment:
-    #   POSTGRES_USER: musikmarching
-    #   POSTGRES_PASSWORD: jembut
-    #   POSTGRES_DB: musikmarching-dev
     volumes:
       - /var/lib/postgresql/data
     restart: unless-stopped
