@@ -20,8 +20,6 @@ func NewDBPool(cfg config.Config) (*pgxpool.Pool, error) {
 		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName,
 	)
 
-	fmt.Println(connString)
-
 	// Create a connection pool configuration
 	poolConfig, err := pgxpool.ParseConfig(connString)
 	if err != nil {
