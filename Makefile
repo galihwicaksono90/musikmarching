@@ -22,6 +22,10 @@ migration-down:
 migration-status:
 	@goose -dir "$(DB_DIR)" postgres "$(DB_URL)" status
 
+.PHONY: migration-seed
+migration-seed:
+	@goose -dir "$(DB_SEED_DIR)" -no-versioning  postgres "$(DB_URL)" up
+
 .PHONY: sqlc-generate
 sqlc-generate:
 	@sqlc generate

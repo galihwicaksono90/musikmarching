@@ -14,9 +14,6 @@ alter table contributor
 add CONSTRAINT fk_contributor_account 
 FOREIGN KEY (id) REFERENCES account (id) deferrable initially deferred;
 
-insert into contributor (id, full_name, is_verified, verified_at)
-values ('ab48aeb7-51a1-4712-932b-fe64d98fec87', 'Galih Wicaksono', true, now());
-
 -- +goose StatementEnd
 
 -- +goose Down

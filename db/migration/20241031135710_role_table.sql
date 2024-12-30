@@ -12,13 +12,6 @@ CREATE TABLE Role (
   UNIQUE(name)
 );
 
-insert into role as r (id, name)
-values 
-  ('515ebadd-f8d1-472f-8b8c-1ba53d61a358', 'admin'),
-  ('78653d16-6134-4f84-afb6-f44deb51f898', 'contributor'),
-  ('748d4130-fc58-4485-be80-f49342252132', 'user')
-;
-
 -- +goose StatementEnd
 
 -- +goose Down
