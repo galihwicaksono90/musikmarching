@@ -13,6 +13,49 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Difficulty string
+
+const (
+	DifficultyBeginner     Difficulty = "beginner"
+	DifficultyIntermediate Difficulty = "intermediate"
+	DifficultyAdvanced     Difficulty = "advanced"
+)
+
+func (e *Difficulty) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Difficulty(s)
+	case string:
+		*e = Difficulty(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Difficulty: %T", src)
+	}
+	return nil
+}
+
+type NullDifficulty struct {
+	Difficulty Difficulty `json:"difficulty"`
+	Valid      bool       `json:"valid"` // Valid is true if Difficulty is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDifficulty) Scan(value interface{}) error {
+	if value == nil {
+		ns.Difficulty, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Difficulty.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDifficulty) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Difficulty), nil
+}
+
 type Rolename string
 
 const (
@@ -67,6 +110,16 @@ type Account struct {
 	RoleID     uuid.UUID          `db:"role_id" json:"role_id"`
 }
 
+type Allocation struct {
+	ID   int32  `db:"id" json:"id"`
+	Name string `db:"name" json:"name"`
+}
+
+type Category struct {
+	ID   int32  `db:"id" json:"id"`
+	Name string `db:"name" json:"name"`
+}
+
 type Contributor struct {
 	ID         uuid.UUID          `db:"id" json:"id"`
 	IsVerified pgtype.Bool        `db:"is_verified" json:"is_verified"`
@@ -87,6 +140,11 @@ type ContributorAccountScore struct {
 	DeletedAt  pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
 	Email      string             `db:"email" json:"email"`
 	Scores     []Score            `db:"scores" json:"scores"`
+}
+
+type Instrument struct {
+	ID   int32  `db:"id" json:"id"`
+	Name string `db:"name" json:"name"`
 }
 
 type Purchase struct {
@@ -120,10 +178,42 @@ type Score struct {
 	Price         pgtype.Numeric     `db:"price" json:"price"`
 	IsVerified    bool               `db:"is_verified" json:"is_verified"`
 	VerifiedAt    pgtype.Timestamptz `db:"verified_at" json:"verified_at"`
+	Difficulty    Difficulty         `db:"difficulty" json:"difficulty"`
 	PdfUrl        string             `db:"pdf_url" json:"pdf_url"`
 	PdfImageUrls  []string           `db:"pdf_image_urls" json:"pdf_image_urls"`
 	AudioUrl      string             `db:"audio_url" json:"audio_url"`
 	CreatedAt     time.Time          `db:"created_at" json:"created_at"`
 	UpdatedAt     pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 	DeletedAt     pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
+}
+
+type ScoreAllocation struct {
+	ScoreID      uuid.UUID `db:"score_id" json:"score_id"`
+	AllocationID int32     `db:"allocation_id" json:"allocation_id"`
+}
+
+type ScoreCategory struct {
+	ScoreID    uuid.UUID `db:"score_id" json:"score_id"`
+	CategoryID int32     `db:"category_id" json:"category_id"`
+}
+
+type ScoreInstrument struct {
+	ScoreID      uuid.UUID `db:"score_id" json:"score_id"`
+	InstrumentID int32     `db:"instrument_id" json:"instrument_id"`
+}
+
+type ScorePublicView struct {
+	ID           uuid.UUID          `db:"id" json:"id"`
+	Title        string             `db:"title" json:"title"`
+	IsVerified   bool               `db:"is_verified" json:"is_verified"`
+	Price        pgtype.Numeric     `db:"price" json:"price"`
+	PdfImageUrls []string           `db:"pdf_image_urls" json:"pdf_image_urls"`
+	AudioUrl     string             `db:"audio_url" json:"audio_url"`
+	CreatedAt    time.Time          `db:"created_at" json:"created_at"`
+	Email        string             `db:"email" json:"email"`
+	FullName     string             `db:"full_name" json:"full_name"`
+	DeletedAt    pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
+	Instruments  []string           `db:"instruments" json:"instruments"`
+	Allocations  []string           `db:"allocations" json:"allocations"`
+	Categories   []string           `db:"categories" json:"categories"`
 }

@@ -12,30 +12,80 @@ import (
 
 type Querier interface {
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (CreateAccountRow, error)
+	CreateAllocation(ctx context.Context, name string) (Allocation, error)
+	CreateCategory(ctx context.Context, name string) (Category, error)
 	CreateContributor(ctx context.Context, arg CreateContributorParams) (uuid.UUID, error)
+	CreateInstrument(ctx context.Context, name string) (Instrument, error)
 	CreatePurchase(ctx context.Context, arg CreatePurchaseParams) (uuid.UUID, error)
 	CreateScore(ctx context.Context, arg CreateScoreParams) (uuid.UUID, error)
+	DeleteAllocation(ctx context.Context, id int32) error
+	DeleteCategory(ctx context.Context, id int32) error
+	DeleteInstrument(ctx context.Context, id int32) error
+	DeleteScoreAllocation(ctx context.Context, arg DeleteScoreAllocationParams) error
+	DeleteScoreCategory(ctx context.Context, arg DeleteScoreCategoryParams) error
+	DeleteScoreInstrument(ctx context.Context, arg DeleteScoreInstrumentParams) error
 	GetAccountByEmail(ctx context.Context, email string) (GetAccountByEmailRow, error)
 	GetAccountById(ctx context.Context, id uuid.UUID) (GetAccountByIdRow, error)
 	GetAccounts(ctx context.Context) ([]GetAccountsRow, error)
 	GetAllContributors(ctx context.Context) ([]ContributorAccountScore, error)
-	GetAllPublicScores(ctx context.Context, arg GetAllPublicScoresParams) ([]GetAllPublicScoresRow, error)
+	GetAllPublicScores(ctx context.Context, arg GetAllPublicScoresParams) ([]ScorePublicView, error)
 	GetAllPurchases(ctx context.Context) ([]Purchase, error)
+	GetAllocations(ctx context.Context) ([]Allocation, error)
+	GetCategories(ctx context.Context) ([]Category, error)
 	GetContributorById(ctx context.Context, id uuid.UUID) (ContributorAccountScore, error)
+	GetInstruments(ctx context.Context) ([]Instrument, error)
 	GetPurchaseByAccountAndScoreId(ctx context.Context, arg GetPurchaseByAccountAndScoreIdParams) (Purchase, error)
 	GetPurchaseById(ctx context.Context, arg GetPurchaseByIdParams) (Purchase, error)
 	GetPurchasesByAccountId(ctx context.Context, accountID uuid.UUID) ([]Purchase, error)
 	GetScoreByContributorID(ctx context.Context, arg GetScoreByContributorIDParams) (GetScoreByContributorIDRow, error)
 	GetScoreByContributorId(ctx context.Context, id uuid.UUID) ([]Score, error)
 	GetScoreById(ctx context.Context, id uuid.UUID) (Score, error)
+	// select
+	//   s.id,
+	//   s.title,
+	//   s.is_verified,
+	//   s.price,
+	//   s.pdf_image_urls,
+	//   s.audio_url,
+	//   s.created_at,
+	//   a.email,
+	//   c.full_name,
+	//   COALESCE(ARRAY(SELECT i.name FROM instrument i
+	//                    JOIN score_instrument si ON i.id = si.instrument_id
+	//                    WHERE si.score_id = s.id
+	//                    ORDER BY i.name), ARRAY[]) AS instruments,
+	//   COALESCE(ARRAY(SELECT a.name FROM allocation a
+	//                    JOIN score_allocation sa ON a.id = sa.allocation_id
+	//                    WHERE sa.score_id = s.id
+	//                    ORDER BY a.name), ARRAY[]::TEXT[]) AS allocations,
+	//   COALESCE(ARRAY(SELECT c.name FROM category c
+	//                    JOIN score_category sc ON c.id = sc.category_id
+	//                    WHERE sc.score_id = s.id
+	//                    ORDER BY c.name), ARRAY[]::TEXT[]) AS categories
+	// from score s
+	// join contributor c on c.id = s.contributor_id
+	// join account a on a.id = s.contributor_id
+	// where s.deleted_at is null
+	// and s.is_verified = true
+	// and c.is_verified = true
+	// order by s.created_at desc
+	// limit @pagelimit::int
+	// offset @pageoffset::int
+	// ;
 	GetScores(ctx context.Context, arg GetScoresParams) ([]GetScoresRow, error)
 	GetScoresByContributorID(ctx context.Context, arg GetScoresByContributorIDParams) ([]GetScoresByContributorIDRow, error)
 	GetScoresPaginated(ctx context.Context) ([]Score, error)
 	GetUnverifiedContributors(ctx context.Context) ([]Contributor, error)
 	GetVerifiedScoreById(ctx context.Context, id uuid.UUID) (GetVerifiedScoreByIdRow, error)
 	GetVerifiedScores(ctx context.Context, arg GetVerifiedScoresParams) ([]GetVerifiedScoresRow, error)
+	InsertScoreAllocation(ctx context.Context, arg InsertScoreAllocationParams) error
+	InsertScoreCategory(ctx context.Context, arg InsertScoreCategoryParams) error
+	InsertScoreInstrument(ctx context.Context, arg InsertScoreInstrumentParams) error
 	UpdateAccount(ctx context.Context, arg UpdateAccountParams) (uuid.UUID, error)
 	UpdateAccountRole(ctx context.Context, arg UpdateAccountRoleParams) (uuid.UUID, error)
+	UpdateAllocation(ctx context.Context, arg UpdateAllocationParams) error
+	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) error
+	UpdateInstrument(ctx context.Context, arg UpdateInstrumentParams) error
 	UpdatePurchaseProof(ctx context.Context, arg UpdatePurchaseProofParams) error
 	UpdateScore(ctx context.Context, arg UpdateScoreParams) error
 	VerifyContributor(ctx context.Context, id uuid.UUID) error

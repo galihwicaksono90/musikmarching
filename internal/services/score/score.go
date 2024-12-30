@@ -12,7 +12,7 @@ import (
 )
 
 type ScoreService interface {
-	GetAllPublic() ([]db.GetAllPublicScoresRow, error)
+	GetAllPublic() ([]db.ScorePublicView, error)
 	GetManyByContributorId(account_id uuid.UUID) ([]db.Score, error)
 	Create(model.CreateScoreDTO) (uuid.UUID, error)
 	Update(uuid.UUID, model.UpdateScoreDTO) error
@@ -31,7 +31,7 @@ type scoreService struct {
 }
 
 // GetAllPublicScores implements ScoreService.
-func (s *scoreService) GetAllPublic() ([]db.GetAllPublicScoresRow, error) {
+func (s *scoreService) GetAllPublic() ([]db.ScorePublicView, error) {
 	return s.store.GetAllPublicScores(context.Background(), db.GetAllPublicScoresParams{
 		Pageoffset: 0,
 		Pagelimit:  100,

@@ -23,3 +23,15 @@ sql:
           go_type: 
             type: "Score"
             slice: true
+        - column: "score_public_view.instruments"
+          go_type: 
+            type: "string"
+            slice: true
+        - column: "score_public_view.allocations"
+          go_type: 
+            type: "string"
+            slice: true
+        - column: "score_public_view.categories"
+          go_type: 
+            type: "string"
+            slice: true

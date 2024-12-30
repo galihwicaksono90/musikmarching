@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -55,23 +54,9 @@ func (q *Queries) CreateScore(ctx context.Context, arg CreateScoreParams) (uuid.
 }
 
 const getAllPublicScores = `-- name: GetAllPublicScores :many
-select
-  s.id,
-  s.title,
-  s.is_verified,
-  s.price,
-  s.pdf_image_urls,
-  s.audio_url,
-  s.created_at,
-  a.email,
-  c.full_name
-from score s
-join contributor c on c.id = s.contributor_id
-join account a on a.id = s.contributor_id
-where s.deleted_at is null
-and s.is_verified = true
-and c.is_verified = true
-order by s.created_at desc
+select id, title, is_verified, price, pdf_image_urls, audio_url, created_at, email, full_name, deleted_at, instruments, allocations, categories from score_public_view spv
+where spv.is_verified = true and spv.deleted_at is null
+order by spv.created_at desc
 limit $2::int
 offset $1::int
 `
@@ -81,27 +66,15 @@ type GetAllPublicScoresParams struct {
 	Pagelimit  int32 `db:"pagelimit" json:"pagelimit"`
 }
 
-type GetAllPublicScoresRow struct {
-	ID           uuid.UUID      `db:"id" json:"id"`
-	Title        string         `db:"title" json:"title"`
-	IsVerified   bool           `db:"is_verified" json:"is_verified"`
-	Price        pgtype.Numeric `db:"price" json:"price"`
-	PdfImageUrls []string       `db:"pdf_image_urls" json:"pdf_image_urls"`
-	AudioUrl     string         `db:"audio_url" json:"audio_url"`
-	CreatedAt    time.Time      `db:"created_at" json:"created_at"`
-	Email        string         `db:"email" json:"email"`
-	FullName     string         `db:"full_name" json:"full_name"`
-}
-
-func (q *Queries) GetAllPublicScores(ctx context.Context, arg GetAllPublicScoresParams) ([]GetAllPublicScoresRow, error) {
+func (q *Queries) GetAllPublicScores(ctx context.Context, arg GetAllPublicScoresParams) ([]ScorePublicView, error) {
 	rows, err := q.db.Query(ctx, getAllPublicScores, arg.Pageoffset, arg.Pagelimit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []GetAllPublicScoresRow{}
+	items := []ScorePublicView{}
 	for rows.Next() {
-		var i GetAllPublicScoresRow
+		var i ScorePublicView
 		if err := rows.Scan(
 			&i.ID,
 			&i.Title,
@@ -112,6 +85,10 @@ func (q *Queries) GetAllPublicScores(ctx context.Context, arg GetAllPublicScores
 			&i.CreatedAt,
 			&i.Email,
 			&i.FullName,
+			&i.DeletedAt,
+			&i.Instruments,
+			&i.Allocations,
+			&i.Categories,
 		); err != nil {
 			return nil, err
 		}
@@ -167,7 +144,7 @@ func (q *Queries) GetScoreByContributorID(ctx context.Context, arg GetScoreByCon
 }
 
 const getScoreByContributorId = `-- name: GetScoreByContributorId :many
-select id, contributor_id, title, price, is_verified, verified_at, pdf_url, pdf_image_urls, audio_url, created_at, updated_at, deleted_at
+select id, contributor_id, title, price, is_verified, verified_at, difficulty, pdf_url, pdf_image_urls, audio_url, created_at, updated_at, deleted_at
 from score
 where contributor_id = $1
 `
@@ -188,6 +165,7 @@ func (q *Queries) GetScoreByContributorId(ctx context.Context, id uuid.UUID) ([]
 			&i.Price,
 			&i.IsVerified,
 			&i.VerifiedAt,
+			&i.Difficulty,
 			&i.PdfUrl,
 			&i.PdfImageUrls,
 			&i.AudioUrl,
@@ -206,7 +184,7 @@ func (q *Queries) GetScoreByContributorId(ctx context.Context, id uuid.UUID) ([]
 }
 
 const getScoreById = `-- name: GetScoreById :one
-select id, contributor_id, title, price, is_verified, verified_at, pdf_url, pdf_image_urls, audio_url, created_at, updated_at, deleted_at
+select id, contributor_id, title, price, is_verified, verified_at, difficulty, pdf_url, pdf_image_urls, audio_url, created_at, updated_at, deleted_at
 from score s
 where s.id = $1
 `
@@ -221,6 +199,7 @@ func (q *Queries) GetScoreById(ctx context.Context, id uuid.UUID) (Score, error)
 		&i.Price,
 		&i.IsVerified,
 		&i.VerifiedAt,
+		&i.Difficulty,
 		&i.PdfUrl,
 		&i.PdfImageUrls,
 		&i.AudioUrl,
@@ -232,6 +211,8 @@ func (q *Queries) GetScoreById(ctx context.Context, id uuid.UUID) (Score, error)
 }
 
 const getScores = `-- name: GetScores :many
+
+
 select s.id, s.title, s.is_verified, s.price, a.name, a.email
 from score s
 inner join contributor c on c.id = s.contributor_id
@@ -255,6 +236,40 @@ type GetScoresRow struct {
 	Email      string         `db:"email" json:"email"`
 }
 
+// select
+//
+//	s.id,
+//	s.title,
+//	s.is_verified,
+//	s.price,
+//	s.pdf_image_urls,
+//	s.audio_url,
+//	s.created_at,
+//	a.email,
+//	c.full_name,
+//	COALESCE(ARRAY(SELECT i.name FROM instrument i
+//	                 JOIN score_instrument si ON i.id = si.instrument_id
+//	                 WHERE si.score_id = s.id
+//	                 ORDER BY i.name), ARRAY[]) AS instruments,
+//	COALESCE(ARRAY(SELECT a.name FROM allocation a
+//	                 JOIN score_allocation sa ON a.id = sa.allocation_id
+//	                 WHERE sa.score_id = s.id
+//	                 ORDER BY a.name), ARRAY[]::TEXT[]) AS allocations,
+//	COALESCE(ARRAY(SELECT c.name FROM category c
+//	                 JOIN score_category sc ON c.id = sc.category_id
+//	                 WHERE sc.score_id = s.id
+//	                 ORDER BY c.name), ARRAY[]::TEXT[]) AS categories
+//
+// from score s
+// join contributor c on c.id = s.contributor_id
+// join account a on a.id = s.contributor_id
+// where s.deleted_at is null
+// and s.is_verified = true
+// and c.is_verified = true
+// order by s.created_at desc
+// limit @pagelimit::int
+// offset @pageoffset::int
+// ;
 func (q *Queries) GetScores(ctx context.Context, arg GetScoresParams) ([]GetScoresRow, error) {
 	rows, err := q.db.Query(ctx, getScores, arg.Pageoffset, arg.Pagelimit)
 	if err != nil {
@@ -336,7 +351,7 @@ func (q *Queries) GetScoresByContributorID(ctx context.Context, arg GetScoresByC
 }
 
 const getScoresPaginated = `-- name: GetScoresPaginated :many
-select id, contributor_id, title, price, is_verified, verified_at, pdf_url, pdf_image_urls, audio_url, created_at, updated_at, deleted_at
+select id, contributor_id, title, price, is_verified, verified_at, difficulty, pdf_url, pdf_image_urls, audio_url, created_at, updated_at, deleted_at
 from score
 where deleted_at is null
 `
@@ -357,6 +372,7 @@ func (q *Queries) GetScoresPaginated(ctx context.Context) ([]Score, error) {
 			&i.Price,
 			&i.IsVerified,
 			&i.VerifiedAt,
+			&i.Difficulty,
 			&i.PdfUrl,
 			&i.PdfImageUrls,
 			&i.AudioUrl,
