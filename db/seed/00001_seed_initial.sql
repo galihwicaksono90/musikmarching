@@ -37,10 +37,10 @@ values ('ab48aeb7-51a1-4712-932b-fe64d98fec87', 'Galih Wicaksono', true, now());
 
 insert into score (id, title, price, difficulty, contributor_id, pdf_url, pdf_image_urls, audio_url, is_verified, verified_at)
 values 
-  ('43a89d84-706c-4727-b1d8-191731bce558', 'song one',   100.00, 'beginner', 'ab48aeb7-51a1-4712-932b-fe64d98fec87', 'pdf_url', '{hello, world}', 'audio_url', true,  now()),
-  ('97320ce1-3159-4ccd-a645-ba7e80f03a5a', 'song two',   200.00, 'intermediate', 'ab48aeb7-51a1-4712-932b-fe64d98fec87', 'pdf_url', '{hello, world}', 'audio_url', false, null ),
-  ('a31d7a7d-4e85-4b27-b956-2bff6415ddd6', 'song three', 300.00, 'advanced', 'ab48aeb7-51a1-4712-932b-fe64d98fec87', 'pdf_url', '{hello, world}', 'audio_url', true,  now()),
-  ('c17db1c2-2c35-477b-8dd7-00fb6db9723c', 'song four',  400.00, 'beginner', 'ab48aeb7-51a1-4712-932b-fe64d98fec87', 'pdf_url', '{hello, world}', 'audio_url', false, null )
+  ('43a89d84-706c-4727-b1d8-191731bce558', 'song one',   100.00, 'beginner', 'ab48aeb7-51a1-4712-932b-fe64d98fec87', 'https://s2.q4cdn.com/175719177/files/doc_presentations/Placeholder-PDF.pdf', '{https://placehold.co/600x400, https://placehold.co/600x400}', 'https://diviextended.com/wp-content/uploads/2021/10/sound-of-waves-marine-drive-mumbai.mp3', true,  now()),
+  ('97320ce1-3159-4ccd-a645-ba7e80f03a5a', 'song two',   200.00, 'intermediate', 'ab48aeb7-51a1-4712-932b-fe64d98fec87', 'https://s2.q4cdn.com/175719177/files/doc_presentations/Placeholder-PDF.pdf', '{https://placehold.co/600x400, https://placehold.co/600x400}', 'https://diviextended.com/wp-content/uploads/2021/10/sound-of-waves-marine-drive-mumbai.mp3', false, null ),
+  ('a31d7a7d-4e85-4b27-b956-2bff6415ddd6', 'song three', 300.00, 'advanced', 'ab48aeb7-51a1-4712-932b-fe64d98fec87', 'https://s2.q4cdn.com/175719177/files/doc_presentations/Placeholder-PDF.pdf', '{https://placehold.co/600x400, https://placehold.co/600x400}', 'https://diviextended.com/wp-content/uploads/2021/10/sound-of-waves-marine-drive-mumbai.mp3', true,  now()),
+  ('c17db1c2-2c35-477b-8dd7-00fb6db9723c', 'song four',  400.00, 'beginner', 'ab48aeb7-51a1-4712-932b-fe64d98fec87', 'https://s2.q4cdn.com/175719177/files/doc_presentations/Placeholder-PDF.pdf', '{https://placehold.co/600x400, https://placehold.co/600x400}', 'https://diviextended.com/wp-content/uploads/2021/10/sound-of-waves-marine-drive-mumbai.mp3', false, null )
 ;
 
 insert into instrument (name)

@@ -10,38 +10,35 @@ import (
 	"github.com/gorilla/mux"
 )
 
+func (h *Handler) HandleGetAllPublicScoresTest(w http.ResponseWriter, r *http.Request) {
+	urlValues := r.URL.Query()
+	scores, err := h.score.GetAllPublic(urlValues)
+
+	if err != nil {
+		h.handleResponse(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), []db.ScorePublicView{})
+		return
+	}
+
+	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), scores)
+}
+
 func (h *Handler) HandleGetScores(w http.ResponseWriter, r *http.Request) {
 	scores, err := h.score.GetAll()
 	if err != nil {
-		h.handleResponse(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), "heyoooooo")
+		h.handleResponse(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err)
 		return
 	}
 	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), scores)
 }
 
 func (h *Handler) HandleGetAllPublicScores(w http.ResponseWriter, r *http.Request) {
-	scores, err := h.score.GetAllPublic()
+	scores, err := h.score.GetAllPublic(r.URL.Query())
 	if err != nil {
-		h.handleResponse(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), "heyoooooo")
+		h.handleResponse(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err)
 		return
 	}
 	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), scores)
 }
-
-// func (h *Handler) HandleGetScores(w http.ResponseWriter, r *http.Request) {
-// 	limit, offset := utils.ParsePagination(r)
-//
-// 	scores, err := h.score.GetAll(db.GetScoresPaginatedParams{
-// 		Limit:  limit,
-// 		Offset: offset,
-// 	})
-// 	if err != nil {
-// 		h.handleResponse(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err)
-// 		return
-// 	}
-//
-// 	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), scores)
-// }
 
 func (h *Handler) HandleGetScoreById(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
@@ -61,7 +58,7 @@ func (h *Handler) HandleGetScoreById(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) HandleGetVerifiedScores(w http.ResponseWriter, r *http.Request) {
-	pageLimit, pageOffset := utils.ParsePagination(r)
+	pageLimit, pageOffset := utils.ParsePagination(r.URL.Query())
 
 	scores, err := h.score.GetManyVerified(db.GetVerifiedScoresParams{
 		PageLimit:  pageLimit,

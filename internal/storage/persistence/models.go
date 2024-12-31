@@ -210,9 +210,10 @@ type ScorePublicView struct {
 	PdfImageUrls []string           `db:"pdf_image_urls" json:"pdf_image_urls"`
 	AudioUrl     string             `db:"audio_url" json:"audio_url"`
 	CreatedAt    time.Time          `db:"created_at" json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	DeletedAt    pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
 	Email        string             `db:"email" json:"email"`
 	FullName     string             `db:"full_name" json:"full_name"`
-	DeletedAt    pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
 	Instruments  []string           `db:"instruments" json:"instruments"`
 	Allocations  []string           `db:"allocations" json:"allocations"`
 	Categories   []string           `db:"categories" json:"categories"`

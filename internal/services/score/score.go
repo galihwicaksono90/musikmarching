@@ -3,8 +3,11 @@ package score
 import (
 	"context"
 	"errors"
+	"fmt"
 	"galihwicaksono90/musikmarching-be/internal/constants/model"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
+	"galihwicaksono90/musikmarching-be/utils"
+	"net/url"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -12,7 +15,7 @@ import (
 )
 
 type ScoreService interface {
-	GetAllPublic() ([]db.ScorePublicView, error)
+	GetAllPublic(url.Values) ([]db.ScorePublicView, error)
 	GetManyByContributorId(account_id uuid.UUID) ([]db.Score, error)
 	Create(model.CreateScoreDTO) (uuid.UUID, error)
 	Update(uuid.UUID, model.UpdateScoreDTO) error
@@ -31,11 +34,23 @@ type scoreService struct {
 }
 
 // GetAllPublicScores implements ScoreService.
-func (s *scoreService) GetAllPublic() ([]db.ScorePublicView, error) {
-	return s.store.GetAllPublicScores(context.Background(), db.GetAllPublicScoresParams{
-		Pageoffset: 0,
-		Pagelimit:  100,
-	})
+func (s *scoreService) GetAllPublic(urlValues url.Values) ([]db.ScorePublicView, error) {
+	limit, offset := utils.ParsePagination(urlValues)
+	title := urlValues.Get("title")
+	title = fmt.Sprintf("%%%s%%", title)
+	instruments := urlValues["instruments"]
+	categories := urlValues["categories"]
+	allocations := urlValues["allocations"]
+
+	params := db.GetAllPublicScoresParams{}
+	params.PageLimit = limit
+	params.PageOffset = offset
+	params.Title = title
+	params.Instruments = instruments
+	params.Categories = categories
+	params.Allocations = allocations
+
+	return s.store.GetAllPublicScores(context.Background(), params)
 }
 
 // GetOneByContributorID implements ScoreService.

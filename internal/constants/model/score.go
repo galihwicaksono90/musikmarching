@@ -24,3 +24,13 @@ type UpdateScoreDTO struct {
 	PdfImageUrls  []string       `json:"pdf_image_urls"`
 	AudioUrl      pgtype.Text    `json:"audio_url"`
 }
+
+type GetAllPublicScoreDTO struct {
+	Limit    int32
+	Offset   int32
+	Title    string
+	Instruments []string
+	Categories []string
+	Allocations []string
+}
+

@@ -1,23 +1,23 @@
 package utils
 
 import (
-	"net/http"
+	"net/url"
 	"strconv"
 )
 
 var DEFAULT_PAGINATON_LIMIT = 10
 var DEFAULT_PAGINATON_OFFSET = 0
 
-func ParsePagination(r *http.Request) (int32, int32) {
-	pageLimit, err := strconv.Atoi(r.FormValue("page_limit"))
+func ParsePagination(values url.Values) (int32, int32) {
+	limit, err := strconv.Atoi(values.Get("limit"))
 	if err != nil {
-		pageLimit = DEFAULT_PAGINATON_LIMIT
+		limit = DEFAULT_PAGINATON_LIMIT
 	}
 
-	pageOffset, err := strconv.Atoi(r.FormValue("page_offset"))
+	offset, err := strconv.Atoi(values.Get("page_offset"))
 	if err != nil {
-		pageOffset = DEFAULT_PAGINATON_OFFSET
+		offset = DEFAULT_PAGINATON_OFFSET
 	}
 
-	return int32(pageLimit), int32(pageOffset)
+	return int32(limit), int32(offset)
 }

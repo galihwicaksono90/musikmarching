@@ -54,20 +54,36 @@ func (q *Queries) CreateScore(ctx context.Context, arg CreateScoreParams) (uuid.
 }
 
 const getAllPublicScores = `-- name: GetAllPublicScores :many
-select id, title, is_verified, price, pdf_image_urls, audio_url, created_at, email, full_name, deleted_at, instruments, allocations, categories from score_public_view spv
-where spv.is_verified = true and spv.deleted_at is null
+select id, title, is_verified, price, pdf_image_urls, audio_url, created_at, updated_at, deleted_at, email, full_name, instruments, allocations, categories from score_public_view spv
+where 
+spv.is_verified = true and spv.deleted_at is null
+and ($1::text IS NULL OR spv.title like $1)
+and ($2::text[] IS NULL or spv.instruments::text[] && $2::text[])
+and ($3::text[] IS NULL or spv.categories::text[] && $3::text[])
+and ($4::text[] IS NULL or spv.allocations::text[] && $4::text[])
 order by spv.created_at desc
-limit $2::int
-offset $1::int
+limit $6::int
+offset $5::int
 `
 
 type GetAllPublicScoresParams struct {
-	Pageoffset int32 `db:"pageoffset" json:"pageoffset"`
-	Pagelimit  int32 `db:"pagelimit" json:"pagelimit"`
+	Title       string   `db:"title" json:"title"`
+	Instruments []string `db:"instruments" json:"instruments"`
+	Categories  []string `db:"categories" json:"categories"`
+	Allocations []string `db:"allocations" json:"allocations"`
+	PageOffset  int32    `db:"page_offset" json:"page_offset"`
+	PageLimit   int32    `db:"page_limit" json:"page_limit"`
 }
 
 func (q *Queries) GetAllPublicScores(ctx context.Context, arg GetAllPublicScoresParams) ([]ScorePublicView, error) {
-	rows, err := q.db.Query(ctx, getAllPublicScores, arg.Pageoffset, arg.Pagelimit)
+	rows, err := q.db.Query(ctx, getAllPublicScores,
+		arg.Title,
+		arg.Instruments,
+		arg.Categories,
+		arg.Allocations,
+		arg.PageOffset,
+		arg.PageLimit,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -83,9 +99,10 @@ func (q *Queries) GetAllPublicScores(ctx context.Context, arg GetAllPublicScores
 			&i.PdfImageUrls,
 			&i.AudioUrl,
 			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
 			&i.Email,
 			&i.FullName,
-			&i.DeletedAt,
 			&i.Instruments,
 			&i.Allocations,
 			&i.Categories,
@@ -211,8 +228,6 @@ func (q *Queries) GetScoreById(ctx context.Context, id uuid.UUID) (Score, error)
 }
 
 const getScores = `-- name: GetScores :many
-
-
 select s.id, s.title, s.is_verified, s.price, a.name, a.email
 from score s
 inner join contributor c on c.id = s.contributor_id
@@ -236,40 +251,6 @@ type GetScoresRow struct {
 	Email      string         `db:"email" json:"email"`
 }
 
-// select
-//
-//	s.id,
-//	s.title,
-//	s.is_verified,
-//	s.price,
-//	s.pdf_image_urls,
-//	s.audio_url,
-//	s.created_at,
-//	a.email,
-//	c.full_name,
-//	COALESCE(ARRAY(SELECT i.name FROM instrument i
-//	                 JOIN score_instrument si ON i.id = si.instrument_id
-//	                 WHERE si.score_id = s.id
-//	                 ORDER BY i.name), ARRAY[]) AS instruments,
-//	COALESCE(ARRAY(SELECT a.name FROM allocation a
-//	                 JOIN score_allocation sa ON a.id = sa.allocation_id
-//	                 WHERE sa.score_id = s.id
-//	                 ORDER BY a.name), ARRAY[]::TEXT[]) AS allocations,
-//	COALESCE(ARRAY(SELECT c.name FROM category c
-//	                 JOIN score_category sc ON c.id = sc.category_id
-//	                 WHERE sc.score_id = s.id
-//	                 ORDER BY c.name), ARRAY[]::TEXT[]) AS categories
-//
-// from score s
-// join contributor c on c.id = s.contributor_id
-// join account a on a.id = s.contributor_id
-// where s.deleted_at is null
-// and s.is_verified = true
-// and c.is_verified = true
-// order by s.created_at desc
-// limit @pagelimit::int
-// offset @pageoffset::int
-// ;
 func (q *Queries) GetScores(ctx context.Context, arg GetScoresParams) ([]GetScoresRow, error) {
 	rows, err := q.db.Query(ctx, getScores, arg.Pageoffset, arg.Pagelimit)
 	if err != nil {

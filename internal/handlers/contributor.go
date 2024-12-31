@@ -16,7 +16,7 @@ import (
 func (h *Handler) HandleGetContributorScores(w http.ResponseWriter, r *http.Request) {
 	user := h.getSessionUser(r)
 
-	limit, offset := utils.ParsePagination(r)
+	limit, offset := utils.ParsePagination(r.URL.Query())
 
 	scores, err := h.score.GetManyByContirbutorID(db.GetScoresByContributorIDParams{
 		ID:         user.ID,

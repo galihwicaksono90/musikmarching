@@ -16,6 +16,7 @@ func Routings(handler *handlers.Handler, baseRouter *mux.Router) {
 	scoreRouter := router.PathPrefix("/score").Subrouter()
 	// scoreRouter.HandleFunc("", handler.HandleGetScores).Methods("GET")
 	scoreRouter.HandleFunc("", handler.HandleGetAllPublicScores).Methods("GET")
+	scoreRouter.HandleFunc("/test", handler.HandleGetAllPublicScoresTest).Methods("GET")
 	scoreRouter.HandleFunc("/{id}", handler.HandleGetScoreById).Methods("GET")
 
 	accountRouter := router.PathPrefix("/account").Subrouter()
