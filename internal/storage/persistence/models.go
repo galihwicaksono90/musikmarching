@@ -13,6 +13,48 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type ContentType string
+
+const (
+	ContentTypeExclusive    ContentType = "exclusive"
+	ContentTypeNonExclusive ContentType = "non-exclusive"
+)
+
+func (e *ContentType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ContentType(s)
+	case string:
+		*e = ContentType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ContentType: %T", src)
+	}
+	return nil
+}
+
+type NullContentType struct {
+	ContentType ContentType `json:"content_type"`
+	Valid       bool        `json:"valid"` // Valid is true if ContentType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullContentType) Scan(value interface{}) error {
+	if value == nil {
+		ns.ContentType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ContentType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullContentType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ContentType), nil
+}
+
 type Difficulty string
 
 const (
@@ -175,8 +217,11 @@ type Score struct {
 	ID            uuid.UUID          `db:"id" json:"id"`
 	ContributorID uuid.UUID          `db:"contributor_id" json:"contributor_id"`
 	Title         string             `db:"title" json:"title"`
+	Description   pgtype.Text        `db:"description" json:"description"`
 	Price         pgtype.Numeric     `db:"price" json:"price"`
 	IsVerified    bool               `db:"is_verified" json:"is_verified"`
+	ContentType   ContentType        `db:"content_type" json:"content_type"`
+	PurchasedBy   pgtype.UUID        `db:"purchased_by" json:"purchased_by"`
 	VerifiedAt    pgtype.Timestamptz `db:"verified_at" json:"verified_at"`
 	Difficulty    Difficulty         `db:"difficulty" json:"difficulty"`
 	PdfUrl        string             `db:"pdf_url" json:"pdf_url"`
@@ -205,8 +250,12 @@ type ScoreInstrument struct {
 type ScorePublicView struct {
 	ID           uuid.UUID          `db:"id" json:"id"`
 	Title        string             `db:"title" json:"title"`
+	Description  pgtype.Text        `db:"description" json:"description"`
 	IsVerified   bool               `db:"is_verified" json:"is_verified"`
 	Price        pgtype.Numeric     `db:"price" json:"price"`
+	Difficulty   Difficulty         `db:"difficulty" json:"difficulty"`
+	ContentType  ContentType        `db:"content_type" json:"content_type"`
+	PurchasedBy  pgtype.UUID        `db:"purchased_by" json:"purchased_by"`
 	PdfImageUrls []string           `db:"pdf_image_urls" json:"pdf_image_urls"`
 	AudioUrl     string             `db:"audio_url" json:"audio_url"`
 	CreatedAt    time.Time          `db:"created_at" json:"created_at"`

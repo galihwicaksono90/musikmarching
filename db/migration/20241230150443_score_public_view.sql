@@ -4,8 +4,12 @@ CREATE or replace VIEW score_public_view AS
 select
   s.id,
   s.title,
+  s.description,
   s.is_verified,
   s.price,
+  s.difficulty,
+  s.content_type,
+  s.purchased_by,
   s.pdf_image_urls,
   s.audio_url,
   s.created_at,

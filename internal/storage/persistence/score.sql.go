@@ -54,30 +54,36 @@ func (q *Queries) CreateScore(ctx context.Context, arg CreateScoreParams) (uuid.
 }
 
 const getAllPublicScores = `-- name: GetAllPublicScores :many
-select id, title, is_verified, price, pdf_image_urls, audio_url, created_at, updated_at, deleted_at, email, full_name, instruments, allocations, categories from score_public_view spv
+select id, title, description, is_verified, price, difficulty, content_type, purchased_by, pdf_image_urls, audio_url, created_at, updated_at, deleted_at, email, full_name, instruments, allocations, categories from score_public_view spv
 where 
-spv.is_verified = true and spv.deleted_at is null
-and ($1::text IS NULL OR spv.title like $1)
-and ($2::text[] IS NULL or spv.instruments::text[] && $2::text[])
-and ($3::text[] IS NULL or spv.categories::text[] && $3::text[])
-and ($4::text[] IS NULL or spv.allocations::text[] && $4::text[])
+spv.is_verified = true and spv.deleted_at is null and spv.purchased_by is null
+and ($1::text IS NULL OR lower(spv.title) like lower($1))
+and ($2::difficulty IS NULL OR spv.difficulty in ($2))
+and ($3::content_type IS NULL OR spv.content_type in ($3))
+and ($4::text[] IS NULL or spv.instruments::text[] && $4::text[])
+and ($5::text[] IS NULL or spv.categories::text[] && $5::text[])
+and ($6::text[] IS NULL or spv.allocations::text[] && $6::text[])
 order by spv.created_at desc
-limit $6::int
-offset $5::int
+limit $8::int
+offset $7::int
 `
 
 type GetAllPublicScoresParams struct {
-	Title       string   `db:"title" json:"title"`
-	Instruments []string `db:"instruments" json:"instruments"`
-	Categories  []string `db:"categories" json:"categories"`
-	Allocations []string `db:"allocations" json:"allocations"`
-	PageOffset  int32    `db:"page_offset" json:"page_offset"`
-	PageLimit   int32    `db:"page_limit" json:"page_limit"`
+	Title       string          `db:"title" json:"title"`
+	Difficulty  NullDifficulty  `db:"difficulty" json:"difficulty"`
+	ContentType NullContentType `db:"content_type" json:"content_type"`
+	Instruments []string        `db:"instruments" json:"instruments"`
+	Categories  []string        `db:"categories" json:"categories"`
+	Allocations []string        `db:"allocations" json:"allocations"`
+	PageOffset  int32           `db:"page_offset" json:"page_offset"`
+	PageLimit   int32           `db:"page_limit" json:"page_limit"`
 }
 
 func (q *Queries) GetAllPublicScores(ctx context.Context, arg GetAllPublicScoresParams) ([]ScorePublicView, error) {
 	rows, err := q.db.Query(ctx, getAllPublicScores,
 		arg.Title,
+		arg.Difficulty,
+		arg.ContentType,
 		arg.Instruments,
 		arg.Categories,
 		arg.Allocations,
@@ -94,8 +100,12 @@ func (q *Queries) GetAllPublicScores(ctx context.Context, arg GetAllPublicScores
 		if err := rows.Scan(
 			&i.ID,
 			&i.Title,
+			&i.Description,
 			&i.IsVerified,
 			&i.Price,
+			&i.Difficulty,
+			&i.ContentType,
+			&i.PurchasedBy,
 			&i.PdfImageUrls,
 			&i.AudioUrl,
 			&i.CreatedAt,
@@ -115,6 +125,41 @@ func (q *Queries) GetAllPublicScores(ctx context.Context, arg GetAllPublicScores
 		return nil, err
 	}
 	return items, nil
+}
+
+const getPublicScoreById = `-- name: GetPublicScoreById :one
+select id, title, description, is_verified, price, difficulty, content_type, purchased_by, pdf_image_urls, audio_url, created_at, updated_at, deleted_at, email, full_name, instruments, allocations, categories from score_public_view spv
+where spv.id = $1
+and spv.is_verified = true 
+and spv.deleted_at is null
+and spv.purchased_by is null
+limit 1
+`
+
+func (q *Queries) GetPublicScoreById(ctx context.Context, id uuid.UUID) (ScorePublicView, error) {
+	row := q.db.QueryRow(ctx, getPublicScoreById, id)
+	var i ScorePublicView
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Description,
+		&i.IsVerified,
+		&i.Price,
+		&i.Difficulty,
+		&i.ContentType,
+		&i.PurchasedBy,
+		&i.PdfImageUrls,
+		&i.AudioUrl,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.Email,
+		&i.FullName,
+		&i.Instruments,
+		&i.Allocations,
+		&i.Categories,
+	)
+	return i, err
 }
 
 const getScoreByContributorID = `-- name: GetScoreByContributorID :one
@@ -161,7 +206,7 @@ func (q *Queries) GetScoreByContributorID(ctx context.Context, arg GetScoreByCon
 }
 
 const getScoreByContributorId = `-- name: GetScoreByContributorId :many
-select id, contributor_id, title, price, is_verified, verified_at, difficulty, pdf_url, pdf_image_urls, audio_url, created_at, updated_at, deleted_at
+select id, contributor_id, title, description, price, is_verified, content_type, purchased_by, verified_at, difficulty, pdf_url, pdf_image_urls, audio_url, created_at, updated_at, deleted_at
 from score
 where contributor_id = $1
 `
@@ -179,8 +224,11 @@ func (q *Queries) GetScoreByContributorId(ctx context.Context, id uuid.UUID) ([]
 			&i.ID,
 			&i.ContributorID,
 			&i.Title,
+			&i.Description,
 			&i.Price,
 			&i.IsVerified,
+			&i.ContentType,
+			&i.PurchasedBy,
 			&i.VerifiedAt,
 			&i.Difficulty,
 			&i.PdfUrl,
@@ -201,7 +249,7 @@ func (q *Queries) GetScoreByContributorId(ctx context.Context, id uuid.UUID) ([]
 }
 
 const getScoreById = `-- name: GetScoreById :one
-select id, contributor_id, title, price, is_verified, verified_at, difficulty, pdf_url, pdf_image_urls, audio_url, created_at, updated_at, deleted_at
+select id, contributor_id, title, description, price, is_verified, content_type, purchased_by, verified_at, difficulty, pdf_url, pdf_image_urls, audio_url, created_at, updated_at, deleted_at
 from score s
 where s.id = $1
 `
@@ -213,8 +261,11 @@ func (q *Queries) GetScoreById(ctx context.Context, id uuid.UUID) (Score, error)
 		&i.ID,
 		&i.ContributorID,
 		&i.Title,
+		&i.Description,
 		&i.Price,
 		&i.IsVerified,
+		&i.ContentType,
+		&i.PurchasedBy,
 		&i.VerifiedAt,
 		&i.Difficulty,
 		&i.PdfUrl,
@@ -332,7 +383,7 @@ func (q *Queries) GetScoresByContributorID(ctx context.Context, arg GetScoresByC
 }
 
 const getScoresPaginated = `-- name: GetScoresPaginated :many
-select id, contributor_id, title, price, is_verified, verified_at, difficulty, pdf_url, pdf_image_urls, audio_url, created_at, updated_at, deleted_at
+select id, contributor_id, title, description, price, is_verified, content_type, purchased_by, verified_at, difficulty, pdf_url, pdf_image_urls, audio_url, created_at, updated_at, deleted_at
 from score
 where deleted_at is null
 `
@@ -350,8 +401,11 @@ func (q *Queries) GetScoresPaginated(ctx context.Context) ([]Score, error) {
 			&i.ID,
 			&i.ContributorID,
 			&i.Title,
+			&i.Description,
 			&i.Price,
 			&i.IsVerified,
+			&i.ContentType,
+			&i.PurchasedBy,
 			&i.VerifiedAt,
 			&i.Difficulty,
 			&i.PdfUrl,

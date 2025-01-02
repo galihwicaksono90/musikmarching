@@ -34,6 +34,7 @@ type Querier interface {
 	GetCategories(ctx context.Context) ([]Category, error)
 	GetContributorById(ctx context.Context, id uuid.UUID) (ContributorAccountScore, error)
 	GetInstruments(ctx context.Context) ([]Instrument, error)
+	GetPublicScoreById(ctx context.Context, id uuid.UUID) (ScorePublicView, error)
 	GetPurchaseByAccountAndScoreId(ctx context.Context, arg GetPurchaseByAccountAndScoreIdParams) (Purchase, error)
 	GetPurchaseById(ctx context.Context, arg GetPurchaseByIdParams) (Purchase, error)
 	GetPurchasesByAccountId(ctx context.Context, accountID uuid.UUID) ([]Purchase, error)

@@ -16,6 +16,7 @@ import (
 
 type ScoreService interface {
 	GetAllPublic(url.Values) ([]db.ScorePublicView, error)
+	GetPublicById(uuid.UUID) (db.ScorePublicView, error)
 	GetManyByContributorId(account_id uuid.UUID) ([]db.Score, error)
 	Create(model.CreateScoreDTO) (uuid.UUID, error)
 	Update(uuid.UUID, model.UpdateScoreDTO) error
@@ -33,6 +34,12 @@ type scoreService struct {
 	store  db.Store
 }
 
+// GetPublicById implements ScoreService.
+func (s *scoreService) GetPublicById(id uuid.UUID) (db.ScorePublicView, error) {
+	ctx := context.Background()
+	return s.store.GetPublicScoreById(ctx, id)
+}
+
 // GetAllPublicScores implements ScoreService.
 func (s *scoreService) GetAllPublic(urlValues url.Values) ([]db.ScorePublicView, error) {
 	limit, offset := utils.ParsePagination(urlValues)
@@ -41,6 +48,7 @@ func (s *scoreService) GetAllPublic(urlValues url.Values) ([]db.ScorePublicView,
 	instruments := urlValues["instruments"]
 	categories := urlValues["categories"]
 	allocations := urlValues["allocations"]
+	difficulty := urlValues.Get("difficulty")
 
 	params := db.GetAllPublicScoresParams{}
 	params.PageLimit = limit
@@ -50,7 +58,18 @@ func (s *scoreService) GetAllPublic(urlValues url.Values) ([]db.ScorePublicView,
 	params.Categories = categories
 	params.Allocations = allocations
 
-	return s.store.GetAllPublicScores(context.Background(), params)
+	var difficultyFilter db.NullDifficulty
+	if err := difficultyFilter.Scan(difficulty); err == nil && isValidDifficulty(string(difficultyFilter.Difficulty)) {
+		params.Difficulty = difficultyFilter
+	}
+
+	contentType := db.NullContentType{}
+	if err := contentType.Scan(urlValues.Get("content_type")); err == nil && isValidContentType(string(contentType.ContentType)) {
+		params.ContentType = contentType
+	}
+
+	result, err := s.store.GetAllPublicScores(context.Background(), params)
+	return result, err
 }
 
 // GetOneByContributorID implements ScoreService.
@@ -155,6 +174,22 @@ func (s *scoreService) Update(scoreId uuid.UUID, params model.UpdateScoreDTO) er
 // GetScoresByContributorId implements ScoreService.
 func (s *scoreService) GetScoresByContributorId(account_id uuid.UUID) ([]db.Score, error) {
 	panic("unimplemented")
+}
+
+func isValidDifficulty(difficulty string) bool {
+	switch db.Difficulty(difficulty) {
+	case db.DifficultyBeginner, db.DifficultyAdvanced, db.DifficultyIntermediate:
+		return true
+	}
+	return false
+}
+
+func isValidContentType(contentType string) bool {
+	switch db.ContentType(contentType) {
+	case db.ContentTypeExclusive, db.ContentTypeNonExclusive:
+		return true
+	}
+	return false
 }
 
 func NewScoreService(logger *logrus.Logger, store db.Store) ScoreService {

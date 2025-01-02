@@ -40,6 +40,23 @@ func (h *Handler) HandleGetAllPublicScores(w http.ResponseWriter, r *http.Reques
 	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), scores)
 }
 
+func (h *Handler) HandleGetPublicScoreById(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+
+	scoreId, err := uuid.Parse(id)
+	if err != nil {
+		h.handleResponse(w, http.StatusInternalServerError, "Score not found", err)
+		return
+	}
+
+	score, err := h.score.GetPublicById(scoreId)
+	if err != nil {
+		h.handleResponse(w, http.StatusNotFound, http.StatusText(http.StatusNotFound), err)
+		return
+	}
+	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), score)
+}
+
 func (h *Handler) HandleGetScoreById(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 

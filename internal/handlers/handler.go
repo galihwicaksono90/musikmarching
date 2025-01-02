@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"galihwicaksono90/musikmarching-be/internal/constants/model"
 	"galihwicaksono90/musikmarching-be/internal/services/account"
+	"galihwicaksono90/musikmarching-be/internal/services/allocation"
 	"galihwicaksono90/musikmarching-be/internal/services/auth"
+	"galihwicaksono90/musikmarching-be/internal/services/category"
 	"galihwicaksono90/musikmarching-be/internal/services/contributor"
 	"galihwicaksono90/musikmarching-be/internal/services/file"
+	"galihwicaksono90/musikmarching-be/internal/services/instrument"
 	"galihwicaksono90/musikmarching-be/internal/services/purchase"
 	"galihwicaksono90/musikmarching-be/internal/services/score"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
@@ -25,6 +28,9 @@ type Handler struct {
 	score       score.ScoreService
 	purchase    purchase.PurchaseService
 	contributor contributor.ContributorService
+	instrument  instrument.InstrumentService
+	category    category.CategoryService
+	allocation  allocation.AllocationService
 	file        file.FileService
 	email       email.Email
 	validate    *validator.Validate
@@ -38,6 +44,9 @@ func New(
 	score score.ScoreService,
 	purchase purchase.PurchaseService,
 	contributor contributor.ContributorService,
+	instrument instrument.InstrumentService,
+	category category.CategoryService,
+	allocation allocation.AllocationService,
 	file file.FileService,
 	email email.Email,
 	validate *validator.Validate,
@@ -50,6 +59,9 @@ func New(
 		score,
 		purchase,
 		contributor,
+		instrument,
+		category,
+		allocation,
 		file,
 		email,
 		validate,
