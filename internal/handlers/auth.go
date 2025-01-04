@@ -40,10 +40,6 @@ func (h *Handler) HandleProviderLogin(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) HandleAuthCallbackFunction(w http.ResponseWriter, r *http.Request) {
 	redirectUrl := viper.GetString("GOOGLE_REROUTE_URL")
 	u, err := gothic.CompleteUserAuth(w, r)
-	h.logger.Println("HandleAuthCallbackFunction======")
-	h.logger.Println(u)
-	h.logger.Println("redirectUrl", redirectUrl)
-	h.logger.Println("======HandleAuthCallbackFunction")
 
 	if err != nil {
 		fmt.Fprintln(w, err)
@@ -67,9 +63,7 @@ func (h *Handler) HandleAuthCallbackFunction(w http.ResponseWriter, r *http.Requ
 
 func (h *Handler) HandleMe(w http.ResponseWriter, r *http.Request) {
 	u := h.getSessionUser(r)
-	h.logger.Println("HandleMe======")
 	h.logger.Println(u)
-	h.logger.Println("======HandleMe")
 	if u == nil {
 		h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), u)
 		return

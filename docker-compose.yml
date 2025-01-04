@@ -10,6 +10,7 @@ services:
     volumes:
       - ~/minio/data:/data
     command: server /data
+    restart: unless-stopped
   postgres:
     container_name: container-pg
     image: postgres
@@ -19,5 +20,5 @@ services:
     env_file:
       - ".env"
     volumes:
-      - /var/lib/postgresql/data
+      - ~/postgres:/var/lib/postgresql/data
     restart: unless-stopped

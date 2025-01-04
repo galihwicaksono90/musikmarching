@@ -20,6 +20,7 @@ type Config struct {
 	SessionDomain    string `mapstructure:"SESSION_DOMAIN"`
 	MinioAccessKey   string `mapstructure:"MINIO_ACCESS_KEY"`
 	MinioAddress     string `mapstructure:"MINIO_ADDRESS"`
+	MinioUrlAddress  string `mapstructure:"MINIO_URL_ADDRESS"`
 	MinioSecure      bool   `mapstructure:"MINIO_SECURE"`
 	MinioSecretKey   string `mapstructure:"MINIO_SECRET_KEY"`
 	MinioBucketName  string `mapstructure:"MINIO_BUCKET_NAME"`
