@@ -38,3 +38,23 @@ verified_at = now()
 where id = @id
 ;
 
+-- name: GetPurchasedScoreById :one
+select
+    s.id,
+    s.title,
+    s.description,
+    a.email,
+    c.full_name,
+    s.difficulty,
+    s.content_type,
+    s.pdf_url,
+    s.pdf_image_urls,
+    s.price,
+    s.audio_url,
+    s.is_verified
+from score s
+join contributor c on c.id = s.contributor_id
+join account a on a.id = c.id
+where s.id = @score_id and s.is_verified = true
+limit 1
+;

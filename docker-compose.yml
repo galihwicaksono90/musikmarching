@@ -1,14 +1,4 @@
 services:
-  app:
-    container_name: musikmarching-be
-    bild: .
-    ports:
-      - "8080:8080"
-    restart: unless-stopped
-    depends_on: 
-      - postgres
-      - minio
-
   minio:
     container_name: musikmarching-minio
     image: quay.io/minio/minio
@@ -19,7 +9,7 @@ services:
       - ".env"
     volumes:
       - ~/minio/data:/data
-    command: server /data --console-address ":9001"
+    command: server /data
   postgres:
     container_name: container-pg
     image: postgres

@@ -37,6 +37,7 @@ type Querier interface {
 	GetPublicScoreById(ctx context.Context, id uuid.UUID) (ScorePublicView, error)
 	GetPurchaseByAccountAndScoreId(ctx context.Context, arg GetPurchaseByAccountAndScoreIdParams) (Purchase, error)
 	GetPurchaseById(ctx context.Context, arg GetPurchaseByIdParams) (Purchase, error)
+	GetPurchasedScoreById(ctx context.Context, scoreID uuid.UUID) (GetPurchasedScoreByIdRow, error)
 	GetPurchasesByAccountId(ctx context.Context, accountID uuid.UUID) ([]Purchase, error)
 	GetScoreByContributorID(ctx context.Context, arg GetScoreByContributorIDParams) (GetScoreByContributorIDRow, error)
 	GetScoreByContributorId(ctx context.Context, id uuid.UUID) ([]Score, error)

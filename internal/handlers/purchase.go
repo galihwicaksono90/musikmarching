@@ -72,7 +72,8 @@ func (h *Handler) HandleUploadPaymentProof(w http.ResponseWriter, r *http.Reques
 	user := h.getSessionUser(r)
 
 	if err := r.ParseMultipartForm(10 << 20); err != nil {
-		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		// http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
 		return
 	}
 
@@ -83,6 +84,10 @@ func (h *Handler) HandleUploadPaymentProof(w http.ResponseWriter, r *http.Reques
 	}
 
 	paymentProofUrl, err := h.file.UploadPaymentProof(r, "image_file")
+	h.logger.Infoln("-------")
+	h.logger.Infoln(paymentProofUrl)
+	h.logger.Infoln(err)
+	h.logger.Infoln("-------")
 	if err != nil {
 		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
 		return
@@ -100,4 +105,24 @@ func (h *Handler) HandleUploadPaymentProof(w http.ResponseWriter, r *http.Reques
 	}
 
 	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), true)
+}
+
+func (h *Handler) HandleGetPurchasedScoreById(w http.ResponseWriter, r *http.Request) {
+	user := h.getSessionUser(r)
+
+	id := mux.Vars(r)["id"]
+	purchaseID, err := uuid.Parse(id)
+	if err != nil {
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
+		return
+	}
+
+	purchase, err := h.purchase.GetPurchasedScoreById(purchaseID, user.ID)
+
+	if err != nil {
+		h.handleResponse(w, http.StatusNotFound, http.StatusText(http.StatusNotFound), err)
+		return
+	}
+
+	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), purchase)
 }

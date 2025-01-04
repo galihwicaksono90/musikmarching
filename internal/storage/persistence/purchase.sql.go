@@ -137,6 +137,62 @@ func (q *Queries) GetPurchaseById(ctx context.Context, arg GetPurchaseByIdParams
 	return i, err
 }
 
+const getPurchasedScoreById = `-- name: GetPurchasedScoreById :one
+select
+    s.id,
+    s.title,
+    s.description,
+    a.email,
+    c.full_name,
+    s.difficulty,
+    s.content_type,
+    s.pdf_url,
+    s.pdf_image_urls,
+    s.price,
+    s.audio_url,
+    s.is_verified
+from score s
+join contributor c on c.id = s.contributor_id
+join account a on a.id = c.id
+where s.id = $1 and s.is_verified = true
+limit 1
+`
+
+type GetPurchasedScoreByIdRow struct {
+	ID           uuid.UUID      `db:"id" json:"id"`
+	Title        string         `db:"title" json:"title"`
+	Description  pgtype.Text    `db:"description" json:"description"`
+	Email        string         `db:"email" json:"email"`
+	FullName     string         `db:"full_name" json:"full_name"`
+	Difficulty   Difficulty     `db:"difficulty" json:"difficulty"`
+	ContentType  ContentType    `db:"content_type" json:"content_type"`
+	PdfUrl       string         `db:"pdf_url" json:"pdf_url"`
+	PdfImageUrls []string       `db:"pdf_image_urls" json:"pdf_image_urls"`
+	Price        pgtype.Numeric `db:"price" json:"price"`
+	AudioUrl     string         `db:"audio_url" json:"audio_url"`
+	IsVerified   bool           `db:"is_verified" json:"is_verified"`
+}
+
+func (q *Queries) GetPurchasedScoreById(ctx context.Context, scoreID uuid.UUID) (GetPurchasedScoreByIdRow, error) {
+	row := q.db.QueryRow(ctx, getPurchasedScoreById, scoreID)
+	var i GetPurchasedScoreByIdRow
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Description,
+		&i.Email,
+		&i.FullName,
+		&i.Difficulty,
+		&i.ContentType,
+		&i.PdfUrl,
+		&i.PdfImageUrls,
+		&i.Price,
+		&i.AudioUrl,
+		&i.IsVerified,
+	)
+	return i, err
+}
+
 const getPurchasesByAccountId = `-- name: GetPurchasesByAccountId :many
 select id, invoice_serial, account_id, score_id, price, title, payment_proof_url, paid_at, is_verified, verified_at, created_at, updated_at, deleted_at from purchase
 where account_id = $1

@@ -150,6 +150,9 @@ func (s *fileService) UploadPaymentProof(r *http.Request, name string) (string, 
 
 func (s *fileService) uploadFile(file io.Reader, fileName string, fileType string) (minio.UploadInfo, error) {
 	bucketName := viper.GetString("MINIO_BUCKET_NAME")
+	s.logger.Infoln("bucketName", bucketName)
+	s.logger.Infoln("fileName", fileName)
+	s.logger.Infoln("fileType", fileType)
 
 	return s.fileStorage.PutObject(
 		context.Background(),
