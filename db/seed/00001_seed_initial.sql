@@ -17,7 +17,7 @@ values
   (select id from role where name = 'admin')
 ),
 (
-  '291a7f36-69ab-4be1-ba91-064445349bbd', 
+  'b5014504-c91d-4f20-8ef7-22d63ee67443', 
   'adika.pperdana@gmail.com', 
   'Admin', 
   'https://lh3.googleusercontent.com/a/ACg8ocJ5FwcGkTjLYTdbgvTsbKdQzVQaHcytNSMJHKFkBPptwbjRu-c=s96-c',
