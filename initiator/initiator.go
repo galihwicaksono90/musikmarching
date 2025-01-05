@@ -66,10 +66,10 @@ func Init() {
 	accountService := account.NewAccountService(logger, store)
 	scoreService := score.NewScoreService(logger, store)
 	purchaseService := purchase.NewPurchaseService(logger, store)
-	contributorService := contributor.NewContributorService(logger, store)
 	instrumentService := instrument.NewInstrumentService(logger, store)
 	categoryService := category.NewCategoryService(logger, store)
 	allocationService := allocation.NewAllocationService(logger, store)
+	contributorService := contributor.NewContributorService(logger, store, instrumentService)
 	fileService := file.NewFileService(logger, fileStorage)
 
 	// initiate new handler

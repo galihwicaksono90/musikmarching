@@ -22,6 +22,20 @@ func (q *Queries) CreateCategory(ctx context.Context, name string) (Category, er
 	return i, err
 }
 
+const createScoreCategory = `-- name: CreateScoreCategory :exec
+insert into score_category (score_id, category_id) values ($1, $2)
+`
+
+type CreateScoreCategoryParams struct {
+	ScoreID    uuid.UUID `db:"score_id" json:"score_id"`
+	CategoryID int32     `db:"category_id" json:"category_id"`
+}
+
+func (q *Queries) CreateScoreCategory(ctx context.Context, arg CreateScoreCategoryParams) error {
+	_, err := q.db.Exec(ctx, createScoreCategory, arg.ScoreID, arg.CategoryID)
+	return err
+}
+
 const deleteCategory = `-- name: DeleteCategory :exec
 delete from category where id = $1
 `
@@ -32,16 +46,11 @@ func (q *Queries) DeleteCategory(ctx context.Context, id int32) error {
 }
 
 const deleteScoreCategory = `-- name: DeleteScoreCategory :exec
-delete from score_category where score_id = $1 and category_id = $2
+delete from score_category where score_id = $1
 `
 
-type DeleteScoreCategoryParams struct {
-	ScoreID    uuid.UUID `db:"score_id" json:"score_id"`
-	CategoryID int32     `db:"category_id" json:"category_id"`
-}
-
-func (q *Queries) DeleteScoreCategory(ctx context.Context, arg DeleteScoreCategoryParams) error {
-	_, err := q.db.Exec(ctx, deleteScoreCategory, arg.ScoreID, arg.CategoryID)
+func (q *Queries) DeleteScoreCategory(ctx context.Context, scoreID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteScoreCategory, scoreID)
 	return err
 }
 
@@ -67,20 +76,6 @@ func (q *Queries) GetCategories(ctx context.Context) ([]Category, error) {
 		return nil, err
 	}
 	return items, nil
-}
-
-const insertScoreCategory = `-- name: InsertScoreCategory :exec
-insert into score_category (score_id, category_id) values ($1, $2)
-`
-
-type InsertScoreCategoryParams struct {
-	ScoreID    uuid.UUID `db:"score_id" json:"score_id"`
-	CategoryID int32     `db:"category_id" json:"category_id"`
-}
-
-func (q *Queries) InsertScoreCategory(ctx context.Context, arg InsertScoreCategoryParams) error {
-	_, err := q.db.Exec(ctx, insertScoreCategory, arg.ScoreID, arg.CategoryID)
-	return err
 }
 
 const updateCategory = `-- name: UpdateCategory :exec

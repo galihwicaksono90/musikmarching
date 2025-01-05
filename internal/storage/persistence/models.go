@@ -242,6 +242,29 @@ type ScoreCategory struct {
 	CategoryID int32     `db:"category_id" json:"category_id"`
 }
 
+type ScoreContributorView struct {
+	ID            uuid.UUID          `db:"id" json:"id"`
+	Title         string             `db:"title" json:"title"`
+	Description   pgtype.Text        `db:"description" json:"description"`
+	IsVerified    bool               `db:"is_verified" json:"is_verified"`
+	Price         pgtype.Numeric     `db:"price" json:"price"`
+	Difficulty    Difficulty         `db:"difficulty" json:"difficulty"`
+	ContentType   ContentType        `db:"content_type" json:"content_type"`
+	PurchasedBy   pgtype.UUID        `db:"purchased_by" json:"purchased_by"`
+	PdfImageUrls  []string           `db:"pdf_image_urls" json:"pdf_image_urls"`
+	PdfUrl        string             `db:"pdf_url" json:"pdf_url"`
+	AudioUrl      string             `db:"audio_url" json:"audio_url"`
+	CreatedAt     time.Time          `db:"created_at" json:"created_at"`
+	UpdatedAt     pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	DeletedAt     pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
+	Email         string             `db:"email" json:"email"`
+	FullName      string             `db:"full_name" json:"full_name"`
+	ContributorID uuid.UUID          `db:"contributor_id" json:"contributor_id"`
+	Instruments   []int              `db:"instruments" json:"instruments"`
+	Allocations   []int              `db:"allocations" json:"allocations"`
+	Categories    []int              `db:"categories" json:"categories"`
+}
+
 type ScoreInstrument struct {
 	ScoreID      uuid.UUID `db:"score_id" json:"score_id"`
 	InstrumentID int32     `db:"instrument_id" json:"instrument_id"`

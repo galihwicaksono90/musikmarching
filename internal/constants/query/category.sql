@@ -10,8 +10,8 @@ insert into category (name) values ($1) returning *;
 -- name: UpdateCategory :exec
 update category set name = $1 where id = $2;
 
--- name: InsertScoreCategory :exec
+-- name: CreateScoreCategory :exec
 insert into score_category (score_id, category_id) values ($1, $2);
 
 -- name: DeleteScoreCategory :exec
-delete from score_category where score_id = $1 and category_id = $2;
+delete from score_category where score_id = $1; 

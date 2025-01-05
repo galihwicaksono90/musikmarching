@@ -17,6 +17,13 @@ values
   (select id from role where name = 'admin')
 ),
 (
+  '291a7f36-69ab-4be1-ba91-064445349bbd', 
+  'adika.pperdana@gmail.com', 
+  'Admin', 
+  'https://lh3.googleusercontent.com/a/ACg8ocJ5FwcGkTjLYTdbgvTsbKdQzVQaHcytNSMJHKFkBPptwbjRu-c=s96-c',
+  (select id from role where name = 'admin')
+),
+(
   'f45cb09c-7ef3-473a-a8df-0e580ad026d1', 
   'galihwicaksono90@gmail.com', 
   'Galih Wicaksono', 

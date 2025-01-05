@@ -4,6 +4,7 @@ import (
 	"context"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -11,6 +12,9 @@ type CategoryService interface {
 	Create(string) (db.Category, error)
 	GetAll() ([]db.Category, error)
 	Delete(int32) error
+	CreateScoreCategory(db.CreateScoreCategoryParams) error
+	UpsertManyScoreCategory(scoreId uuid.UUID, instruments []int32)
+	DeleteScoreCategoryByScoreId(uuid.UUID) error
 }
 
 type categoryService struct {
@@ -18,19 +22,41 @@ type categoryService struct {
 	store  db.Store
 }
 
+// DeleteScoreCategoryByScoreId implements CategoryService.
+func (c *categoryService) DeleteScoreCategoryByScoreId(id uuid.UUID) error {
+	return c.store.DeleteScoreCategory(context.Background(), id)
+}
+
+// UpsertManyScoreCategory implements CategoryService.
+func (c *categoryService) UpsertManyScoreCategory(scoreId uuid.UUID, categories []int32) {
+	c.DeleteScoreCategoryByScoreId(scoreId)
+
+	for _, x := range categories {
+		c.CreateScoreCategory(db.CreateScoreCategoryParams{
+			ScoreID:    scoreId,
+			CategoryID: x,
+		})
+	}
+}
+
+// CreateScoreCategory implements CategoryService.
+func (c *categoryService) CreateScoreCategory(params db.CreateScoreCategoryParams) error {
+	return c.store.CreateScoreCategory(context.Background(), params)
+}
+
 // Delete implements CategoryService.
-func (i *categoryService) Delete(id int32) error {
-  return i.store.DeleteCategory(context.Background(), id)
+func (c *categoryService) Delete(id int32) error {
+	return c.store.DeleteCategory(context.Background(), id)
 }
 
 // Create implements CategoryService.
-func (i *categoryService) Create(name string) (db.Category, error) {
-	return i.store.CreateCategory(context.Background(), name)
+func (c *categoryService) Create(name string) (db.Category, error) {
+	return c.store.CreateCategory(context.Background(), name)
 }
 
 // GetAll implements CategoryService.
-func (i *categoryService) GetAll() ([]db.Category, error) {
-	return i.store.GetCategories(context.Background())
+func (c *categoryService) GetAll() ([]db.Category, error) {
+	return c.store.GetCategories(context.Background())
 }
 
 func NewCategoryService(

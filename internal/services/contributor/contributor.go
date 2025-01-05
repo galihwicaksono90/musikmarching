@@ -2,6 +2,7 @@ package contributor
 
 import (
 	"context"
+	"galihwicaksono90/musikmarching-be/internal/services/instrument"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 
 	"github.com/google/uuid"
@@ -18,6 +19,7 @@ type ContributorService interface {
 type contributorService struct {
 	logger *logrus.Logger
 	store  db.Store
+	instrument instrument.InstrumentService
 }
 
 // Verify implements ContributorService.
@@ -63,9 +65,11 @@ func (c *contributorService) Create(params db.CreateContributorParams) (uuid.UUI
 func NewContributorService(
 	logger *logrus.Logger,
 	store db.Store,
+	instrument instrument.InstrumentService,
 ) ContributorService {
 	return &contributorService{
 		logger,
 		store,
+		instrument,
 	}
 }

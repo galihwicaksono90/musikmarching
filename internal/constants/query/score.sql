@@ -50,14 +50,10 @@ offset @pageoffset::int
 ;
 
 -- name: GetScoreByContributorID :one
-select s.id, s.title, s.is_verified, s.price, a.name, a.email, s.pdf_url, s.audio_url, s.pdf_image_urls
-from score s
-inner join contributor c on c.id = s.contributor_id
-inner join account a on a.id = s.contributor_id
-where s.id = @score_id
-and s.contributor_id = @contributor_id
+  select * from score_contributor_view scv
+  where scv.id = @score_id
+  and scv.contributor_id = @contributor_id
 ;
-
 
 -- name: GetVerifiedScores :many
 select s.id, s.title, s.price, a.name, a.email
@@ -91,20 +87,29 @@ insert into score (
   pdf_url,
   pdf_image_urls,
   audio_url,
-  contributor_id
+  contributor_id,
+  description,
+  content_type,
+  difficulty
 ) values (
   @title,
   @price,
   @pdf_url,
   @pdf_image_urls,
   @audio_url,
-  @contributor_id
+  @contributor_id,
+  @description,
+  @content_type,
+  @difficulty
 ) returning id;
 
 -- name: UpdateScore :exec
 update score set
   title = COALESCE(sqlc.narg('title'), title),
   price = COALESCE(sqlc.narg('price'), price),
+  description = COALESCE(sqlc.narg('description'), description),
+  difficulty = COALESCE(sqlc.narg('difficulty'), difficulty),
+  content_type = COALESCE(sqlc.narg('content_type'), content_type),
   pdf_url = COALESCE(sqlc.narg('pdf_url'), pdf_url),
   pdf_image_urls = COALESCE(sqlc.narg('pdf_image_urls'), pdf_image_urls),
   audio_url = COALESCE(sqlc.narg('audio_url'), audio_url),
@@ -117,11 +122,5 @@ update score set
   is_verified = true,
   verified_at = now()
 where id = @id
-;
-
--- name: GetScoreByContributorId :many
-select *
-from score
-where contributor_id = @id
 ;
 

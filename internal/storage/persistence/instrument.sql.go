@@ -22,6 +22,20 @@ func (q *Queries) CreateInstrument(ctx context.Context, name string) (Instrument
 	return i, err
 }
 
+const createScoreInstrument = `-- name: CreateScoreInstrument :exec
+insert into score_instrument (score_id, instrument_id) values ($1, $2)
+`
+
+type CreateScoreInstrumentParams struct {
+	ScoreID      uuid.UUID `db:"score_id" json:"score_id"`
+	InstrumentID int32     `db:"instrument_id" json:"instrument_id"`
+}
+
+func (q *Queries) CreateScoreInstrument(ctx context.Context, arg CreateScoreInstrumentParams) error {
+	_, err := q.db.Exec(ctx, createScoreInstrument, arg.ScoreID, arg.InstrumentID)
+	return err
+}
+
 const deleteInstrument = `-- name: DeleteInstrument :exec
 delete from instrument where id = $1
 `
@@ -32,16 +46,11 @@ func (q *Queries) DeleteInstrument(ctx context.Context, id int32) error {
 }
 
 const deleteScoreInstrument = `-- name: DeleteScoreInstrument :exec
-delete from score_instrument where score_id = $1 and instrument_id = $2
+delete from score_instrument where score_id = $1
 `
 
-type DeleteScoreInstrumentParams struct {
-	ScoreID      uuid.UUID `db:"score_id" json:"score_id"`
-	InstrumentID int32     `db:"instrument_id" json:"instrument_id"`
-}
-
-func (q *Queries) DeleteScoreInstrument(ctx context.Context, arg DeleteScoreInstrumentParams) error {
-	_, err := q.db.Exec(ctx, deleteScoreInstrument, arg.ScoreID, arg.InstrumentID)
+func (q *Queries) DeleteScoreInstrument(ctx context.Context, scoreID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteScoreInstrument, scoreID)
 	return err
 }
 
@@ -67,20 +76,6 @@ func (q *Queries) GetInstruments(ctx context.Context) ([]Instrument, error) {
 		return nil, err
 	}
 	return items, nil
-}
-
-const insertScoreInstrument = `-- name: InsertScoreInstrument :exec
-insert into score_instrument (score_id, instrument_id) values ($1, $2)
-`
-
-type InsertScoreInstrumentParams struct {
-	ScoreID      uuid.UUID `db:"score_id" json:"score_id"`
-	InstrumentID int32     `db:"instrument_id" json:"instrument_id"`
-}
-
-func (q *Queries) InsertScoreInstrument(ctx context.Context, arg InsertScoreInstrumentParams) error {
-	_, err := q.db.Exec(ctx, insertScoreInstrument, arg.ScoreID, arg.InstrumentID)
-	return err
 }
 
 const updateInstrument = `-- name: UpdateInstrument :exec

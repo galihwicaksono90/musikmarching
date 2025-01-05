@@ -19,14 +19,20 @@ insert into score (
   pdf_url,
   pdf_image_urls,
   audio_url,
-  contributor_id
+  contributor_id,
+  description,
+  content_type,
+  difficulty
 ) values (
   $1,
   $2,
   $3,
   $4,
   $5,
-  $6
+  $6,
+  $7,
+  $8,
+  $9
 ) returning id
 `
 
@@ -37,6 +43,9 @@ type CreateScoreParams struct {
 	PdfImageUrls  []string       `db:"pdf_image_urls" json:"pdf_image_urls"`
 	AudioUrl      string         `db:"audio_url" json:"audio_url"`
 	ContributorID uuid.UUID      `db:"contributor_id" json:"contributor_id"`
+	Description   pgtype.Text    `db:"description" json:"description"`
+	ContentType   ContentType    `db:"content_type" json:"content_type"`
+	Difficulty    Difficulty     `db:"difficulty" json:"difficulty"`
 }
 
 func (q *Queries) CreateScore(ctx context.Context, arg CreateScoreParams) (uuid.UUID, error) {
@@ -47,6 +56,9 @@ func (q *Queries) CreateScore(ctx context.Context, arg CreateScoreParams) (uuid.
 		arg.PdfImageUrls,
 		arg.AudioUrl,
 		arg.ContributorID,
+		arg.Description,
+		arg.ContentType,
+		arg.Difficulty,
 	)
 	var id uuid.UUID
 	err := row.Scan(&id)
@@ -163,12 +175,9 @@ func (q *Queries) GetPublicScoreById(ctx context.Context, id uuid.UUID) (ScorePu
 }
 
 const getScoreByContributorID = `-- name: GetScoreByContributorID :one
-select s.id, s.title, s.is_verified, s.price, a.name, a.email, s.pdf_url, s.audio_url, s.pdf_image_urls
-from score s
-inner join contributor c on c.id = s.contributor_id
-inner join account a on a.id = s.contributor_id
-where s.id = $1
-and s.contributor_id = $2
+  select id, title, description, is_verified, price, difficulty, content_type, purchased_by, pdf_image_urls, pdf_url, audio_url, created_at, updated_at, deleted_at, email, full_name, contributor_id, instruments, allocations, categories from score_contributor_view scv
+  where scv.id = $1
+  and scv.contributor_id = $2
 `
 
 type GetScoreByContributorIDParams struct {
@@ -176,76 +185,32 @@ type GetScoreByContributorIDParams struct {
 	ContributorID uuid.UUID `db:"contributor_id" json:"contributor_id"`
 }
 
-type GetScoreByContributorIDRow struct {
-	ID           uuid.UUID      `db:"id" json:"id"`
-	Title        string         `db:"title" json:"title"`
-	IsVerified   bool           `db:"is_verified" json:"is_verified"`
-	Price        pgtype.Numeric `db:"price" json:"price"`
-	Name         string         `db:"name" json:"name"`
-	Email        string         `db:"email" json:"email"`
-	PdfUrl       string         `db:"pdf_url" json:"pdf_url"`
-	AudioUrl     string         `db:"audio_url" json:"audio_url"`
-	PdfImageUrls []string       `db:"pdf_image_urls" json:"pdf_image_urls"`
-}
-
-func (q *Queries) GetScoreByContributorID(ctx context.Context, arg GetScoreByContributorIDParams) (GetScoreByContributorIDRow, error) {
+func (q *Queries) GetScoreByContributorID(ctx context.Context, arg GetScoreByContributorIDParams) (ScoreContributorView, error) {
 	row := q.db.QueryRow(ctx, getScoreByContributorID, arg.ScoreID, arg.ContributorID)
-	var i GetScoreByContributorIDRow
+	var i ScoreContributorView
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
+		&i.Description,
 		&i.IsVerified,
 		&i.Price,
-		&i.Name,
-		&i.Email,
+		&i.Difficulty,
+		&i.ContentType,
+		&i.PurchasedBy,
+		&i.PdfImageUrls,
 		&i.PdfUrl,
 		&i.AudioUrl,
-		&i.PdfImageUrls,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.Email,
+		&i.FullName,
+		&i.ContributorID,
+		&i.Instruments,
+		&i.Allocations,
+		&i.Categories,
 	)
 	return i, err
-}
-
-const getScoreByContributorId = `-- name: GetScoreByContributorId :many
-select id, contributor_id, title, description, price, is_verified, content_type, purchased_by, verified_at, difficulty, pdf_url, pdf_image_urls, audio_url, created_at, updated_at, deleted_at
-from score
-where contributor_id = $1
-`
-
-func (q *Queries) GetScoreByContributorId(ctx context.Context, id uuid.UUID) ([]Score, error) {
-	rows, err := q.db.Query(ctx, getScoreByContributorId, id)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Score{}
-	for rows.Next() {
-		var i Score
-		if err := rows.Scan(
-			&i.ID,
-			&i.ContributorID,
-			&i.Title,
-			&i.Description,
-			&i.Price,
-			&i.IsVerified,
-			&i.ContentType,
-			&i.PurchasedBy,
-			&i.VerifiedAt,
-			&i.Difficulty,
-			&i.PdfUrl,
-			&i.PdfImageUrls,
-			&i.AudioUrl,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.DeletedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
 
 const getScoreById = `-- name: GetScoreById :one
@@ -505,26 +470,35 @@ const updateScore = `-- name: UpdateScore :exec
 update score set
   title = COALESCE($1, title),
   price = COALESCE($2, price),
-  pdf_url = COALESCE($3, pdf_url),
-  pdf_image_urls = COALESCE($4, pdf_image_urls),
-  audio_url = COALESCE($5, audio_url),
+  description = COALESCE($3, description),
+  difficulty = COALESCE($4, difficulty),
+  content_type = COALESCE($5, content_type),
+  pdf_url = COALESCE($6, pdf_url),
+  pdf_image_urls = COALESCE($7, pdf_image_urls),
+  audio_url = COALESCE($8, audio_url),
   updated_at = now()
-where id = $6
+where id = $9
 `
 
 type UpdateScoreParams struct {
-	Title        pgtype.Text    `db:"title" json:"title"`
-	Price        pgtype.Numeric `db:"price" json:"price"`
-	PdfUrl       pgtype.Text    `db:"pdf_url" json:"pdf_url"`
-	PdfImageUrls []string       `db:"pdf_image_urls" json:"pdf_image_urls"`
-	AudioUrl     pgtype.Text    `db:"audio_url" json:"audio_url"`
-	ID           uuid.UUID      `db:"id" json:"id"`
+	Title        pgtype.Text     `db:"title" json:"title"`
+	Price        pgtype.Numeric  `db:"price" json:"price"`
+	Description  pgtype.Text     `db:"description" json:"description"`
+	Difficulty   NullDifficulty  `db:"difficulty" json:"difficulty"`
+	ContentType  NullContentType `db:"content_type" json:"content_type"`
+	PdfUrl       pgtype.Text     `db:"pdf_url" json:"pdf_url"`
+	PdfImageUrls []string        `db:"pdf_image_urls" json:"pdf_image_urls"`
+	AudioUrl     pgtype.Text     `db:"audio_url" json:"audio_url"`
+	ID           uuid.UUID       `db:"id" json:"id"`
 }
 
 func (q *Queries) UpdateScore(ctx context.Context, arg UpdateScoreParams) error {
 	_, err := q.db.Exec(ctx, updateScore,
 		arg.Title,
 		arg.Price,
+		arg.Description,
+		arg.Difficulty,
+		arg.ContentType,
 		arg.PdfUrl,
 		arg.PdfImageUrls,
 		arg.AudioUrl,

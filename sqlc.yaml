@@ -35,3 +35,15 @@ sql:
           go_type: 
             type: "string"
             slice: true
+        - column: "score_contributor_view.instruments"
+          go_type: 
+            type: "int"
+            slice: true
+        - column: "score_contributor_view.allocations"
+          go_type: 
+            type: "int"
+            slice: true
+        - column: "score_contributor_view.categories"
+          go_type: 
+            type: "int"
+            slice: true

@@ -7,6 +7,7 @@ import (
 	"galihwicaksono90/musikmarching-be/utils"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -67,7 +68,7 @@ func (h *Handler) HandleCreateContributorScore(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	pdfUrl, images, err := h.file.UploadPdfFile(r, "pdf_file", 1)
+	pdfUrl, images, err := h.file.UploadPdfFile(r, "pdf_file", 2)
 
 	for index, image := range images {
 		h.logger.Infoln(image + strconv.Itoa(index))
@@ -85,21 +86,38 @@ func (h *Handler) HandleCreateContributorScore(w http.ResponseWriter, r *http.Re
 	}
 
 	title := r.FormValue("title")
+	description := r.FormValue("description")
+
+	difficulty := db.Difficulty("")
+	if err := difficulty.Scan(r.FormValue("difficulty")); err != nil {
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "Invalid difficulty value")
+		return
+	}
+	contentType := db.ContentType("")
+	if err := contentType.Scan(r.FormValue("content_type")); err != nil {
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "Invalid content type value")
+		return
+	}
+
 	price, ok := utils.StringToBigInt(r.FormValue("price"))
 	if !ok {
 		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "invalid price")
 		return
 	}
 
-	score, err := h.score.Create(model.CreateScoreDTO{
+	dto := model.CreateScoreDTO{
 		ContributorID: user.ID,
 		Title:         title,
+		Description:   description,
 		Price:         price,
 		PdfUrl:        pdfUrl,
 		PdfImageUrls:  images,
 		AudioUrl:      audioUrl,
-	})
+		Difficulty:    difficulty,
+		ContentType:   contentType,
+	}
 
+	scoreId, err := h.score.Create(dto)
 	if err != nil {
 		h.handleResponse(
 			w,
@@ -110,7 +128,43 @@ func (h *Handler) HandleCreateContributorScore(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	h.handleResponse(w, http.StatusCreated, http.StatusText(http.StatusCreated), score)
+	instruments := strings.Split(r.FormValue("instruments"), ",")
+	for _, i := range instruments {
+		serial, err := strconv.Atoi(i)
+		if err != nil {
+			continue
+		}
+		h.instrument.CreateScoreInstrument(db.CreateScoreInstrumentParams{
+			ScoreID:      scoreId,
+			InstrumentID: int32(serial),
+		})
+	}
+
+	categories := strings.Split(r.FormValue("categories"), ",")
+	for _, c := range categories {
+		serial, err := strconv.Atoi(c)
+		if err != nil {
+			continue
+		}
+		h.category.CreateScoreCategory(db.CreateScoreCategoryParams{
+			ScoreID:    scoreId,
+			CategoryID: int32(serial),
+		})
+	}
+
+	allocations := strings.Split(r.FormValue("allocations"), ",")
+	for _, a := range allocations {
+		serial, err := strconv.Atoi(a)
+		if err != nil {
+			continue
+		}
+		h.allocation.CreateScoreAllocation(db.CreateScoreAllocationParams{
+			ScoreID:      scoreId,
+			AllocationID: int32(serial),
+		})
+	}
+
+	h.handleResponse(w, http.StatusCreated, http.StatusText(http.StatusCreated), scoreId)
 }
 
 func (h *Handler) HandleUpdateContributorScore(w http.ResponseWriter, r *http.Request) {
@@ -133,16 +187,33 @@ func (h *Handler) HandleUpdateContributorScore(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	difficulty := db.NullDifficulty{}
+	if err := difficulty.Scan(r.FormValue("difficulty")); err != nil {
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "Invalid difficulty value")
+		return
+	}
+	contentType := db.NullContentType{}
+	if err := contentType.Scan(r.FormValue("content_type")); err != nil {
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "Invalid content type value")
+		return
+	}
+
 	params := model.UpdateScoreDTO{
 		ContributorID: user.ID,
 		Title: pgtype.Text{
 			String: r.FormValue("title"),
 			Valid:  true,
 		},
+		Description: pgtype.Text{
+			String: r.FormValue("description"),
+			Valid:  true,
+		},
 		Price: pgtype.Numeric{
 			Int:   price,
 			Valid: true,
 		},
+		Difficulty:  difficulty,
+		ContentType: contentType,
 	}
 
 	pdfUrl, images, err := h.file.UploadPdfFile(r, "pdf_file", 2)
@@ -166,6 +237,41 @@ func (h *Handler) HandleUpdateContributorScore(w http.ResponseWriter, r *http.Re
 		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), false)
 		return
 	}
+
+	instruments := strings.Split(r.FormValue("instruments"), ",")
+	instrumentsIDs := make([]int32, len(instruments))
+	for _, i := range instruments {
+		serial, err := strconv.Atoi(i)
+		if err != nil {
+			continue
+		}
+		instrumentsIDs = append(instrumentsIDs, int32(serial))
+	}
+	h.instrument.UpsertManyScoreInstrument(scoreID, instrumentsIDs)
+
+	categories := strings.Split(r.FormValue("categories"), ",")
+	categoryIDs := make([]int32, len(categories))
+	for _, i := range categories {
+		serial, err := strconv.Atoi(i)
+		if err != nil {
+			continue
+		}
+		categoryIDs = append(categoryIDs, int32(serial))
+	}
+	h.category.UpsertManyScoreCategory(scoreID, categoryIDs)
+
+	allocations := strings.Split(r.FormValue("allocations"), ",")
+	allocationIDs := make([]int32, len(allocations))
+	for _, i := range allocations {
+		serial, err := strconv.Atoi(i)
+		if err != nil {
+			continue
+		}
+		allocationIDs = append(allocationIDs, int32(serial))
+	}
+	h.allocation.UpsertManyScoreAllocation(scoreID, allocationIDs)
+
+
 
 	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), user)
 }

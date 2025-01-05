@@ -18,12 +18,15 @@ type Querier interface {
 	CreateInstrument(ctx context.Context, name string) (Instrument, error)
 	CreatePurchase(ctx context.Context, arg CreatePurchaseParams) (uuid.UUID, error)
 	CreateScore(ctx context.Context, arg CreateScoreParams) (uuid.UUID, error)
+	CreateScoreAllocation(ctx context.Context, arg CreateScoreAllocationParams) error
+	CreateScoreCategory(ctx context.Context, arg CreateScoreCategoryParams) error
+	CreateScoreInstrument(ctx context.Context, arg CreateScoreInstrumentParams) error
 	DeleteAllocation(ctx context.Context, id int32) error
 	DeleteCategory(ctx context.Context, id int32) error
 	DeleteInstrument(ctx context.Context, id int32) error
-	DeleteScoreAllocation(ctx context.Context, arg DeleteScoreAllocationParams) error
-	DeleteScoreCategory(ctx context.Context, arg DeleteScoreCategoryParams) error
-	DeleteScoreInstrument(ctx context.Context, arg DeleteScoreInstrumentParams) error
+	DeleteScoreAllocation(ctx context.Context, scoreID uuid.UUID) error
+	DeleteScoreCategory(ctx context.Context, scoreID uuid.UUID) error
+	DeleteScoreInstrument(ctx context.Context, scoreID uuid.UUID) error
 	GetAccountByEmail(ctx context.Context, email string) (GetAccountByEmailRow, error)
 	GetAccountById(ctx context.Context, id uuid.UUID) (GetAccountByIdRow, error)
 	GetAccounts(ctx context.Context) ([]GetAccountsRow, error)
@@ -39,8 +42,7 @@ type Querier interface {
 	GetPurchaseById(ctx context.Context, arg GetPurchaseByIdParams) (Purchase, error)
 	GetPurchasedScoreById(ctx context.Context, scoreID uuid.UUID) (GetPurchasedScoreByIdRow, error)
 	GetPurchasesByAccountId(ctx context.Context, accountID uuid.UUID) ([]Purchase, error)
-	GetScoreByContributorID(ctx context.Context, arg GetScoreByContributorIDParams) (GetScoreByContributorIDRow, error)
-	GetScoreByContributorId(ctx context.Context, id uuid.UUID) ([]Score, error)
+	GetScoreByContributorID(ctx context.Context, arg GetScoreByContributorIDParams) (ScoreContributorView, error)
 	GetScoreById(ctx context.Context, id uuid.UUID) (Score, error)
 	GetScores(ctx context.Context, arg GetScoresParams) ([]GetScoresRow, error)
 	GetScoresByContributorID(ctx context.Context, arg GetScoresByContributorIDParams) ([]GetScoresByContributorIDRow, error)
@@ -48,9 +50,6 @@ type Querier interface {
 	GetUnverifiedContributors(ctx context.Context) ([]Contributor, error)
 	GetVerifiedScoreById(ctx context.Context, id uuid.UUID) (GetVerifiedScoreByIdRow, error)
 	GetVerifiedScores(ctx context.Context, arg GetVerifiedScoresParams) ([]GetVerifiedScoresRow, error)
-	InsertScoreAllocation(ctx context.Context, arg InsertScoreAllocationParams) error
-	InsertScoreCategory(ctx context.Context, arg InsertScoreCategoryParams) error
-	InsertScoreInstrument(ctx context.Context, arg InsertScoreInstrumentParams) error
 	UpdateAccount(ctx context.Context, arg UpdateAccountParams) (uuid.UUID, error)
 	UpdateAccountRole(ctx context.Context, arg UpdateAccountRoleParams) (uuid.UUID, error)
 	UpdateAllocation(ctx context.Context, arg UpdateAllocationParams) error

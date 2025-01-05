@@ -22,6 +22,20 @@ func (q *Queries) CreateAllocation(ctx context.Context, name string) (Allocation
 	return i, err
 }
 
+const createScoreAllocation = `-- name: CreateScoreAllocation :exec
+insert into score_allocation (score_id, allocation_id) values ($1, $2)
+`
+
+type CreateScoreAllocationParams struct {
+	ScoreID      uuid.UUID `db:"score_id" json:"score_id"`
+	AllocationID int32     `db:"allocation_id" json:"allocation_id"`
+}
+
+func (q *Queries) CreateScoreAllocation(ctx context.Context, arg CreateScoreAllocationParams) error {
+	_, err := q.db.Exec(ctx, createScoreAllocation, arg.ScoreID, arg.AllocationID)
+	return err
+}
+
 const deleteAllocation = `-- name: DeleteAllocation :exec
 delete from allocation where id = $1
 `
@@ -32,16 +46,11 @@ func (q *Queries) DeleteAllocation(ctx context.Context, id int32) error {
 }
 
 const deleteScoreAllocation = `-- name: DeleteScoreAllocation :exec
-delete from score_allocation where score_id = $1 and allocation_id = $2
+delete from score_allocation where score_id = $1
 `
 
-type DeleteScoreAllocationParams struct {
-	ScoreID      uuid.UUID `db:"score_id" json:"score_id"`
-	AllocationID int32     `db:"allocation_id" json:"allocation_id"`
-}
-
-func (q *Queries) DeleteScoreAllocation(ctx context.Context, arg DeleteScoreAllocationParams) error {
-	_, err := q.db.Exec(ctx, deleteScoreAllocation, arg.ScoreID, arg.AllocationID)
+func (q *Queries) DeleteScoreAllocation(ctx context.Context, scoreID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteScoreAllocation, scoreID)
 	return err
 }
 
@@ -67,20 +76,6 @@ func (q *Queries) GetAllocations(ctx context.Context) ([]Allocation, error) {
 		return nil, err
 	}
 	return items, nil
-}
-
-const insertScoreAllocation = `-- name: InsertScoreAllocation :exec
-insert into score_allocation (score_id, allocation_id) values ($1, $2)
-`
-
-type InsertScoreAllocationParams struct {
-	ScoreID      uuid.UUID `db:"score_id" json:"score_id"`
-	AllocationID int32     `db:"allocation_id" json:"allocation_id"`
-}
-
-func (q *Queries) InsertScoreAllocation(ctx context.Context, arg InsertScoreAllocationParams) error {
-	_, err := q.db.Exec(ctx, insertScoreAllocation, arg.ScoreID, arg.AllocationID)
-	return err
 }
 
 const updateAllocation = `-- name: UpdateAllocation :exec

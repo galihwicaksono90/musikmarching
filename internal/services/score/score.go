@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"galihwicaksono90/musikmarching-be/internal/constants/model"
+	// "galihwicaksono90/musikmarching-be/internal/services/instrument"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 	"galihwicaksono90/musikmarching-be/utils"
 	"net/url"
@@ -24,7 +25,7 @@ type ScoreService interface {
 	GetVerifiedById(id uuid.UUID) (db.GetVerifiedScoreByIdRow, error)
 	GetById(id uuid.UUID) (db.Score, error)
 	GetManyByContirbutorID(db.GetScoresByContributorIDParams) ([]db.GetScoresByContributorIDRow, error)
-	GetOneByContributorID(db.GetScoreByContributorIDParams) (db.GetScoreByContributorIDRow, error)
+	GetOneByContributorID(db.GetScoreByContributorIDParams) (db.ScoreContributorView, error)
 	GetAll() ([]db.Score, error)
 	Verify(id uuid.UUID) error
 }
@@ -73,7 +74,7 @@ func (s *scoreService) GetAllPublic(urlValues url.Values) ([]db.ScorePublicView,
 }
 
 // GetOneByContributorID implements ScoreService.
-func (s *scoreService) GetOneByContributorID(params db.GetScoreByContributorIDParams) (db.GetScoreByContributorIDRow, error) {
+func (s *scoreService) GetOneByContributorID(params db.GetScoreByContributorIDParams) (db.ScoreContributorView, error) {
 	return s.store.GetScoreByContributorID(context.Background(), params)
 }
 
@@ -133,6 +134,10 @@ func (s *scoreService) Create(params model.CreateScoreDTO) (uuid.UUID, error) {
 
 	return s.store.CreateScore(ctx, db.CreateScoreParams{
 		Title: params.Title,
+		Description: pgtype.Text{
+			String: params.Description,
+			Valid:  true,
+		},
 		Price: pgtype.Numeric{
 			Int:   params.Price,
 			Valid: true,
@@ -141,6 +146,8 @@ func (s *scoreService) Create(params model.CreateScoreDTO) (uuid.UUID, error) {
 		PdfImageUrls:  params.PdfImageUrls,
 		AudioUrl:      params.AudioUrl,
 		ContributorID: params.ContributorID,
+		Difficulty:    params.Difficulty,
+		ContentType:   params.ContentType,
 	})
 }
 
@@ -160,6 +167,9 @@ func (s *scoreService) Update(scoreId uuid.UUID, params model.UpdateScoreDTO) er
 	if err := s.store.UpdateScore(ctx, db.UpdateScoreParams{
 		Title:        params.Title,
 		Price:        params.Price,
+		Description:  params.Description,
+		Difficulty:   params.Difficulty,
+		ContentType:  params.ContentType,
 		PdfUrl:       params.PdfUrl,
 		PdfImageUrls: params.PdfImageUrls,
 		AudioUrl:     params.AudioUrl,
