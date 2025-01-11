@@ -26,6 +26,7 @@ CREATE TABLE Score (
 alter table score
 add CONSTRAINT fk_score_contributor 
 FOREIGN KEY(contributor_id) REFERENCES contributor(id) deferrable initially deferred
+;
 
 -- +goose StatementEnd
 

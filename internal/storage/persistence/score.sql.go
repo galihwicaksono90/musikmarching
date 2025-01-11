@@ -175,9 +175,10 @@ func (q *Queries) GetPublicScoreById(ctx context.Context, id uuid.UUID) (ScorePu
 }
 
 const getScoreByContributorID = `-- name: GetScoreByContributorID :one
-  select id, title, description, is_verified, price, difficulty, content_type, purchased_by, pdf_image_urls, pdf_url, audio_url, created_at, updated_at, deleted_at, email, full_name, contributor_id, instruments, allocations, categories from score_contributor_view scv
-  where scv.id = $1
-  and scv.contributor_id = $2
+select id, title, description, is_verified, price, difficulty, content_type, purchased_by, pdf_image_urls, pdf_url, audio_url, created_at, updated_at, deleted_at, email, full_name, contributor_id, instruments, allocations, categories from score_contributor_view scv
+where scv.id = $1
+and scv.contributor_id = $2
+limit 1
 `
 
 type GetScoreByContributorIDParams struct {
@@ -295,47 +296,48 @@ func (q *Queries) GetScores(ctx context.Context, arg GetScoresParams) ([]GetScor
 }
 
 const getScoresByContributorID = `-- name: GetScoresByContributorID :many
-select s.id, s.title, s.is_verified, s.price, a.name, a.email
-from score s
-inner join contributor c on c.id = s.contributor_id
-inner join account a on a.id = s.contributor_id
-where s.contributor_id = $1
-order by s.is_verified desc, s.created_at desc
+select id, title, description, is_verified, price, difficulty, content_type, purchased_by, pdf_image_urls, pdf_url, audio_url, created_at, updated_at, deleted_at, email, full_name, contributor_id, instruments, allocations, categories from score_contributor_view scv
+where scv.contributor_id = $1
 limit $3::int
 offset $2::int
 `
 
 type GetScoresByContributorIDParams struct {
-	ID         uuid.UUID `db:"id" json:"id"`
-	Pageoffset int32     `db:"pageoffset" json:"pageoffset"`
-	Pagelimit  int32     `db:"pagelimit" json:"pagelimit"`
+	ContributorID uuid.UUID `db:"contributor_id" json:"contributor_id"`
+	Pageoffset    int32     `db:"pageoffset" json:"pageoffset"`
+	Pagelimit     int32     `db:"pagelimit" json:"pagelimit"`
 }
 
-type GetScoresByContributorIDRow struct {
-	ID         uuid.UUID      `db:"id" json:"id"`
-	Title      string         `db:"title" json:"title"`
-	IsVerified bool           `db:"is_verified" json:"is_verified"`
-	Price      pgtype.Numeric `db:"price" json:"price"`
-	Name       string         `db:"name" json:"name"`
-	Email      string         `db:"email" json:"email"`
-}
-
-func (q *Queries) GetScoresByContributorID(ctx context.Context, arg GetScoresByContributorIDParams) ([]GetScoresByContributorIDRow, error) {
-	rows, err := q.db.Query(ctx, getScoresByContributorID, arg.ID, arg.Pageoffset, arg.Pagelimit)
+func (q *Queries) GetScoresByContributorID(ctx context.Context, arg GetScoresByContributorIDParams) ([]ScoreContributorView, error) {
+	rows, err := q.db.Query(ctx, getScoresByContributorID, arg.ContributorID, arg.Pageoffset, arg.Pagelimit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []GetScoresByContributorIDRow{}
+	items := []ScoreContributorView{}
 	for rows.Next() {
-		var i GetScoresByContributorIDRow
+		var i ScoreContributorView
 		if err := rows.Scan(
 			&i.ID,
 			&i.Title,
+			&i.Description,
 			&i.IsVerified,
 			&i.Price,
-			&i.Name,
+			&i.Difficulty,
+			&i.ContentType,
+			&i.PurchasedBy,
+			&i.PdfImageUrls,
+			&i.PdfUrl,
+			&i.AudioUrl,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
 			&i.Email,
+			&i.FullName,
+			&i.ContributorID,
+			&i.Instruments,
+			&i.Allocations,
+			&i.Categories,
 		); err != nil {
 			return nil, err
 		}

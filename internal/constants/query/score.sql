@@ -39,20 +39,17 @@ where deleted_at is null
 ;
 
 -- name: GetScoresByContributorID :many
-select s.id, s.title, s.is_verified, s.price, a.name, a.email
-from score s
-inner join contributor c on c.id = s.contributor_id
-inner join account a on a.id = s.contributor_id
-where s.contributor_id = @id
-order by s.is_verified desc, s.created_at desc
+select * from score_contributor_view scv
+where scv.contributor_id = @contributor_id
 limit @pagelimit::int
 offset @pageoffset::int
 ;
 
 -- name: GetScoreByContributorID :one
-  select * from score_contributor_view scv
-  where scv.id = @score_id
-  and scv.contributor_id = @contributor_id
+select * from score_contributor_view scv
+where scv.id = @score_id
+and scv.contributor_id = @contributor_id
+limit 1
 ;
 
 -- name: GetVerifiedScores :many

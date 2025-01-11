@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	// "encoding/json"
 	"encoding/json"
 	"galihwicaksono90/musikmarching-be/internal/constants/model"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
@@ -20,9 +21,9 @@ func (h *Handler) HandleGetContributorScores(w http.ResponseWriter, r *http.Requ
 	limit, offset := utils.ParsePagination(r.URL.Query())
 
 	scores, err := h.score.GetManyByContirbutorID(db.GetScoresByContributorIDParams{
-		ID:         user.ID,
-		Pageoffset: offset,
-		Pagelimit:  limit,
+		ContributorID: user.ID,
+		Pageoffset:    offset,
+		Pagelimit:     limit,
 	})
 
 	if err != nil {
@@ -271,8 +272,6 @@ func (h *Handler) HandleUpdateContributorScore(w http.ResponseWriter, r *http.Re
 	}
 	h.allocation.UpsertManyScoreAllocation(scoreID, allocationIDs)
 
-
-
 	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), user)
 }
 
@@ -286,7 +285,9 @@ func (h *Handler) HandleCreateContributor(w http.ResponseWriter, r *http.Request
 
 	if user.RoleName == db.RolenameContributor {
 		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "This user is already a contributor")
+		return
 	}
+
 
 	if user.RoleName != db.RolenameUser {
 		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "This user is not allowed")
@@ -294,7 +295,7 @@ func (h *Handler) HandleCreateContributor(w http.ResponseWriter, r *http.Request
 
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
-		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "Failed to decode input body")
 		return
 	}
 
@@ -303,10 +304,25 @@ func (h *Handler) HandleCreateContributor(w http.ResponseWriter, r *http.Request
 		FullName: input.FullName,
 	}
 
-	if _, err = h.contributor.Create(params); err != nil {
-		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
+	_, err = h.contributor.Create(params) 
+	if err != nil {
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "Failed to create contributor")
 		return
 	}
 
-	h.handleResponse(w, http.StatusCreated, http.StatusText(http.StatusCreated), input)
+	u := &model.SessionUser{
+		ID:         user.ID,
+		Email:      user.Email,
+		Name:       user.Name,
+		RoleName:   db.RolenameContributor,
+		PictureUrl: user.PictureUrl,
+	}
+
+	if err := h.auth.StoreUserSession(w, r, u); err != nil {
+		h.logger.Println("err", err)
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "Failed to store user session")
+		return
+	}
+
+	h.handleResponse(w, http.StatusCreated, http.StatusText(http.StatusCreated), true)
 }

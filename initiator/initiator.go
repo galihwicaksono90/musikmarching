@@ -20,7 +20,6 @@ import (
 	"galihwicaksono90/musikmarching-be/pkg/email"
 	fileStorage "galihwicaksono90/musikmarching-be/pkg/file-storage"
 	"galihwicaksono90/musikmarching-be/pkg/logger"
-	"galihwicaksono90/musikmarching-be/pkg/middlewares"
 	"galihwicaksono90/musikmarching-be/pkg/validator"
 	"log"
 	"net/http"
@@ -57,7 +56,7 @@ func Init() {
 		CookiesKey: config.SessionSecret,
 		MaxAge:     60 * 60 * 24 * 4,
 		HttpOnly:   true,
-		Secure:     true,
+		Secure:     false,
 		Domain:     config.SessionDomain,
 	})
 
@@ -91,14 +90,11 @@ func Init() {
 
 	// routings
 	router := mux.NewRouter()
-	router.Use(middlewares.SessionMiddleware)
 	routings.AuthRouting(handler, router)
-
+	routings.Routings(handler, router)
 	router.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode("pong")
 	})
-
-	routings.Routings(handler, router)
 
 	port := fmt.Sprintf(":%s", config.Port)
 

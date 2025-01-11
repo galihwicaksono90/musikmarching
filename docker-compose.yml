@@ -22,3 +22,4 @@ services:
     volumes:
       - ~/postgres:/var/lib/postgresql/data
     restart: unless-stopped
+

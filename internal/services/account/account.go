@@ -12,6 +12,7 @@ import (
 )
 
 type AccountService interface {
+	GetUserByID(uuid.UUID) (*model.Account, error)
 	GetUserByEmail(string) (*model.Account, error)
 	UpsertAccount(goth.User) (*model.SessionUser, error)
 	UpdateRole(uuid.UUID, db.Rolename) error
@@ -22,9 +23,25 @@ type accountService struct {
 	store  db.Store
 }
 
+// GetUserByID implements AccountService.
+func (s *accountService) GetUserByID(id uuid.UUID) (*model.Account, error) {
+	account, err := s.store.GetAccountById(context.Background(), id)
+
+	if err != nil {
+		s.logger.Error(err)
+		return &model.Account{}, err
+	}
+	return &model.Account{
+		ID:       account.ID,
+		Email:    account.Email,
+		Name:     account.Name,
+		RoleName: account.RoleName,
+	}, nil
+}
+
 // UpdateRole implements AccountService.
 func (s *accountService) UpdateRole(id uuid.UUID, role db.Rolename) error {
-	_, err :=  s.store.UpdateAccountRole(context.Background(), db.UpdateAccountRoleParams{
+	_, err := s.store.UpdateAccountRole(context.Background(), db.UpdateAccountRoleParams{
 		ID:       id,
 		Rolename: role,
 	})

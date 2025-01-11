@@ -9,6 +9,7 @@ import (
 
 func Routings(handler *handlers.Handler, baseRouter *mux.Router) {
 	router := baseRouter.PathPrefix("/api/v1").Subrouter()
+	router.Use(middlewares.SessionMiddleware)
 
 	authRouter := router.PathPrefix("/auth").Subrouter()
 	authRouter.HandleFunc("/me", handler.HandleMe).Methods("GET")

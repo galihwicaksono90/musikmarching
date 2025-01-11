@@ -24,7 +24,7 @@ type ScoreService interface {
 	GetManyVerified(db.GetVerifiedScoresParams) (*[]db.GetVerifiedScoresRow, error)
 	GetVerifiedById(id uuid.UUID) (db.GetVerifiedScoreByIdRow, error)
 	GetById(id uuid.UUID) (db.Score, error)
-	GetManyByContirbutorID(db.GetScoresByContributorIDParams) ([]db.GetScoresByContributorIDRow, error)
+	GetManyByContirbutorID(db.GetScoresByContributorIDParams) ([]db.ScoreContributorView, error)
 	GetOneByContributorID(db.GetScoreByContributorIDParams) (db.ScoreContributorView, error)
 	GetAll() ([]db.Score, error)
 	Verify(id uuid.UUID) error
@@ -79,7 +79,7 @@ func (s *scoreService) GetOneByContributorID(params db.GetScoreByContributorIDPa
 }
 
 // GetByContirbutorID implements ScoreService.
-func (s *scoreService) GetManyByContirbutorID(params db.GetScoresByContributorIDParams) ([]db.GetScoresByContributorIDRow, error) {
+func (s *scoreService) GetManyByContirbutorID(params db.GetScoresByContributorIDParams) ([]db.ScoreContributorView, error) {
 	return s.store.GetScoresByContributorID(context.Background(), params)
 }
 

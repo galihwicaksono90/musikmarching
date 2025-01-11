@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"galihwicaksono90/musikmarching-be/internal/constants/model"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
+
+	// db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 	"galihwicaksono90/musikmarching-be/pkg/middlewares"
 	"net/http"
 	"reflect"
@@ -63,14 +65,26 @@ func (h *Handler) HandleAuthCallbackFunction(w http.ResponseWriter, r *http.Requ
 
 func (h *Handler) HandleMe(w http.ResponseWriter, r *http.Request) {
 	u := h.getSessionUser(r)
-	h.logger.Println(u)
+
 	if u == nil {
 		h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), u)
 		return
 	}
 
-	if u.RoleName != db.RolenameContributor {
-		h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), u)
+	account, err := h.account.GetUserByID(u.ID)
+	if err != nil {
+		h.handleResponse(w, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized), nil)
+		return
+	}
+
+	user := make(map[string]interface{})
+	user["id"] = account.ID
+	user["name"] = account.Name
+	user["email"] = account.Email
+	user["role_name"] = account.RoleName
+
+	if account.RoleName != db.RolenameContributor {
+		h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), user)
 		return
 	}
 
@@ -80,11 +94,7 @@ func (h *Handler) HandleMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := make(map[string]interface{})
-	user["id"] = u.ID
-	user["email"] = u.Email
 	user["name"] = c.FullName
-	user["role_name"] = u.RoleName
 	user["is_verified"] = c.IsVerified
 	user["verified_at"] = c.VerifiedAt
 
@@ -115,4 +125,4 @@ func structToMap(obj interface{}) map[string]interface{} {
 		result[typ.Field(i).Name] = field.Interface()
 	}
 	return result
-}
+} 

@@ -84,10 +84,7 @@ func (h *Handler) HandleUploadPaymentProof(w http.ResponseWriter, r *http.Reques
 	}
 
 	paymentProofUrl, err := h.file.UploadPaymentProof(r, "image_file")
-	h.logger.Infoln("-------")
-	h.logger.Infoln(paymentProofUrl)
-	h.logger.Infoln(err)
-	h.logger.Infoln("-------")
+
 	if err != nil {
 		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
 		return

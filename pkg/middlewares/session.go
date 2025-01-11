@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"galihwicaksono90/musikmarching-be/internal/constants/model"
-	"galihwicaksono90/musikmarching-be/internal/services/auth"
 
 	"net/http"
 
 	"github.com/markbates/goth/gothic"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -31,10 +31,15 @@ func getSessionUser(r *http.Request) *model.SessionUser {
 
 func SessionMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sessionName := viper.GetString("SESSION_NAME")
+
 		ctx := context.WithValue(r.Context(), UserContextName, nil)
 		req := r.WithContext(ctx)
 
-		session, err := gothic.Store.Get(r, auth.SessionName)
+		session, err := gothic.Store.Get(r, sessionName)
+		fmt.Println("============================================")
+		fmt.Println(session.Values["user"])
+		fmt.Println("============================================")
 
 		if err != nil {
 			fmt.Errorf("session error: %s", err)

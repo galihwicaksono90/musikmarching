@@ -17,8 +17,8 @@ type ContributorService interface {
 }
 
 type contributorService struct {
-	logger *logrus.Logger
-	store  db.Store
+	logger     *logrus.Logger
+	store      db.Store
 	instrument instrument.InstrumentService
 }
 
@@ -43,21 +43,16 @@ func (c *contributorService) GetByID(id uuid.UUID) (db.ContributorAccountScore, 
 // Create implements ContributorService.
 func (c *contributorService) Create(params db.CreateContributorParams) (uuid.UUID, error) {
 	ctx := context.Background()
+	contrib, _ := c.store.GetContributorById(ctx, params.ID)
 
-	_, err := c.store.CreateContributor(ctx, params)
-
-	if err != nil {
-		return uuid.UUID{}, err
+	if contrib.Email == "" {
+		c.store.CreateContributor(ctx, params)
 	}
 
-	_, err = c.store.UpdateAccountRole(ctx, db.UpdateAccountRoleParams{
+	c.store.UpdateAccountRole(ctx, db.UpdateAccountRoleParams{
 		Rolename: db.RolenameContributor,
 		ID:       params.ID,
 	})
-
-	if err != nil {
-		return uuid.UUID{}, err
-	}
 
 	return params.ID, nil
 }

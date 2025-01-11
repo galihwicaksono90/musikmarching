@@ -16,8 +16,8 @@ import (
 
 type AuthService interface {
 	GetSessionUser(r *http.Request) (*model.SessionUser, error)
-	StoreUserSession(w http.ResponseWriter, r *http.Request, user *model.SessionUser) error
 	RemoveUserSession(w http.ResponseWriter, r *http.Request)
+	StoreUserSession(w http.ResponseWriter, r *http.Request, user *model.SessionUser) error
 }
 
 type authService struct {
@@ -26,7 +26,8 @@ type authService struct {
 
 // GetSessionUser implements AuthService.
 func (a *authService) GetSessionUser(r *http.Request) (*model.SessionUser, error) {
-	session, err := gothic.Store.Get(r, SessionName)
+	sessionName := viper.GetString("SESSION_NAME")
+	session, err := gothic.Store.Get(r, sessionName)
 	if err != nil {
 		a.logger.Println(err)
 		return nil, err
@@ -51,7 +52,8 @@ func (a *authService) GetSessionUser(r *http.Request) (*model.SessionUser, error
 
 // RemoveUserSession implements AuthService.
 func (a *authService) RemoveUserSession(w http.ResponseWriter, r *http.Request) {
-	session, err := gothic.Store.Get(r, SessionName)
+	sessionName := viper.GetString("SESSION_NAME")
+	session, err := gothic.Store.Get(r, sessionName)
 	if err != nil {
 		a.logger.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -67,15 +69,17 @@ func (a *authService) RemoveUserSession(w http.ResponseWriter, r *http.Request) 
 
 // StoreUserSession implements AuthService.
 func (a *authService) StoreUserSession(w http.ResponseWriter, r *http.Request, user *model.SessionUser) error {
-	session, _ := gothic.Store.Get(r, SessionName)
-
-	a.logger.Println(session)
+	sessionName := viper.GetString("SESSION_NAME")
+	session, _ := gothic.Store.Get(r, sessionName)
 
 	session.Values["user"] = user
 
-	err := session.Save(r, w)
-	if err != nil {
-		a.logger.Println(err)
+	a.logger.Println("============================================")
+	a.logger.Println(session.Values["user"])
+	a.logger.Println(session.ID)
+	a.logger.Println("============================================")
+
+	if err := session.Save(r, w); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return err
 	}
