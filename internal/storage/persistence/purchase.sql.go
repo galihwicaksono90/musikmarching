@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -38,18 +39,36 @@ func (q *Queries) CreatePurchase(ctx context.Context, arg CreatePurchaseParams) 
 }
 
 const getAllPurchases = `-- name: GetAllPurchases :many
-select id, invoice_serial, account_id, score_id, price, title, payment_proof_url, paid_at, is_verified, verified_at, created_at, updated_at, deleted_at from purchase
+select p.id, p.invoice_serial, p.account_id, p.score_id, p.price, p.title, p.payment_proof_url, p.paid_at, p.is_verified, p.verified_at, p.created_at, p.updated_at, p.deleted_at, c.full_name from purchase p
+join contributor c on c.id = account_id
 `
 
-func (q *Queries) GetAllPurchases(ctx context.Context) ([]Purchase, error) {
+type GetAllPurchasesRow struct {
+	ID              uuid.UUID          `db:"id" json:"id"`
+	InvoiceSerial   int32              `db:"invoice_serial" json:"invoice_serial"`
+	AccountID       uuid.UUID          `db:"account_id" json:"account_id"`
+	ScoreID         uuid.UUID          `db:"score_id" json:"score_id"`
+	Price           pgtype.Numeric     `db:"price" json:"price"`
+	Title           string             `db:"title" json:"title"`
+	PaymentProofUrl pgtype.Text        `db:"payment_proof_url" json:"payment_proof_url"`
+	PaidAt          pgtype.Timestamptz `db:"paid_at" json:"paid_at"`
+	IsVerified      bool               `db:"is_verified" json:"is_verified"`
+	VerifiedAt      pgtype.Timestamptz `db:"verified_at" json:"verified_at"`
+	CreatedAt       time.Time          `db:"created_at" json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	DeletedAt       pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
+	FullName        string             `db:"full_name" json:"full_name"`
+}
+
+func (q *Queries) GetAllPurchases(ctx context.Context) ([]GetAllPurchasesRow, error) {
 	rows, err := q.db.Query(ctx, getAllPurchases)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Purchase{}
+	items := []GetAllPurchasesRow{}
 	for rows.Next() {
-		var i Purchase
+		var i GetAllPurchasesRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.InvoiceSerial,
@@ -64,6 +83,7 @@ func (q *Queries) GetAllPurchases(ctx context.Context) ([]Purchase, error) {
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.FullName,
 		); err != nil {
 			return nil, err
 		}

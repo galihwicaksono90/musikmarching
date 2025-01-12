@@ -173,15 +173,15 @@ type Contributor struct {
 }
 
 type ContributorAccountScore struct {
-	ID         uuid.UUID          `db:"id" json:"id"`
-	IsVerified pgtype.Bool        `db:"is_verified" json:"is_verified"`
-	FullName   string             `db:"full_name" json:"full_name"`
-	VerifiedAt pgtype.Timestamptz `db:"verified_at" json:"verified_at"`
-	CreatedAt  time.Time          `db:"created_at" json:"created_at"`
-	UpdatedAt  pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
-	DeletedAt  pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
-	Email      string             `db:"email" json:"email"`
-	Scores     []Score            `db:"scores" json:"scores"`
+	ID         uuid.UUID              `db:"id" json:"id"`
+	IsVerified pgtype.Bool            `db:"is_verified" json:"is_verified"`
+	FullName   string                 `db:"full_name" json:"full_name"`
+	VerifiedAt pgtype.Timestamptz     `db:"verified_at" json:"verified_at"`
+	CreatedAt  time.Time              `db:"created_at" json:"created_at"`
+	UpdatedAt  pgtype.Timestamptz     `db:"updated_at" json:"updated_at"`
+	DeletedAt  pgtype.Timestamptz     `db:"deleted_at" json:"deleted_at"`
+	Email      string                 `db:"email" json:"email"`
+	Scores     []ScoreContributorView `db:"scores" json:"scores"`
 }
 
 type Instrument struct {

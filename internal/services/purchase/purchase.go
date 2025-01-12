@@ -10,7 +10,7 @@ import (
 
 type PurchaseService interface {
 	PurchaseScore(uuid.UUID, uuid.UUID) (uuid.UUID, error)
-	GetAll() ([]db.Purchase, error)
+	GetAll() ([]db.GetAllPurchasesRow, error)
 	Verify(uuid.UUID) error
 	GetPurchasesByAccountID(uuid.UUID) ([]db.Purchase, error)
 	GetPurchaseByID(db.GetPurchaseByIdParams) (db.Purchase, error)
@@ -43,7 +43,7 @@ func (p *purchaseService) Verify(id uuid.UUID) error {
 }
 
 // GetAll implements PurchaseService.
-func (p *purchaseService) GetAll() ([]db.Purchase, error) {
+func (p *purchaseService) GetAll() ([]db.GetAllPurchasesRow, error) {
 	ctx := context.Background()
 	return p.store.GetAllPurchases(ctx)
 }

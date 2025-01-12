@@ -28,7 +28,8 @@ where id = @id and account_id = @account_id
 ;
 
 -- name: GetAllPurchases :many
-select * from purchase
+select p.*, c.full_name from purchase p
+join contributor c on c.id = account_id
 ;
 
 -- name: VerifyPurchase :exec

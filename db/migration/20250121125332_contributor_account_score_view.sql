@@ -10,7 +10,7 @@ FROM
 JOIN 
     account a on a.id = c.id
 LEFT JOIN
-    score s ON s.contributor_id = c.id
+    score_contributor_view s ON s.contributor_id = c.id
 GROUP BY
     c.id, c.full_name, a.email;
 -- +goose StatementEnd

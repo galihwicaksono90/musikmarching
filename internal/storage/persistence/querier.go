@@ -32,7 +32,7 @@ type Querier interface {
 	GetAccounts(ctx context.Context) ([]GetAccountsRow, error)
 	GetAllContributors(ctx context.Context) ([]ContributorAccountScore, error)
 	GetAllPublicScores(ctx context.Context, arg GetAllPublicScoresParams) ([]ScorePublicView, error)
-	GetAllPurchases(ctx context.Context) ([]Purchase, error)
+	GetAllPurchases(ctx context.Context) ([]GetAllPurchasesRow, error)
 	GetAllocations(ctx context.Context) ([]Allocation, error)
 	GetCategories(ctx context.Context) ([]Category, error)
 	GetContributorById(ctx context.Context, id uuid.UUID) (ContributorAccountScore, error)
