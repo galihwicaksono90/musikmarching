@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"galihwicaksono90/musikmarching-be/internal/constants/model"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 	"galihwicaksono90/musikmarching-be/utils"
 
@@ -9,18 +10,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
-
-func (h *Handler) HandleGetAllPublicScoresTest(w http.ResponseWriter, r *http.Request) {
-	urlValues := r.URL.Query()
-	scores, err := h.score.GetAllPublic(urlValues)
-
-	if err != nil {
-		h.handleResponse(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), []db.ScorePublicView{})
-		return
-	}
-
-	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), scores)
-}
 
 func (h *Handler) HandleGetScores(w http.ResponseWriter, r *http.Request) {
 	scores, err := h.score.GetAll()
@@ -37,7 +26,22 @@ func (h *Handler) HandleGetAllPublicScores(w http.ResponseWriter, r *http.Reques
 		h.handleResponse(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err)
 		return
 	}
-	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), scores)
+
+	data := make([]db.ScorePublicView, len(scores))
+
+	for i, s := range scores {
+		data[i] = s.ScorePublicView
+	}
+
+	var count int64 
+	if len(scores) > 0 {
+		count = scores[0].Count
+	}
+
+	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), model.PublicScores{
+		Scores: data,
+		Count: count,
+	})
 }
 
 func (h *Handler) HandleGetPublicScoreById(w http.ResponseWriter, r *http.Request) {
@@ -87,4 +91,9 @@ func (h *Handler) HandleGetVerifiedScores(w http.ResponseWriter, r *http.Request
 	}
 
 	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), scores)
+}
+
+type Result struct {
+	Scores []db.ScorePublicView `json:"scores"`
+	Count  int64                `json:"count"`
 }

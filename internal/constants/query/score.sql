@@ -1,7 +1,7 @@
 -- name: GetAllPublicScores :many
-select * from score_public_view spv
-where 
-spv.is_verified = true and spv.deleted_at is null and spv.purchased_by is null
+select sqlc.embed(spv), count(*) over() as count 
+from score_public_view spv
+where spv.is_verified = true and spv.deleted_at is null and spv.purchased_by is null
 and (@title::text IS NULL OR lower(spv.title) like lower(@title))
 and (sqlc.narg('difficulty')::difficulty IS NULL OR spv.difficulty in (sqlc.narg('difficulty')))
 and (sqlc.narg('content_type')::content_type IS NULL OR spv.content_type in (sqlc.narg('content_type')))
@@ -120,4 +120,3 @@ update score set
   verified_at = now()
 where id = @id
 ;
-

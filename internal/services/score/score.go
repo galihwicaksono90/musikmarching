@@ -16,7 +16,7 @@ import (
 )
 
 type ScoreService interface {
-	GetAllPublic(url.Values) ([]db.ScorePublicView, error)
+	GetAllPublic(url.Values) ([]db.GetAllPublicScoresRow, error)
 	GetPublicById(uuid.UUID) (db.ScorePublicView, error)
 	GetManyByContributorId(account_id uuid.UUID) ([]db.Score, error)
 	Create(model.CreateScoreDTO) (uuid.UUID, error)
@@ -42,7 +42,7 @@ func (s *scoreService) GetPublicById(id uuid.UUID) (db.ScorePublicView, error) {
 }
 
 // GetAllPublicScores implements ScoreService.
-func (s *scoreService) GetAllPublic(urlValues url.Values) ([]db.ScorePublicView, error) {
+func (s *scoreService) GetAllPublic(urlValues url.Values) ([]db.GetAllPublicScoresRow, error) {
 	limit, offset := utils.ParsePagination(urlValues)
 	title := urlValues.Get("title")
 	title = fmt.Sprintf("%%%s%%", title)

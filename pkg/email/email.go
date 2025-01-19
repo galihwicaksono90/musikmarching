@@ -1,6 +1,7 @@
 package email
 
 import (
+	"fmt"
 	"galihwicaksono90/musikmarching-be/internal/constants/model"
 	"galihwicaksono90/musikmarching-be/pkg/config"
 	"net/smtp"
@@ -8,10 +9,16 @@ import (
 
 type Email interface {
 	SendPurchaseInvoice(user *model.SessionUser) error
+	Send(to string, subject string, body string) error
 }
 
 type email struct {
 	config config.Config
+}
+
+// Send implements Email.
+func (e *email) Send(to string, subject string, body string) error {
+	return e.sendEmail(to, subject, body)
 }
 
 // SendInvoice implements Email.
@@ -23,6 +30,7 @@ func (e *email) SendPurchaseInvoice(user *model.SessionUser) error {
 }
 
 func (e *email) sendEmail(to string, subject string, body string) error {
+	fmt.Println(e.config)
 	auth := smtp.PlainAuth(
 		"",
 		e.config.SmtpFrom,

@@ -123,3 +123,18 @@ func (h *Handler) HandleGetPurchasedScoreById(w http.ResponseWriter, r *http.Req
 
 	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), purchase)
 }
+
+func (h *Handler) HandleSendEmail(w http.ResponseWriter, r *http.Request) {
+	user := h.getSessionUser(r)
+
+	if err := h.email.SendPurchaseInvoice(user); err != nil {
+		h.logger.Println("errorerrorerrorerrorerrorerrorerrorerrorerrorerrorerror")
+		h.logger.Println(err)
+		h.logger.Println("errorerrorerrorerrorerrorerrorerrorerrorerrorerrorerror")
+		h.handleResponse(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err)
+		return
+	}
+	h.logger.Println("ssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccessuccess")
+	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), true)
+	h.logger.Println("ssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccessuccess")
+}

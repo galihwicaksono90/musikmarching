@@ -66,9 +66,9 @@ func (q *Queries) CreateScore(ctx context.Context, arg CreateScoreParams) (uuid.
 }
 
 const getAllPublicScores = `-- name: GetAllPublicScores :many
-select id, title, description, is_verified, price, difficulty, content_type, purchased_by, pdf_image_urls, audio_url, created_at, updated_at, deleted_at, email, full_name, instruments, allocations, categories from score_public_view spv
-where 
-spv.is_verified = true and spv.deleted_at is null and spv.purchased_by is null
+select spv.id, spv.title, spv.description, spv.is_verified, spv.price, spv.difficulty, spv.content_type, spv.purchased_by, spv.pdf_image_urls, spv.audio_url, spv.created_at, spv.updated_at, spv.deleted_at, spv.email, spv.full_name, spv.instruments, spv.allocations, spv.categories, count(*) over() as count 
+from score_public_view spv
+where spv.is_verified = true and spv.deleted_at is null and spv.purchased_by is null
 and ($1::text IS NULL OR lower(spv.title) like lower($1))
 and ($2::difficulty IS NULL OR spv.difficulty in ($2))
 and ($3::content_type IS NULL OR spv.content_type in ($3))
@@ -91,7 +91,12 @@ type GetAllPublicScoresParams struct {
 	PageLimit   int32           `db:"page_limit" json:"page_limit"`
 }
 
-func (q *Queries) GetAllPublicScores(ctx context.Context, arg GetAllPublicScoresParams) ([]ScorePublicView, error) {
+type GetAllPublicScoresRow struct {
+	ScorePublicView ScorePublicView `db:"score_public_view" json:"score_public_view"`
+	Count           int64           `db:"count" json:"count"`
+}
+
+func (q *Queries) GetAllPublicScores(ctx context.Context, arg GetAllPublicScoresParams) ([]GetAllPublicScoresRow, error) {
 	rows, err := q.db.Query(ctx, getAllPublicScores,
 		arg.Title,
 		arg.Difficulty,
@@ -106,28 +111,29 @@ func (q *Queries) GetAllPublicScores(ctx context.Context, arg GetAllPublicScores
 		return nil, err
 	}
 	defer rows.Close()
-	items := []ScorePublicView{}
+	items := []GetAllPublicScoresRow{}
 	for rows.Next() {
-		var i ScorePublicView
+		var i GetAllPublicScoresRow
 		if err := rows.Scan(
-			&i.ID,
-			&i.Title,
-			&i.Description,
-			&i.IsVerified,
-			&i.Price,
-			&i.Difficulty,
-			&i.ContentType,
-			&i.PurchasedBy,
-			&i.PdfImageUrls,
-			&i.AudioUrl,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.DeletedAt,
-			&i.Email,
-			&i.FullName,
-			&i.Instruments,
-			&i.Allocations,
-			&i.Categories,
+			&i.ScorePublicView.ID,
+			&i.ScorePublicView.Title,
+			&i.ScorePublicView.Description,
+			&i.ScorePublicView.IsVerified,
+			&i.ScorePublicView.Price,
+			&i.ScorePublicView.Difficulty,
+			&i.ScorePublicView.ContentType,
+			&i.ScorePublicView.PurchasedBy,
+			&i.ScorePublicView.PdfImageUrls,
+			&i.ScorePublicView.AudioUrl,
+			&i.ScorePublicView.CreatedAt,
+			&i.ScorePublicView.UpdatedAt,
+			&i.ScorePublicView.DeletedAt,
+			&i.ScorePublicView.Email,
+			&i.ScorePublicView.FullName,
+			&i.ScorePublicView.Instruments,
+			&i.ScorePublicView.Allocations,
+			&i.ScorePublicView.Categories,
+			&i.Count,
 		); err != nil {
 			return nil, err
 		}
@@ -381,6 +387,59 @@ func (q *Queries) GetScoresPaginated(ctx context.Context) ([]Score, error) {
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTestingScore = `-- name: GetTestingScore :many
+select spv.id, spv.title, spv.description, spv.is_verified, spv.price, spv.difficulty, spv.content_type, spv.purchased_by, spv.pdf_image_urls, spv.audio_url, spv.created_at, spv.updated_at, spv.deleted_at, spv.email, spv.full_name, spv.instruments, spv.allocations, spv.categories, count(*) over() as full_count
+from score_public_view spv
+where spv.is_verified = true
+and spv.purchased_by is null
+offset 0 limit 2
+`
+
+type GetTestingScoreRow struct {
+	ScorePublicView ScorePublicView `db:"score_public_view" json:"score_public_view"`
+	FullCount       int64           `db:"full_count" json:"full_count"`
+}
+
+func (q *Queries) GetTestingScore(ctx context.Context) ([]GetTestingScoreRow, error) {
+	rows, err := q.db.Query(ctx, getTestingScore)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetTestingScoreRow{}
+	for rows.Next() {
+		var i GetTestingScoreRow
+		if err := rows.Scan(
+			&i.ScorePublicView.ID,
+			&i.ScorePublicView.Title,
+			&i.ScorePublicView.Description,
+			&i.ScorePublicView.IsVerified,
+			&i.ScorePublicView.Price,
+			&i.ScorePublicView.Difficulty,
+			&i.ScorePublicView.ContentType,
+			&i.ScorePublicView.PurchasedBy,
+			&i.ScorePublicView.PdfImageUrls,
+			&i.ScorePublicView.AudioUrl,
+			&i.ScorePublicView.CreatedAt,
+			&i.ScorePublicView.UpdatedAt,
+			&i.ScorePublicView.DeletedAt,
+			&i.ScorePublicView.Email,
+			&i.ScorePublicView.FullName,
+			&i.ScorePublicView.Instruments,
+			&i.ScorePublicView.Allocations,
+			&i.ScorePublicView.Categories,
+			&i.FullCount,
 		); err != nil {
 			return nil, err
 		}

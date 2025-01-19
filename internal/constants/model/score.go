@@ -40,3 +40,8 @@ type GetAllPublicScoreDTO struct {
 	Categories  []string
 	Allocations []string
 }
+
+type PublicScores struct {
+	Scores []db.ScorePublicView `json:"scores"`
+	Count  int64 `json:"count"`
+}
