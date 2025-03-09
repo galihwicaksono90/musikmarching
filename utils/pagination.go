@@ -14,7 +14,7 @@ func ParsePagination(values url.Values) (int32, int32) {
 		limit = DEFAULT_PAGINATON_LIMIT
 	}
 
-	offset, err := strconv.Atoi(values.Get("page_offset"))
+	offset, err := strconv.Atoi(values.Get("offset"))
 	if err != nil {
 		offset = DEFAULT_PAGINATON_OFFSET
 	}
