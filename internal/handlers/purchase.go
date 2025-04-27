@@ -52,6 +52,7 @@ func (h *Handler) HandlePurchaseScore(w http.ResponseWriter, r *http.Request) {
 
 	id := mux.Vars(r)["id"]
 	scoreId, err := uuid.Parse(id)
+
 	if err != nil {
 		h.handleResponse(w, http.StatusInternalServerError, "Score not found", err)
 		return
@@ -63,7 +64,7 @@ func (h *Handler) HandlePurchaseScore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.email.SendPurchaseInvoice(user)
+	// h.email.SendPurchaseInvoice(user)
 
 	h.handleResponse(w, http.StatusCreated, http.StatusText(http.StatusCreated), purchaseID)
 }
@@ -72,7 +73,6 @@ func (h *Handler) HandleUploadPaymentProof(w http.ResponseWriter, r *http.Reques
 	user := h.getSessionUser(r)
 
 	if err := r.ParseMultipartForm(10 << 20); err != nil {
-		// http.Error(w, "Failed to parse form", http.StatusBadRequest)
 		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
 		return
 	}
@@ -128,13 +128,8 @@ func (h *Handler) HandleSendEmail(w http.ResponseWriter, r *http.Request) {
 	user := h.getSessionUser(r)
 
 	if err := h.email.SendPurchaseInvoice(user); err != nil {
-		h.logger.Println("errorerrorerrorerrorerrorerrorerrorerrorerrorerrorerror")
-		h.logger.Println(err)
-		h.logger.Println("errorerrorerrorerrorerrorerrorerrorerrorerrorerrorerror")
 		h.handleResponse(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err)
 		return
 	}
-	h.logger.Println("ssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccessuccess")
 	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), true)
-	h.logger.Println("ssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccesssuccessuccess")
 }

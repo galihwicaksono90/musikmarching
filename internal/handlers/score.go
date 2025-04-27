@@ -33,14 +33,14 @@ func (h *Handler) HandleGetAllPublicScores(w http.ResponseWriter, r *http.Reques
 		data[i] = s.ScorePublicView
 	}
 
-	var count int64 
+	var count int64
 	if len(scores) > 0 {
 		count = scores[0].Count
 	}
 
 	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), model.PublicScores{
 		Scores: data,
-		Count: count,
+		Count:  count,
 	})
 }
 
@@ -91,6 +91,32 @@ func (h *Handler) HandleGetVerifiedScores(w http.ResponseWriter, r *http.Request
 	}
 
 	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), scores)
+}
+
+func (h *Handler) HandleGetScoreLibrary(w http.ResponseWriter, r *http.Request) {
+	user := h.getSessionUser(r)
+
+	scores, err := h.score.GetScoreLibrary(user.ID, r.URL.Query())
+	if err != nil {
+		h.handleResponse(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err)
+		return
+	}
+
+	data := make([]db.ScoreLibraryView, len(scores))
+
+	for i, s := range scores {
+		data[i] = s.ScoreLibraryView
+	}
+
+	var count int64
+	if len(scores) > 0 {
+		count = scores[0].Count
+	}
+
+	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), model.LibraryScores{
+		Scores: data,
+		Count:  count,
+	})
 }
 
 type Result struct {

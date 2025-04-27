@@ -145,21 +145,11 @@ func (s *fileService) UploadPaymentProof(r *http.Request, name string) (string, 
 
 	result, err := s.uploadFile(file, fileName, fileType)
 
-	s.logger.Infoln("====")
-	s.logger.Infoln(result.Location)
-	s.logger.Infoln(err)
-	s.logger.Infoln("====")
-
 	return result.Location, err
 }
 
 func (s *fileService) uploadFile(file io.Reader, fileName string, fileType string) (minio.UploadInfo, error) {
 	bucketName := viper.GetString("MINIO_BUCKET_NAME")
-	s.logger.Infoln("================================================")
-	s.logger.Infoln("bucketName", bucketName)
-	s.logger.Infoln("fileName", fileName)
-	s.logger.Infoln("fileType", fileType)
-	s.logger.Infoln("================================================")
 
 	return s.fileStorage.PutObject(
 		context.Background(),

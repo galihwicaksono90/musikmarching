@@ -1,7 +1,6 @@
 package email
 
 import (
-	"fmt"
 	"galihwicaksono90/musikmarching-be/internal/constants/model"
 	"galihwicaksono90/musikmarching-be/pkg/config"
 	"net/smtp"
@@ -30,7 +29,6 @@ func (e *email) SendPurchaseInvoice(user *model.SessionUser) error {
 }
 
 func (e *email) sendEmail(to string, subject string, body string) error {
-	fmt.Println(e.config)
 	auth := smtp.PlainAuth(
 		"",
 		e.config.SmtpFrom,

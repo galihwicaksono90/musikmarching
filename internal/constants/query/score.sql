@@ -39,11 +39,21 @@ where deleted_at is null
 ;
 
 -- name: GetScoresByContributorID :many
-select * from score_contributor_view scv
-where scv.contributor_id = @contributor_id
-limit @pagelimit::int
-offset @pageoffset::int
+select scv.*, coalesce(p.purchase_count, 0)
+from score_contributor_view scv
+left join (
+    select p.score_id, count(*) as purchase_count
+    from purchase p
+    group by p.score_id
+) p on p.score_id = scv.id
+where scv.contributor_id = @contributor_id::uuid
 ;
+
+-- select * from score_contributor_view scv
+-- where scv.contributor_id = @contributor_id
+-- limit @pagelimit::int
+-- offset @pageoffset::int
+-- ;
 
 -- name: GetScoreByContributorID :one
 select * from score_contributor_view scv
@@ -119,4 +129,17 @@ update score set
   is_verified = true,
   verified_at = now()
 where id = @id
+;
+
+-- name: GetScoreLibrary :many
+with purchases as (
+  select score_id from purchase  
+  where account_id = @account_id::uuid
+  and is_verified = true
+)
+select sqlc.embed(score_library_view),  count(*) over() as count
+from score_library_view
+where id in (select score_id from purchases)
+limit @page_limit::int
+offset @page_offset::int
 ;

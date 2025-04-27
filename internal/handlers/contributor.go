@@ -18,13 +18,7 @@ import (
 func (h *Handler) HandleGetContributorScores(w http.ResponseWriter, r *http.Request) {
 	user := h.getSessionUser(r)
 
-	limit, offset := utils.ParsePagination(r.URL.Query())
-
-	scores, err := h.score.GetManyByContirbutorID(db.GetScoresByContributorIDParams{
-		ContributorID: user.ID,
-		Pageoffset:    offset,
-		Pagelimit:     limit,
-	})
+	scores, err := h.score.GetManyByContirbutorID(user.ID)
 
 	if err != nil {
 		h.handleResponse(
@@ -70,10 +64,6 @@ func (h *Handler) HandleCreateContributorScore(w http.ResponseWriter, r *http.Re
 	}
 
 	pdfUrl, images, err := h.file.UploadPdfFile(r, "pdf_file", 2)
-
-	for index, image := range images {
-		h.logger.Infoln(image + strconv.Itoa(index))
-	}
 
 	if err != nil {
 		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
@@ -288,7 +278,6 @@ func (h *Handler) HandleCreateContributor(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-
 	if user.RoleName != db.RolenameUser {
 		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "This user is not allowed")
 	}
@@ -304,7 +293,7 @@ func (h *Handler) HandleCreateContributor(w http.ResponseWriter, r *http.Request
 		FullName: input.FullName,
 	}
 
-	_, err = h.contributor.Create(params) 
+	_, err = h.contributor.Create(params)
 	if err != nil {
 		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "Failed to create contributor")
 		return
@@ -325,4 +314,96 @@ func (h *Handler) HandleCreateContributor(w http.ResponseWriter, r *http.Request
 	}
 
 	h.handleResponse(w, http.StatusCreated, http.StatusText(http.StatusCreated), true)
+}
+
+func (h *Handler) HandleGetContributorScoreStatistics(w http.ResponseWriter, r *http.Request) {
+	user := h.getSessionUser(r)
+
+	statistics, err := h.contributor.GetScoreStatistics(user.ID)
+	if err != nil {
+		h.handleResponse(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err)
+		return
+	}
+
+	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), statistics)
+}
+
+func (h *Handler) HandleGetContributorBestSellingScores(w http.ResponseWriter, r *http.Request) {
+	user := h.getSessionUser(r)
+
+	scores, err := h.contributor.GetBestSellingScores(user.ID)
+	if err != nil {
+		h.handleResponse(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err)
+		return
+	}
+
+	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), scores)
+}
+
+func (h *Handler) HandleGetContributorPaymentMethod(w http.ResponseWriter, r *http.Request) {
+	user := h.getSessionUser(r)
+
+	method, err := h.contributor.GetPaymentMethod(user.ID)
+	if err != nil {
+		h.handleResponse(w, http.StatusNotFound, http.StatusText(http.StatusNotFound), err)
+		return
+	}
+
+	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), method)
+}
+
+type HandleUpdateContributorPaymentMethodInput struct {
+	Method        string `json:"method"`
+	BankName      string `json:"bank_name"`
+	AccountNumber string `json:"account_number"`
+}
+
+func (h *Handler) HandleUpsertContributorPaymentMethod(w http.ResponseWriter, r *http.Request) {
+	user := h.getSessionUser(r)
+
+	var input HandleUpdateContributorPaymentMethodInput
+
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
+	}
+
+	err := h.contributor.UpsertPaymentMethod(db.UpsertContributorPaymentMethodParams{
+		Method:        input.Method,
+		AccountNumber: input.AccountNumber,
+		ContributorID: user.ID,
+		BankName:      input.BankName,
+	})
+
+	if err != nil {
+		h.handleResponse(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err)
+		return
+	}
+
+	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), true)
+}
+
+func (h *Handler) HandleGetContributorPayments(w http.ResponseWriter, r *http.Request) {
+	user := h.getSessionUser(r)
+
+	payments, err := h.contributor.GetPayments(user.ID)
+
+	if err != nil {
+		h.handleResponse(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err)
+		return
+	}
+
+	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), payments)
+}
+
+func (h *Handler) HandleGetContributorPaymentStatistics(w http.ResponseWriter, r *http.Request) {
+	user := h.getSessionUser(r)
+
+	data, err := h.contributor.GetPaymentStatistics(user.ID)
+
+	if err != nil {
+		h.handleResponse(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err)
+		return
+	}
+
+	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), data)
 }

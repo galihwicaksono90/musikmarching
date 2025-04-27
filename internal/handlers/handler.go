@@ -11,6 +11,7 @@ import (
 	"galihwicaksono90/musikmarching-be/internal/services/file"
 	"galihwicaksono90/musikmarching-be/internal/services/instrument"
 	"galihwicaksono90/musikmarching-be/internal/services/purchase"
+	"galihwicaksono90/musikmarching-be/internal/services/payment"
 	"galihwicaksono90/musikmarching-be/internal/services/score"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 	"galihwicaksono90/musikmarching-be/pkg/email"
@@ -27,6 +28,7 @@ type Handler struct {
 	account     account.AccountService
 	score       score.ScoreService
 	purchase    purchase.PurchaseService
+	payment    payment.PaymentService
 	contributor contributor.ContributorService
 	instrument  instrument.InstrumentService
 	category    category.CategoryService
@@ -43,6 +45,7 @@ func New(
 	account account.AccountService,
 	score score.ScoreService,
 	purchase purchase.PurchaseService,
+	payment payment.PaymentService,
 	contributor contributor.ContributorService,
 	instrument instrument.InstrumentService,
 	category category.CategoryService,
@@ -58,6 +61,7 @@ func New(
 		account,
 		score,
 		purchase,
+		payment,
 		contributor,
 		instrument,
 		category,
@@ -71,5 +75,5 @@ func New(
 func (h *Handler) handleResponse(w http.ResponseWriter, code uint, message string, data interface{}) {
 	response := model.Response(code, message, data)
 	json.NewEncoder(w).Encode(response)
-	h.logger.Info(data)
+	// h.logger.Info(data)
 }

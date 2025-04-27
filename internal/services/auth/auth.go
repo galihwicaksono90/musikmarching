@@ -74,11 +74,6 @@ func (a *authService) StoreUserSession(w http.ResponseWriter, r *http.Request, u
 
 	session.Values["user"] = user
 
-	a.logger.Println("============================================")
-	a.logger.Println(session.Values["user"])
-	a.logger.Println(session.ID)
-	a.logger.Println("============================================")
-
 	if err := session.Save(r, w); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return err

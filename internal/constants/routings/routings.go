@@ -32,6 +32,7 @@ func Routings(handler *handlers.Handler, baseRouter *mux.Router) {
 	purchaseRouter.HandleFunc("/{id}", handler.HandlePurchaseScore).Methods("POST")
 	purchaseRouter.HandleFunc("/upload-proof/{id}", handler.HandleUploadPaymentProof).Methods("PUT")
 	purchaseRouter.HandleFunc("/score/{id}", handler.HandleGetPurchasedScoreById).Methods("GET")
+	purchaseRouter.HandleFunc("/scores/library", handler.HandleGetScoreLibrary).Methods("GET")
 
 	contributorRouter := router.PathPrefix("/contributor").Subrouter()
 	contributorRouter.Use(middlewares.AuthMiddleware, middlewares.ContributorMiddleware)
@@ -39,6 +40,12 @@ func Routings(handler *handlers.Handler, baseRouter *mux.Router) {
 	contributorRouter.HandleFunc("/score/{id}", handler.HandleGetContributorScore).Methods("GET")
 	contributorRouter.HandleFunc("/score", handler.HandleCreateContributorScore).Methods("POST")
 	contributorRouter.HandleFunc("/score/{id}", handler.HandleUpdateContributorScore).Methods("PUT")
+	contributorRouter.HandleFunc("/scores/statistics", handler.HandleGetContributorScoreStatistics).Methods("GET")
+	contributorRouter.HandleFunc("/scores/best-selling", handler.HandleGetContributorBestSellingScores).Methods("GET")
+	contributorRouter.HandleFunc("/payment-method", handler.HandleGetContributorPaymentMethod).Methods("GET")
+	contributorRouter.HandleFunc("/payment-method", handler.HandleUpsertContributorPaymentMethod).Methods("POST")
+	contributorRouter.HandleFunc("/payments", handler.HandleGetContributorPayments).Methods("GET")
+	contributorRouter.HandleFunc("/payments/statistics", handler.HandleGetContributorPaymentStatistics).Methods("GET")
 
 	adminRouter := router.PathPrefix("/admin").Subrouter()
 	adminRouter.Use(middlewares.AuthMiddleware, middlewares.AdminMiddleware)

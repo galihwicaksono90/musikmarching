@@ -45,3 +45,8 @@ type PublicScores struct {
 	Scores []db.ScorePublicView `json:"scores"`
 	Count  int64 `json:"count"`
 }
+
+type LibraryScores struct {
+	Scores []db.ScoreLibraryView `json:"scores"`
+	Count  int64 `json:"count"`
+}

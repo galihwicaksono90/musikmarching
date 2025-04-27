@@ -11,6 +11,7 @@ import (
 
 type Store interface {
 	Querier
+	ExecTx(context.Context, func(*Queries) error) error
 }
 
 type SQLStore struct {

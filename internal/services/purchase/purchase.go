@@ -11,7 +11,7 @@ import (
 type PurchaseService interface {
 	PurchaseScore(uuid.UUID, uuid.UUID) (uuid.UUID, error)
 	GetAll() ([]db.GetAllPurchasesRow, error)
-	Verify(uuid.UUID) error
+	Verify(purchase_id uuid.UUID) error
 	GetPurchasesByAccountID(uuid.UUID) ([]db.Purchase, error)
 	GetPurchaseByID(db.GetPurchaseByIdParams) (db.Purchase, error)
 	GetPurchasedScoreById(uuid.UUID, uuid.UUID) (db.GetPurchasedScoreByIdRow, error)
@@ -39,7 +39,19 @@ func (p *purchaseService) GetPurchasedScoreById(purchaseID uuid.UUID, accountID 
 // Verify implements PurchaseService.
 func (p *purchaseService) Verify(id uuid.UUID) error {
 	ctx := context.Background()
-	return p.store.VerifyPurchase(ctx, id)
+	return p.store.ExecTx(ctx, func(q *db.Queries) error {
+		_, err := q.VerifyPurchase(ctx, id)
+
+		if err != nil {
+			p.logger.Errorln(err)
+			return err
+		}
+
+		if err := p.store.CreatePayment(ctx, id); err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 // GetAll implements PurchaseService.

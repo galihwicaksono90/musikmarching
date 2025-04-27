@@ -28,15 +28,16 @@ where id = @id and account_id = @account_id
 ;
 
 -- name: GetAllPurchases :many
-select p.*, c.full_name from purchase p
-join contributor c on c.id = account_id
+select p.*, a.name from purchase p
+inner join account a on a.id = account_id
 ;
 
--- name: VerifyPurchase :exec
+-- name: VerifyPurchase :one
 update purchase set
 is_verified = true,
 verified_at = now()
 where id = @id
+returning *
 ;
 
 -- name: GetPurchasedScoreById :one

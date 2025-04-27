@@ -37,9 +37,6 @@ func SessionMiddleware(next http.Handler) http.Handler {
 		req := r.WithContext(ctx)
 
 		session, err := gothic.Store.Get(r, sessionName)
-		fmt.Println("============================================")
-		fmt.Println(session.Values["user"])
-		fmt.Println("============================================")
 
 		if err != nil {
 			fmt.Errorf("session error: %s", err)

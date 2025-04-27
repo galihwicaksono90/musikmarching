@@ -14,6 +14,7 @@ import (
 	"galihwicaksono90/musikmarching-be/internal/services/instrument"
 	"galihwicaksono90/musikmarching-be/internal/services/purchase"
 	"galihwicaksono90/musikmarching-be/internal/services/score"
+	"galihwicaksono90/musikmarching-be/internal/services/payment"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 	"galihwicaksono90/musikmarching-be/pkg/cors"
 	"galihwicaksono90/musikmarching-be/pkg/dbpool"
@@ -68,7 +69,8 @@ func Init() {
 	instrumentService := instrument.NewInstrumentService(logger, store)
 	categoryService := category.NewCategoryService(logger, store)
 	allocationService := allocation.NewAllocationService(logger, store)
-	contributorService := contributor.NewContributorService(logger, store, instrumentService)
+	contributorService := contributor.NewContributorService(logger, store)
+	paymentService := payment.NewPaymentService(logger, store)
 	fileService := file.NewFileService(logger, fileStorage)
 
 	// initiate new handler
@@ -79,6 +81,7 @@ func Init() {
 		accountService,
 		scoreService,
 		purchaseService,
+		paymentService,
 		contributorService,
 		instrumentService,
 		categoryService,

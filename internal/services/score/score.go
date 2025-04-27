@@ -18,13 +18,14 @@ import (
 type ScoreService interface {
 	GetAllPublic(url.Values) ([]db.GetAllPublicScoresRow, error)
 	GetPublicById(uuid.UUID) (db.ScorePublicView, error)
+	GetScoreLibrary(uuid.UUID, url.Values) ([]db.GetScoreLibraryRow, error)
 	GetManyByContributorId(account_id uuid.UUID) ([]db.Score, error)
 	Create(model.CreateScoreDTO) (uuid.UUID, error)
 	Update(uuid.UUID, model.UpdateScoreDTO) error
 	GetManyVerified(db.GetVerifiedScoresParams) (*[]db.GetVerifiedScoresRow, error)
 	GetVerifiedById(id uuid.UUID) (db.GetVerifiedScoreByIdRow, error)
 	GetById(id uuid.UUID) (db.Score, error)
-	GetManyByContirbutorID(db.GetScoresByContributorIDParams) ([]db.ScoreContributorView, error)
+	GetManyByContirbutorID(uuid.UUID) ([]db.GetScoresByContributorIDRow, error)
 	GetOneByContributorID(db.GetScoreByContributorIDParams) (db.ScoreContributorView, error)
 	GetAll() ([]db.Score, error)
 	Verify(id uuid.UUID) error
@@ -33,6 +34,19 @@ type ScoreService interface {
 type scoreService struct {
 	logger *logrus.Logger
 	store  db.Store
+}
+
+// GetScoreLibrary implements ScoreService.
+func (s *scoreService) GetScoreLibrary(id uuid.UUID, urlValues url.Values) ([]db.GetScoreLibraryRow, error) {
+	limit, offset := utils.ParsePagination(urlValues)
+	ctx := context.Background()
+	params := db.GetScoreLibraryParams{
+		PageOffset: offset,
+		PageLimit:  limit,
+		AccountID:  id,
+	}
+
+	return s.store.GetScoreLibrary(ctx, params)
 }
 
 // GetPublicById implements ScoreService.
@@ -79,8 +93,10 @@ func (s *scoreService) GetOneByContributorID(params db.GetScoreByContributorIDPa
 }
 
 // GetByContirbutorID implements ScoreService.
-func (s *scoreService) GetManyByContirbutorID(params db.GetScoresByContributorIDParams) ([]db.ScoreContributorView, error) {
-	return s.store.GetScoresByContributorID(context.Background(), params)
+func (s *scoreService) GetManyByContirbutorID(id uuid.UUID) ([]db.GetScoresByContributorIDRow, error) {
+	s.logger.Println(id)
+	ctx := context.Background()
+	return s.store.GetScoresByContributorID(ctx, id)
 }
 
 // VerifyScore implements ScoreService.
