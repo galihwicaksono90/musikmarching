@@ -44,6 +44,7 @@ from score_contributor_view scv
 left join (
     select p.score_id, count(*) as purchase_count
     from purchase p
+    inner join payment pm on pm.purchase_id = p.id
     group by p.score_id
 ) p on p.score_id = scv.id
 where scv.contributor_id = @contributor_id::uuid
@@ -122,6 +123,14 @@ update score set
   audio_url = COALESCE(sqlc.narg('audio_url'), audio_url),
   updated_at = now()
 where id = @id
+;
+
+-- name: DeleteScore :exec
+update score s set
+  deleted_at = now(),
+  updated_at = now()
+where s.id = @id 
+and s.contributor_id = @contributor_id::uuid
 ;
 
 -- name: VerifyScore :exec

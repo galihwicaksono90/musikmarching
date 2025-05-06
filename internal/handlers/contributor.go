@@ -265,6 +265,26 @@ func (h *Handler) HandleUpdateContributorScore(w http.ResponseWriter, r *http.Re
 	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), user)
 }
 
+func (h *Handler) HandleDeleteContributorScore(w http.ResponseWriter, r *http.Request) {
+	user := h.getSessionUser(r)
+
+	scoreID, err := uuid.Parse(mux.Vars(r)["id"])
+	if err != nil {
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
+		return
+	}
+
+	if err := h.score.Delete(db.DeleteScoreParams{
+		ID:            scoreID,
+		ContributorID: user.ID,
+	}); err != nil {
+		h.handleResponse(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err)
+		return
+	}
+
+	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), true)
+}
+
 type HandleCreateContributorInput struct {
 	FullName string `json:"full_name"`
 }

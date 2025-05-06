@@ -25,6 +25,7 @@ type Querier interface {
 	DeleteAllocation(ctx context.Context, id int32) error
 	DeleteCategory(ctx context.Context, id int32) error
 	DeleteInstrument(ctx context.Context, id int32) error
+	DeleteScore(ctx context.Context, arg DeleteScoreParams) error
 	DeleteScoreAllocation(ctx context.Context, scoreID uuid.UUID) error
 	DeleteScoreCategory(ctx context.Context, scoreID uuid.UUID) error
 	DeleteScoreInstrument(ctx context.Context, scoreID uuid.UUID) error

@@ -40,6 +40,7 @@ func Routings(handler *handlers.Handler, baseRouter *mux.Router) {
 	contributorRouter.HandleFunc("/score/{id}", handler.HandleGetContributorScore).Methods("GET")
 	contributorRouter.HandleFunc("/score", handler.HandleCreateContributorScore).Methods("POST")
 	contributorRouter.HandleFunc("/score/{id}", handler.HandleUpdateContributorScore).Methods("PUT")
+	contributorRouter.HandleFunc("/score/{id}", handler.HandleDeleteContributorScore).Methods("DELETE")
 	contributorRouter.HandleFunc("/scores/statistics", handler.HandleGetContributorScoreStatistics).Methods("GET")
 	contributorRouter.HandleFunc("/scores/best-selling", handler.HandleGetContributorBestSellingScores).Methods("GET")
 	contributorRouter.HandleFunc("/payment-method", handler.HandleGetContributorPaymentMethod).Methods("GET")

@@ -66,6 +66,24 @@ func (q *Queries) CreateScore(ctx context.Context, arg CreateScoreParams) (uuid.
 	return id, err
 }
 
+const deleteScore = `-- name: DeleteScore :exec
+update score s set
+  deleted_at = now(),
+  updated_at = now()
+where s.id = $1 
+and s.contributor_id = $2::uuid
+`
+
+type DeleteScoreParams struct {
+	ID            uuid.UUID `db:"id" json:"id"`
+	ContributorID uuid.UUID `db:"contributor_id" json:"contributor_id"`
+}
+
+func (q *Queries) DeleteScore(ctx context.Context, arg DeleteScoreParams) error {
+	_, err := q.db.Exec(ctx, deleteScore, arg.ID, arg.ContributorID)
+	return err
+}
+
 const getAllPublicScores = `-- name: GetAllPublicScores :many
 select spv.id, spv.title, spv.description, spv.is_verified, spv.price, spv.difficulty, spv.content_type, spv.purchased_by, spv.pdf_image_urls, spv.audio_url, spv.created_at, spv.updated_at, spv.deleted_at, spv.email, spv.full_name, spv.instruments, spv.allocations, spv.categories, count(*) over() as count 
 from score_public_view spv
@@ -380,6 +398,7 @@ from score_contributor_view scv
 left join (
     select p.score_id, count(*) as purchase_count
     from purchase p
+    inner join payment pm on pm.purchase_id = p.id
     group by p.score_id
 ) p on p.score_id = scv.id
 where scv.contributor_id = $1::uuid

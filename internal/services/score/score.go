@@ -22,6 +22,7 @@ type ScoreService interface {
 	GetManyByContributorId(account_id uuid.UUID) ([]db.Score, error)
 	Create(model.CreateScoreDTO) (uuid.UUID, error)
 	Update(uuid.UUID, model.UpdateScoreDTO) error
+	Delete(db.DeleteScoreParams) error
 	GetManyVerified(db.GetVerifiedScoresParams) (*[]db.GetVerifiedScoresRow, error)
 	GetVerifiedById(id uuid.UUID) (db.GetVerifiedScoreByIdRow, error)
 	GetById(id uuid.UUID) (db.Score, error)
@@ -195,6 +196,12 @@ func (s *scoreService) Update(scoreId uuid.UUID, params model.UpdateScoreDTO) er
 	}
 
 	return nil
+}
+
+func (s *scoreService) Delete(params db.DeleteScoreParams) error {
+	ctx := context.Background()
+
+	return s.store.DeleteScore(ctx, params)
 }
 
 // GetScoresByContributorId implements ScoreService.
