@@ -36,11 +36,21 @@ values
   'Galih Wicaksono', 
   'https://lh3.googleusercontent.com/a/ACg8ocJWwtbtedC3Ys49-9UFEcTJ4xiUFAdTLikFNOwuemfqxPaIEYE=s96-c',
   (select id from role where name = 'user')
+),
+(
+  '52240b2c-ec89-4415-89de-ef4b35078486', 
+  'swaranadamusic.email@gmail.com', 
+  'Swaranada Music', 
+  'https://lh3.googleusercontent.com/a/ACg8ocJWwtbtedC3Ys49-9UFEcTJ4xiUFAdTLikFNOwuemfqxPaIEYE=s96-c',
+  (select id from role where name = 'contributor')
 )
 ;
 
 insert into contributor (id, full_name, is_verified, verified_at)
-values ('f45cb09c-7ef3-473a-a8df-0e580ad026d1', 'Tony Blank', true, now());
+values 
+  ('f45cb09c-7ef3-473a-a8df-0e580ad026d1', 'Tony Blank', true, now()),
+  ('52240b2c-ec89-4415-89de-ef4b35078486', 'Swaranada Musik', true, now())
+;
 
 insert into score (id, title, description, price, difficulty, contributor_id, pdf_url, pdf_image_urls, audio_url, is_verified, verified_at, content_type)
 values 
@@ -101,7 +111,11 @@ values
   ('c17db1c2-2c35-477b-8dd7-00fb6db9723c', 2)
 ;
 
-
+insert into payment_method(id, method, bank_name, account_number, contributor_id)
+values 
+  ('beaf7202-09d9-4d71-a985-dfa17f8221a5', 'Transfer', 'BCA', '123456789', 'f45cb09c-7ef3-473a-a8df-0e580ad026d1'),
+  ('d28ddde8-d8ee-4c2b-9399-f7b689b9945a', 'Transfer', 'BCA', '123456789', '52240b2c-ec89-4415-89de-ef4b35078486')
+;
 
 -- +goose StatementEnd
 
