@@ -107,4 +107,3 @@ inner join purchase pu on py.purchase_id = pu.id
 inner join score s on pu.score_id = s.id
 and s.contributor_id = @contributor_id::uuid
 ;
-

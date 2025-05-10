@@ -23,7 +23,7 @@ func Routings(handler *handlers.Handler, baseRouter *mux.Router) {
 
 	accountRouter := router.PathPrefix("/account").Subrouter()
 	accountRouter.Use(middlewares.AuthMiddleware)
-	accountRouter.HandleFunc("/contributor-request", handler.HandleCreateContributor).Methods("POST")
+	accountRouter.HandleFunc("/contributor-request", handler.HandleCreateContributorApply).Methods("POST")
 
 	purchaseRouter := router.PathPrefix("/purchase").Subrouter()
 	purchaseRouter.Use(middlewares.AuthMiddleware)

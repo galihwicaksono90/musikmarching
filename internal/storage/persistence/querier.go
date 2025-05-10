@@ -15,6 +15,7 @@ type Querier interface {
 	CreateAllocation(ctx context.Context, name string) (Allocation, error)
 	CreateCategory(ctx context.Context, name string) (Category, error)
 	CreateContributor(ctx context.Context, arg CreateContributorParams) (uuid.UUID, error)
+	CreateContributorApply(ctx context.Context, arg CreateContributorApplyParams) (ContributorApply, error)
 	CreateInstrument(ctx context.Context, name string) (Instrument, error)
 	CreatePayment(ctx context.Context, purchaseID uuid.UUID) error
 	CreatePurchase(ctx context.Context, arg CreatePurchaseParams) (uuid.UUID, error)

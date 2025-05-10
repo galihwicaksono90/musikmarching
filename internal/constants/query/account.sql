@@ -36,3 +36,29 @@ set role_id = (select id from role as r where r.name = @roleName)
 where a.id = @id
 RETURNING id
 ;
+
+-- name: CreateContributorApply :one
+insert into contributor_apply
+(
+  account_id, 
+  full_name,
+  phone_number,
+  musical_background,
+  education,
+  experience,
+  portofolio_link,
+  sample_url
+)
+values (
+  @account_id, 
+  @full_name,
+  @phone_number,
+  @musical_background,
+  @education,
+  @experience,
+  @portofolio_link,
+  @sample_url
+)
+returning *
+;
+

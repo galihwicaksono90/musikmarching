@@ -37,6 +37,85 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (C
 	return i, err
 }
 
+const createContributorApply = `-- name: CreateContributorApply :one
+insert into contributor_apply
+(
+  account_id, 
+  full_name,
+  phone_number,
+  musical_background,
+  education,
+  experience,
+  portofolio_link,
+  sample_url,
+  payment_method,
+  bank_name,
+  account_number
+)
+values (
+  $1, 
+  $2,
+  $3,
+  $4,
+  $5,
+  $6,
+  $7,
+  $8,
+  $9,
+  $10,
+  $11
+)
+returning id, account_id, full_name, phone_number, musical_background, education, experience, portofolio_link, sample_url, payment_method, bank_name, account_number, created_at, updated_at
+`
+
+type CreateContributorApplyParams struct {
+	AccountID         uuid.UUID   `db:"account_id" json:"account_id"`
+	FullName          string      `db:"full_name" json:"full_name"`
+	PhoneNumber       pgtype.Text `db:"phone_number" json:"phone_number"`
+	MusicalBackground string      `db:"musical_background" json:"musical_background"`
+	Education         pgtype.Text `db:"education" json:"education"`
+	Experience        pgtype.Text `db:"experience" json:"experience"`
+	PortofolioLink    pgtype.Text `db:"portofolio_link" json:"portofolio_link"`
+	SampleUrl         pgtype.Text `db:"sample_url" json:"sample_url"`
+	PaymentMethod     string      `db:"payment_method" json:"payment_method"`
+	BankName          string      `db:"bank_name" json:"bank_name"`
+	AccountNumber     string      `db:"account_number" json:"account_number"`
+}
+
+func (q *Queries) CreateContributorApply(ctx context.Context, arg CreateContributorApplyParams) (ContributorApply, error) {
+	row := q.db.QueryRow(ctx, createContributorApply,
+		arg.AccountID,
+		arg.FullName,
+		arg.PhoneNumber,
+		arg.MusicalBackground,
+		arg.Education,
+		arg.Experience,
+		arg.PortofolioLink,
+		arg.SampleUrl,
+		arg.PaymentMethod,
+		arg.BankName,
+		arg.AccountNumber,
+	)
+	var i ContributorApply
+	err := row.Scan(
+		&i.ID,
+		&i.AccountID,
+		&i.FullName,
+		&i.PhoneNumber,
+		&i.MusicalBackground,
+		&i.Education,
+		&i.Experience,
+		&i.PortofolioLink,
+		&i.SampleUrl,
+		&i.PaymentMethod,
+		&i.BankName,
+		&i.AccountNumber,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getAccountByEmail = `-- name: GetAccountByEmail :one
 select a.id, a.name, a.email, a.picture_url, a.created_at, a.updated_at, a.deleted_at, a.role_id, r.name as role_name from account a
 inner join role r on r.id = a.role_id
