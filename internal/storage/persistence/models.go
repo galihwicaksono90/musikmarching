@@ -185,20 +185,18 @@ type ContributorAccountScore struct {
 }
 
 type ContributorApply struct {
-	ID                uuid.UUID          `db:"id" json:"id"`
-	AccountID         uuid.UUID          `db:"account_id" json:"account_id"`
-	FullName          string             `db:"full_name" json:"full_name"`
-	PhoneNumber       pgtype.Text        `db:"phone_number" json:"phone_number"`
-	MusicalBackground string             `db:"musical_background" json:"musical_background"`
-	Education         pgtype.Text        `db:"education" json:"education"`
-	Experience        pgtype.Text        `db:"experience" json:"experience"`
-	PortofolioLink    pgtype.Text        `db:"portofolio_link" json:"portofolio_link"`
-	SampleUrl         pgtype.Text        `db:"sample_url" json:"sample_url"`
-	PaymentMethod     string             `db:"payment_method" json:"payment_method"`
-	BankName          string             `db:"bank_name" json:"bank_name"`
-	AccountNumber     string             `db:"account_number" json:"account_number"`
-	CreatedAt         time.Time          `db:"created_at" json:"created_at"`
-	UpdatedAt         pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	ID                         uuid.UUID          `db:"id" json:"id"`
+	AccountID                  uuid.UUID          `db:"account_id" json:"account_id"`
+	FullName                   string             `db:"full_name" json:"full_name"`
+	PhoneNumber                string             `db:"phone_number" json:"phone_number"`
+	MusicalBackground          string             `db:"musical_background" json:"musical_background"`
+	Education                  pgtype.Text        `db:"education" json:"education"`
+	Experience                 pgtype.Text        `db:"experience" json:"experience"`
+	PortofolioLink             pgtype.Text        `db:"portofolio_link" json:"portofolio_link"`
+	TermsAndConditionsAccepted bool               `db:"terms_and_conditions_accepted" json:"terms_and_conditions_accepted"`
+	SampleUrl                  pgtype.Text        `db:"sample_url" json:"sample_url"`
+	CreatedAt                  time.Time          `db:"created_at" json:"created_at"`
+	UpdatedAt                  pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 }
 
 type Instrument struct {

@@ -10,6 +10,7 @@ import (
 	"galihwicaksono90/musikmarching-be/internal/services/auth"
 	"galihwicaksono90/musikmarching-be/internal/services/category"
 	"galihwicaksono90/musikmarching-be/internal/services/contributor"
+	"galihwicaksono90/musikmarching-be/internal/services/contributor-apply"
 	"galihwicaksono90/musikmarching-be/internal/services/file"
 	"galihwicaksono90/musikmarching-be/internal/services/instrument"
 	"galihwicaksono90/musikmarching-be/internal/services/purchase"
@@ -70,6 +71,7 @@ func Init() {
 	categoryService := category.NewCategoryService(logger, store)
 	allocationService := allocation.NewAllocationService(logger, store)
 	contributorService := contributor.NewContributorService(logger, store)
+	contributorApplyService := contributorapply.NewContributorApplyService(logger, store)
 	paymentService := payment.NewPaymentService(logger, store)
 	fileService := file.NewFileService(logger, fileStorage)
 
@@ -83,6 +85,7 @@ func Init() {
 		purchaseService,
 		paymentService,
 		contributorService,
+		contributorApplyService,
 		instrumentService,
 		categoryService,
 		allocationService,

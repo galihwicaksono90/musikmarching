@@ -2,7 +2,6 @@ package account
 
 import (
 	"context"
-	"encoding/json"
 	"galihwicaksono90/musikmarching-be/internal/constants/model"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 
@@ -17,18 +16,11 @@ type AccountService interface {
 	GetUserByEmail(string) (*model.Account, error)
 	UpsertAccount(goth.User) (*model.SessionUser, error)
 	UpdateRole(uuid.UUID, db.Rolename) error
-	ApplyContributor(db.CreateContributorApplyParams) (db.ContributorApply, error)
 }
 
 type accountService struct {
 	logger *logrus.Logger
 	store  db.Store
-}
-
-// ApplyContributor implements AccountService.
-func (s *accountService) ApplyContributor(params db.CreateContributorApplyParams) (db.ContributorApply, error) {
-	ctx := context.Background()
-	return s.store.CreateContributorApply(ctx, params)
 }
 
 // GetUserByID implements AccountService.

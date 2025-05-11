@@ -8,10 +8,11 @@ import (
 	"galihwicaksono90/musikmarching-be/internal/services/auth"
 	"galihwicaksono90/musikmarching-be/internal/services/category"
 	"galihwicaksono90/musikmarching-be/internal/services/contributor"
+	"galihwicaksono90/musikmarching-be/internal/services/contributor-apply"
 	"galihwicaksono90/musikmarching-be/internal/services/file"
 	"galihwicaksono90/musikmarching-be/internal/services/instrument"
-	"galihwicaksono90/musikmarching-be/internal/services/purchase"
 	"galihwicaksono90/musikmarching-be/internal/services/payment"
+	"galihwicaksono90/musikmarching-be/internal/services/purchase"
 	"galihwicaksono90/musikmarching-be/internal/services/score"
 	db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 	"galihwicaksono90/musikmarching-be/pkg/email"
@@ -22,20 +23,21 @@ import (
 )
 
 type Handler struct {
-	logger      *logrus.Logger
-	store       *db.Store
-	auth        auth.AuthService
-	account     account.AccountService
-	score       score.ScoreService
-	purchase    purchase.PurchaseService
-	payment    payment.PaymentService
-	contributor contributor.ContributorService
-	instrument  instrument.InstrumentService
-	category    category.CategoryService
-	allocation  allocation.AllocationService
-	file        file.FileService
-	email       email.Email
-	validate    *validator.Validate
+	logger           *logrus.Logger
+	store            *db.Store
+	auth             auth.AuthService
+	account          account.AccountService
+	score            score.ScoreService
+	purchase         purchase.PurchaseService
+	payment          payment.PaymentService
+	contributor      contributor.ContributorService
+	contributorApply contributorapply.ContributorApplyService
+	instrument       instrument.InstrumentService
+	category         category.CategoryService
+	allocation       allocation.AllocationService
+	file             file.FileService
+	email            email.Email
+	validate         *validator.Validate
 }
 
 func New(
@@ -47,6 +49,7 @@ func New(
 	purchase purchase.PurchaseService,
 	payment payment.PaymentService,
 	contributor contributor.ContributorService,
+	contributorApply contributorapply.ContributorApplyService,
 	instrument instrument.InstrumentService,
 	category category.CategoryService,
 	allocation allocation.AllocationService,
@@ -63,6 +66,7 @@ func New(
 		purchase,
 		payment,
 		contributor,
+		contributorApply,
 		instrument,
 		category,
 		allocation,
