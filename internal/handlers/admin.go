@@ -91,12 +91,16 @@ func (h *Handler) HandleAdminVerifyPurchase(w http.ResponseWriter, r *http.Reque
 
 func (h *Handler) HandleAdminVerifyContributorApplication(w http.ResponseWriter, r *http.Request) {
 	accountID, err := uuid.Parse(mux.Vars(r)["id"])
+
 	if err != nil {
 		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
 		return
 	}
 
-	if err := h.admin.VerifyContributorApplication(accountID); err != nil{
+	if err := h.admin.VerifyContributorApplication(accountID); err != nil {
+		h.logger.Println("=====")
+		h.logger.Errorln(err)
+		h.logger.Println("=====")
 		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
 	}
 

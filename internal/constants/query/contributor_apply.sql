@@ -51,5 +51,15 @@ select * from contributor_apply
 update contributor_apply set 
 is_verified = true,
 updated_at = now()
-where account_id = @account_id::uuid
+where id = @account_id::uuid
+;
+
+-- name: CreateContributorFromContributorApply :exec
+with contributor_apply_data as (
+  select * from contributor_apply
+  where id = @account_id::uuid
+) 
+insert into contributor(id, full_name, phone_number, musical_background, education, experience, portofolio_link, is_verified)
+select id, full_name, phone_number, musical_background, education, experience, portofolio_link, true
+from contributor_apply_data
 ;

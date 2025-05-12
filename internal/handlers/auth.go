@@ -8,7 +8,6 @@ import (
 	// db "galihwicaksono90/musikmarching-be/internal/storage/persistence"
 	"galihwicaksono90/musikmarching-be/pkg/middlewares"
 	"net/http"
-	"reflect"
 
 	"github.com/markbates/goth/gothic"
 	"github.com/spf13/viper"
@@ -114,15 +113,3 @@ func (h *Handler) getSessionUser(r *http.Request) *model.SessionUser {
 
 	return user
 }
-
-func structToMap(obj interface{}) map[string]interface{} {
-	result := make(map[string]interface{})
-	val := reflect.ValueOf(obj)
-	typ := val.Type()
-
-	for i := 0; i < val.NumField(); i++ {
-		field := val.Field(i)
-		result[typ.Field(i).Name] = field.Interface()
-	}
-	return result
-} 

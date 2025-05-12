@@ -16,6 +16,7 @@ type Querier interface {
 	CreateCategory(ctx context.Context, name string) (Category, error)
 	CreateContributor(ctx context.Context, arg CreateContributorParams) (uuid.UUID, error)
 	CreateContributorApply(ctx context.Context, arg CreateContributorApplyParams) (ContributorApply, error)
+	CreateContributorFromContributorApply(ctx context.Context, accountID uuid.UUID) error
 	CreateInstrument(ctx context.Context, name string) (Instrument, error)
 	CreatePayment(ctx context.Context, purchaseID uuid.UUID) error
 	CreatePurchase(ctx context.Context, arg CreatePurchaseParams) (uuid.UUID, error)

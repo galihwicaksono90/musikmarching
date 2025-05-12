@@ -83,6 +83,21 @@ func (q *Queries) CreateContributorApply(ctx context.Context, arg CreateContribu
 	return i, err
 }
 
+const createContributorFromContributorApply = `-- name: CreateContributorFromContributorApply :exec
+with contributor_apply_data as (
+  select id, is_verified, full_name, phone_number, musical_background, education, experience, portofolio_link, terms_and_conditions_accepted, sample_url, created_at, updated_at from contributor_apply
+  where id = $1::uuid
+) 
+insert into contributor(id, full_name, phone_number, musical_background, education, experience, portofolio_link, is_verified)
+select id, full_name, phone_number, musical_background, education, experience, portofolio_link, true
+from contributor_apply_data
+`
+
+func (q *Queries) CreateContributorFromContributorApply(ctx context.Context, accountID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, createContributorFromContributorApply, accountID)
+	return err
+}
+
 const getContributorApplications = `-- name: GetContributorApplications :many
 select id, is_verified, full_name, phone_number, musical_background, education, experience, portofolio_link, terms_and_conditions_accepted, sample_url, created_at, updated_at from contributor_apply
 `
@@ -183,7 +198,7 @@ const verifyContributorApply = `-- name: VerifyContributorApply :exec
 update contributor_apply set 
 is_verified = true,
 updated_at = now()
-where account_id = $1::uuid
+where id = $1::uuid
 `
 
 func (q *Queries) VerifyContributorApply(ctx context.Context, accountID uuid.UUID) error {

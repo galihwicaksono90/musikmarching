@@ -84,9 +84,6 @@ func (h *Handler) HandleGetContributorApplications(w http.ResponseWriter, r *htt
 		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
 		return
 	}
-	h.logger.Println("=====")
-	h.logger.Println(applications)
-	h.logger.Println("=====")
 
 	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), applications)
 }
