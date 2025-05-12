@@ -59,4 +59,6 @@ func Routings(handler *handlers.Handler, baseRouter *mux.Router) {
 	adminRouter.HandleFunc("/contributor/verify/{id}", handler.HandleAdminVerifyContributor).Methods("POST")
 	adminRouter.HandleFunc("/purchases", handler.HandleAdminGetPurchases).Methods("GET")
 	adminRouter.HandleFunc("/purchase/verify/{id}", handler.HandleAdminVerifyPurchase).Methods("POST")
+	adminRouter.HandleFunc("/application", handler.HandleGetContributorApplications).Methods("GET")
+	adminRouter.HandleFunc("/application/{id}", handler.HandleAdminVerifyContributorApplication).Methods("POST")
 }

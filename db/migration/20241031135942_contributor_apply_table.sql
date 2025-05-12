@@ -1,8 +1,8 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE contributor_apply (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  account_id UUID NOT NULL references account (id) deferrable initially deferred unique,
+  id UUID PRIMARY KEY references account (id),
+  is_verified BOOLEAN NOT NULL DEFAULT false,
   full_name VARCHAR(255) NOT NULL,
   phone_number VARCHAR(255) NOT NULL,
   musical_background TEXT NOT NULL,

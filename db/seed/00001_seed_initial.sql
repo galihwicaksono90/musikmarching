@@ -46,10 +46,55 @@ values
 )
 ;
 
-insert into contributor (id, full_name, is_verified, verified_at)
+insert into contributor_apply (
+  id, 
+  full_name, 
+  phone_number,
+  musical_background,
+  is_verified
+) values 
+  (
+  'f45cb09c-7ef3-473a-a8df-0e580ad026d1', 
+  'Tony Blank', 
+  '+6289999999', 
+  'Basic',
+  'true'
+  ),
+  (
+  '52240b2c-ec89-4415-89de-ef4b35078486', 
+  'Swaranada Musik', 
+  '+6289999999', 
+  'Basic',
+  'true'
+  )
+;
+
+
+insert into contributor (
+  id, 
+  full_name, 
+  is_verified, 
+  verified_at,
+  phone_number,
+  musical_background
+)
 values 
-  ('f45cb09c-7ef3-473a-a8df-0e580ad026d1', 'Tony Blank', true, now()),
-  ('52240b2c-ec89-4415-89de-ef4b35078486', 'Swaranada Musik', true, now())
+(
+  'f45cb09c-7ef3-473a-a8df-0e580ad026d1', 
+  'Tony Blank', 
+  true, 
+  now(),
+  '+6289999999', 
+  'Basic'
+),
+(
+  '52240b2c-ec89-4415-89de-ef4b35078486', 
+  'Swaranada Musik', 
+  true, 
+  now(),
+  '+6289999999', 
+  'Basic'
+)
 ;
 
 insert into score (id, title, description, price, difficulty, contributor_id, pdf_url, pdf_image_urls, audio_url, is_verified, verified_at, content_type)

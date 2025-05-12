@@ -12,11 +12,17 @@ type ContributorApplyService interface {
 	Apply(db.CreateContributorApplyParams) (db.ContributorApply, error)
 	GetByAccountID(uuid.UUID) (db.ContributorApply, error)
 	Update(db.UpdateContributorApplyParams) error
+	GetAll() ([]db.ContributorApply, error)
 }
 
 type contributorApplyService struct {
 	logger *logrus.Logger
 	store  db.Store
+}
+
+// GetAll implements ContributorApplyService.
+func (s *contributorApplyService) GetAll() ([]db.ContributorApply, error) {
+	return s.store.GetContributorApplications(context.Background())
 }
 
 // Update implements ContributorApplyService.

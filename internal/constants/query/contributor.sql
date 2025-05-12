@@ -4,8 +4,23 @@ where cas.id = @id
 ;
 
 -- name: CreateContributor :one
-insert into contributor as c (id, full_name)
-values (@id, @full_name)
+insert into contributor as c (
+  id, 
+  full_name,
+  phone_number,
+  musical_background,
+  education,
+  experience,
+  portofolio_link
+) values (
+  @id, 
+  @full_name,
+  @phone_number,
+  @musical_background,
+  education = COALESCE(sqlc.narg('education'), education),
+  experience = COALESCE(sqlc.narg('experience'), experience),
+  portofolio_link = COALESCE(sqlc.narg('portofolio_link'), portofolio_link)
+)
 on conflict do nothing
 returning c.id
 ;

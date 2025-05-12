@@ -38,7 +38,7 @@ func (h *Handler) HandleCreateContributorApply(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	params.AccountID = user.ID
+	params.ID = user.ID
 	data, err := h.contributorApply.Apply(params)
 	if err != nil {
 		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
@@ -75,4 +75,18 @@ func (h *Handler) HandleUpdateContributorApply(w http.ResponseWriter, r *http.Re
 	}
 
 	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), nil)
+}
+
+func (h *Handler) HandleGetContributorApplications(w http.ResponseWriter, r *http.Request) {
+	applications, err := h.contributorApply.GetAll()
+	if err != nil {
+		h.logger.Error(err)
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
+		return
+	}
+	h.logger.Println("=====")
+	h.logger.Println(applications)
+	h.logger.Println("=====")
+
+	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), applications)
 }

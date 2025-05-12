@@ -15,7 +15,7 @@ import (
 const createContributorApply = `-- name: CreateContributorApply :one
 insert into contributor_apply
 (
-  account_id, 
+  id,
   full_name,
   phone_number,
   musical_background,
@@ -23,10 +23,11 @@ insert into contributor_apply
   experience,
   portofolio_link,
   sample_url,
-  terms_and_conditions_accepted
+  terms_and_conditions_accepted,
+  is_verified
 )
 values (
-  $1, 
+  $1,
   $2,
   $3,
   $4,
@@ -34,13 +35,14 @@ values (
   $6,
   $7,
   $8,
-  $9
+  $9,
+  false
 )
-returning id, account_id, full_name, phone_number, musical_background, education, experience, portofolio_link, terms_and_conditions_accepted, sample_url, created_at, updated_at
+returning id, is_verified, full_name, phone_number, musical_background, education, experience, portofolio_link, terms_and_conditions_accepted, sample_url, created_at, updated_at
 `
 
 type CreateContributorApplyParams struct {
-	AccountID                  uuid.UUID   `db:"account_id" json:"account_id"`
+	ID                         uuid.UUID   `db:"id" json:"id"`
 	FullName                   string      `db:"full_name" json:"full_name"`
 	PhoneNumber                string      `db:"phone_number" json:"phone_number"`
 	MusicalBackground          string      `db:"musical_background" json:"musical_background"`
@@ -53,7 +55,7 @@ type CreateContributorApplyParams struct {
 
 func (q *Queries) CreateContributorApply(ctx context.Context, arg CreateContributorApplyParams) (ContributorApply, error) {
 	row := q.db.QueryRow(ctx, createContributorApply,
-		arg.AccountID,
+		arg.ID,
 		arg.FullName,
 		arg.PhoneNumber,
 		arg.MusicalBackground,
@@ -66,7 +68,7 @@ func (q *Queries) CreateContributorApply(ctx context.Context, arg CreateContribu
 	var i ContributorApply
 	err := row.Scan(
 		&i.ID,
-		&i.AccountID,
+		&i.IsVerified,
 		&i.FullName,
 		&i.PhoneNumber,
 		&i.MusicalBackground,
@@ -81,8 +83,45 @@ func (q *Queries) CreateContributorApply(ctx context.Context, arg CreateContribu
 	return i, err
 }
 
+const getContributorApplications = `-- name: GetContributorApplications :many
+select id, is_verified, full_name, phone_number, musical_background, education, experience, portofolio_link, terms_and_conditions_accepted, sample_url, created_at, updated_at from contributor_apply
+`
+
+func (q *Queries) GetContributorApplications(ctx context.Context) ([]ContributorApply, error) {
+	rows, err := q.db.Query(ctx, getContributorApplications)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ContributorApply{}
+	for rows.Next() {
+		var i ContributorApply
+		if err := rows.Scan(
+			&i.ID,
+			&i.IsVerified,
+			&i.FullName,
+			&i.PhoneNumber,
+			&i.MusicalBackground,
+			&i.Education,
+			&i.Experience,
+			&i.PortofolioLink,
+			&i.TermsAndConditionsAccepted,
+			&i.SampleUrl,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getContributorApplyByAccountID = `-- name: GetContributorApplyByAccountID :one
-select id, account_id, full_name, phone_number, musical_background, education, experience, portofolio_link, terms_and_conditions_accepted, sample_url, created_at, updated_at from contributor_apply where account_id = $1
+select id, is_verified, full_name, phone_number, musical_background, education, experience, portofolio_link, terms_and_conditions_accepted, sample_url, created_at, updated_at from contributor_apply where id = $1
 `
 
 func (q *Queries) GetContributorApplyByAccountID(ctx context.Context, accountID uuid.UUID) (ContributorApply, error) {
@@ -90,7 +129,7 @@ func (q *Queries) GetContributorApplyByAccountID(ctx context.Context, accountID 
 	var i ContributorApply
 	err := row.Scan(
 		&i.ID,
-		&i.AccountID,
+		&i.IsVerified,
 		&i.FullName,
 		&i.PhoneNumber,
 		&i.MusicalBackground,
@@ -112,8 +151,9 @@ phone_number = $2,
 musical_background = COALESCE($3, musical_background),
 education = COALESCE($4, education),
 experience = COALESCE($5, experience),
+experience = COALESCE($6, portofolio_link),
 updated_at = now()
-where account_id = $6::uuid
+where id = $7::uuid
 `
 
 type UpdateContributorApplyParams struct {
@@ -122,6 +162,7 @@ type UpdateContributorApplyParams struct {
 	MusicalBackground pgtype.Text `db:"musical_background" json:"musical_background"`
 	Education         pgtype.Text `db:"education" json:"education"`
 	Experience        pgtype.Text `db:"experience" json:"experience"`
+	PortofolioLink    pgtype.Text `db:"portofolio_link" json:"portofolio_link"`
 	AccountID         uuid.UUID   `db:"account_id" json:"account_id"`
 }
 
@@ -132,7 +173,20 @@ func (q *Queries) UpdateContributorApply(ctx context.Context, arg UpdateContribu
 		arg.MusicalBackground,
 		arg.Education,
 		arg.Experience,
+		arg.PortofolioLink,
 		arg.AccountID,
 	)
+	return err
+}
+
+const verifyContributorApply = `-- name: VerifyContributorApply :exec
+update contributor_apply set 
+is_verified = true,
+updated_at = now()
+where account_id = $1::uuid
+`
+
+func (q *Queries) VerifyContributorApply(ctx context.Context, accountID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, verifyContributorApply, accountID)
 	return err
 }

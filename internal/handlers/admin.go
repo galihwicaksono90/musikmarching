@@ -88,3 +88,17 @@ func (h *Handler) HandleAdminVerifyPurchase(w http.ResponseWriter, r *http.Reque
 
 	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), true)
 }
+
+func (h *Handler) HandleAdminVerifyContributorApplication(w http.ResponseWriter, r *http.Request) {
+	accountID, err := uuid.Parse(mux.Vars(r)["id"])
+	if err != nil {
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
+		return
+	}
+
+	if err := h.admin.VerifyContributorApplication(accountID); err != nil{
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), err)
+	}
+
+	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), true)
+}

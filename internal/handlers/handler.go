@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"galihwicaksono90/musikmarching-be/internal/constants/model"
 	"galihwicaksono90/musikmarching-be/internal/services/account"
+	"galihwicaksono90/musikmarching-be/internal/services/admin"
 	"galihwicaksono90/musikmarching-be/internal/services/allocation"
 	"galihwicaksono90/musikmarching-be/internal/services/auth"
 	"galihwicaksono90/musikmarching-be/internal/services/category"
@@ -27,6 +28,7 @@ type Handler struct {
 	store            *db.Store
 	auth             auth.AuthService
 	account          account.AccountService
+	admin          admin.AdminService
 	score            score.ScoreService
 	purchase         purchase.PurchaseService
 	payment          payment.PaymentService
@@ -45,6 +47,7 @@ func New(
 	store *db.Store,
 	auth auth.AuthService,
 	account account.AccountService,
+	admin admin.AdminService,
 	score score.ScoreService,
 	purchase purchase.PurchaseService,
 	payment payment.PaymentService,
@@ -62,6 +65,7 @@ func New(
 		store,
 		auth,
 		account,
+		admin,
 		score,
 		purchase,
 		payment,

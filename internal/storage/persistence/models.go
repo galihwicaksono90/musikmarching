@@ -163,30 +163,40 @@ type Category struct {
 }
 
 type Contributor struct {
-	ID         uuid.UUID          `db:"id" json:"id"`
-	IsVerified pgtype.Bool        `db:"is_verified" json:"is_verified"`
-	FullName   string             `db:"full_name" json:"full_name"`
-	VerifiedAt pgtype.Timestamptz `db:"verified_at" json:"verified_at"`
-	CreatedAt  time.Time          `db:"created_at" json:"created_at"`
-	UpdatedAt  pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
-	DeletedAt  pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
+	ID                uuid.UUID          `db:"id" json:"id"`
+	IsVerified        pgtype.Bool        `db:"is_verified" json:"is_verified"`
+	FullName          string             `db:"full_name" json:"full_name"`
+	VerifiedAt        pgtype.Timestamptz `db:"verified_at" json:"verified_at"`
+	PhoneNumber       string             `db:"phone_number" json:"phone_number"`
+	MusicalBackground string             `db:"musical_background" json:"musical_background"`
+	Education         pgtype.Text        `db:"education" json:"education"`
+	Experience        pgtype.Text        `db:"experience" json:"experience"`
+	PortofolioLink    pgtype.Text        `db:"portofolio_link" json:"portofolio_link"`
+	CreatedAt         time.Time          `db:"created_at" json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	DeletedAt         pgtype.Timestamptz `db:"deleted_at" json:"deleted_at"`
 }
 
 type ContributorAccountScore struct {
-	ID         uuid.UUID              `db:"id" json:"id"`
-	IsVerified pgtype.Bool            `db:"is_verified" json:"is_verified"`
-	FullName   string                 `db:"full_name" json:"full_name"`
-	VerifiedAt pgtype.Timestamptz     `db:"verified_at" json:"verified_at"`
-	CreatedAt  time.Time              `db:"created_at" json:"created_at"`
-	UpdatedAt  pgtype.Timestamptz     `db:"updated_at" json:"updated_at"`
-	DeletedAt  pgtype.Timestamptz     `db:"deleted_at" json:"deleted_at"`
-	Email      string                 `db:"email" json:"email"`
-	Scores     []ScoreContributorView `db:"scores" json:"scores"`
+	ID                uuid.UUID              `db:"id" json:"id"`
+	IsVerified        pgtype.Bool            `db:"is_verified" json:"is_verified"`
+	FullName          string                 `db:"full_name" json:"full_name"`
+	VerifiedAt        pgtype.Timestamptz     `db:"verified_at" json:"verified_at"`
+	PhoneNumber       string                 `db:"phone_number" json:"phone_number"`
+	MusicalBackground string                 `db:"musical_background" json:"musical_background"`
+	Education         pgtype.Text            `db:"education" json:"education"`
+	Experience        pgtype.Text            `db:"experience" json:"experience"`
+	PortofolioLink    pgtype.Text            `db:"portofolio_link" json:"portofolio_link"`
+	CreatedAt         time.Time              `db:"created_at" json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz     `db:"updated_at" json:"updated_at"`
+	DeletedAt         pgtype.Timestamptz     `db:"deleted_at" json:"deleted_at"`
+	Email             string                 `db:"email" json:"email"`
+	Scores            []ScoreContributorView `db:"scores" json:"scores"`
 }
 
 type ContributorApply struct {
 	ID                         uuid.UUID          `db:"id" json:"id"`
-	AccountID                  uuid.UUID          `db:"account_id" json:"account_id"`
+	IsVerified                 bool               `db:"is_verified" json:"is_verified"`
 	FullName                   string             `db:"full_name" json:"full_name"`
 	PhoneNumber                string             `db:"phone_number" json:"phone_number"`
 	MusicalBackground          string             `db:"musical_background" json:"musical_background"`

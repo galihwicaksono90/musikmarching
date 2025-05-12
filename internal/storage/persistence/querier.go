@@ -38,6 +38,7 @@ type Querier interface {
 	GetAllPurchases(ctx context.Context) ([]GetAllPurchasesRow, error)
 	GetAllocations(ctx context.Context) ([]Allocation, error)
 	GetCategories(ctx context.Context) ([]Category, error)
+	GetContributorApplications(ctx context.Context) ([]ContributorApply, error)
 	GetContributorApplyByAccountID(ctx context.Context, accountID uuid.UUID) (ContributorApply, error)
 	GetContributorBestSellingScores(ctx context.Context, contributorID uuid.UUID) ([]GetContributorBestSellingScoresRow, error)
 	GetContributorById(ctx context.Context, id uuid.UUID) (ContributorAccountScore, error)
@@ -75,6 +76,7 @@ type Querier interface {
 	UpdateScore(ctx context.Context, arg UpdateScoreParams) error
 	UpsertContributorPaymentMethod(ctx context.Context, arg UpsertContributorPaymentMethodParams) error
 	VerifyContributor(ctx context.Context, id uuid.UUID) error
+	VerifyContributorApply(ctx context.Context, accountID uuid.UUID) error
 	VerifyPurchase(ctx context.Context, id uuid.UUID) (Purchase, error)
 	VerifyScore(ctx context.Context, id uuid.UUID) error
 }

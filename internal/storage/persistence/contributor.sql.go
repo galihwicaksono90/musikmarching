@@ -14,26 +14,54 @@ import (
 )
 
 const createContributor = `-- name: CreateContributor :one
-insert into contributor as c (id, full_name)
-values ($1, $2)
+insert into contributor as c (
+  id, 
+  full_name,
+  phone_number,
+  musical_background,
+  education,
+  experience,
+  portofolio_link
+) values (
+  $1, 
+  $2,
+  $3,
+  $4,
+  education = COALESCE($5, education),
+  experience = COALESCE($6, experience),
+  portofolio_link = COALESCE($7, portofolio_link)
+)
 on conflict do nothing
 returning c.id
 `
 
 type CreateContributorParams struct {
-	ID       uuid.UUID `db:"id" json:"id"`
-	FullName string    `db:"full_name" json:"full_name"`
+	ID                uuid.UUID   `db:"id" json:"id"`
+	FullName          string      `db:"full_name" json:"full_name"`
+	PhoneNumber       string      `db:"phone_number" json:"phone_number"`
+	MusicalBackground string      `db:"musical_background" json:"musical_background"`
+	Education         pgtype.Text `db:"education" json:"education"`
+	Experience        pgtype.Text `db:"experience" json:"experience"`
+	PortofolioLink    pgtype.Text `db:"portofolio_link" json:"portofolio_link"`
 }
 
 func (q *Queries) CreateContributor(ctx context.Context, arg CreateContributorParams) (uuid.UUID, error) {
-	row := q.db.QueryRow(ctx, createContributor, arg.ID, arg.FullName)
+	row := q.db.QueryRow(ctx, createContributor,
+		arg.ID,
+		arg.FullName,
+		arg.PhoneNumber,
+		arg.MusicalBackground,
+		arg.Education,
+		arg.Experience,
+		arg.PortofolioLink,
+	)
 	var id uuid.UUID
 	err := row.Scan(&id)
 	return id, err
 }
 
 const getAllContributors = `-- name: GetAllContributors :many
-select id, is_verified, full_name, verified_at, created_at, updated_at, deleted_at, email, scores from contributor_account_scores as cas
+select id, is_verified, full_name, verified_at, phone_number, musical_background, education, experience, portofolio_link, created_at, updated_at, deleted_at, email, scores from contributor_account_scores as cas
 `
 
 func (q *Queries) GetAllContributors(ctx context.Context) ([]ContributorAccountScore, error) {
@@ -50,6 +78,11 @@ func (q *Queries) GetAllContributors(ctx context.Context) ([]ContributorAccountS
 			&i.IsVerified,
 			&i.FullName,
 			&i.VerifiedAt,
+			&i.PhoneNumber,
+			&i.MusicalBackground,
+			&i.Education,
+			&i.Experience,
+			&i.PortofolioLink,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -110,7 +143,7 @@ func (q *Queries) GetContributorBestSellingScores(ctx context.Context, contribut
 }
 
 const getContributorById = `-- name: GetContributorById :one
-select id, is_verified, full_name, verified_at, created_at, updated_at, deleted_at, email, scores from contributor_account_scores as cas
+select id, is_verified, full_name, verified_at, phone_number, musical_background, education, experience, portofolio_link, created_at, updated_at, deleted_at, email, scores from contributor_account_scores as cas
 where cas.id = $1
 `
 
@@ -122,6 +155,11 @@ func (q *Queries) GetContributorById(ctx context.Context, id uuid.UUID) (Contrib
 		&i.IsVerified,
 		&i.FullName,
 		&i.VerifiedAt,
+		&i.PhoneNumber,
+		&i.MusicalBackground,
+		&i.Education,
+		&i.Experience,
+		&i.PortofolioLink,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -282,7 +320,7 @@ func (q *Queries) GetContributorScoreStatistics(ctx context.Context, contributor
 }
 
 const getUnverifiedContributors = `-- name: GetUnverifiedContributors :many
-select id, is_verified, full_name, verified_at, created_at, updated_at, deleted_at from contributor as c
+select id, is_verified, full_name, verified_at, phone_number, musical_background, education, experience, portofolio_link, created_at, updated_at, deleted_at from contributor as c
 where c.is_verified = false
 `
 
@@ -300,6 +338,11 @@ func (q *Queries) GetUnverifiedContributors(ctx context.Context) ([]Contributor,
 			&i.IsVerified,
 			&i.FullName,
 			&i.VerifiedAt,
+			&i.PhoneNumber,
+			&i.MusicalBackground,
+			&i.Education,
+			&i.Experience,
+			&i.PortofolioLink,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,

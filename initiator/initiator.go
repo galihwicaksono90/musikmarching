@@ -6,6 +6,7 @@ import (
 	"galihwicaksono90/musikmarching-be/internal/constants/routings"
 	"galihwicaksono90/musikmarching-be/internal/handlers"
 	"galihwicaksono90/musikmarching-be/internal/services/account"
+	"galihwicaksono90/musikmarching-be/internal/services/admin"
 	"galihwicaksono90/musikmarching-be/internal/services/allocation"
 	"galihwicaksono90/musikmarching-be/internal/services/auth"
 	"galihwicaksono90/musikmarching-be/internal/services/category"
@@ -65,6 +66,7 @@ func Init() {
 	// services
 	authService := auth.NewAuthService(logger, sessionStore)
 	accountService := account.NewAccountService(logger, store)
+	adminService := admin.NewAdminService(logger, store)
 	scoreService := score.NewScoreService(logger, store)
 	purchaseService := purchase.NewPurchaseService(logger, store)
 	instrumentService := instrument.NewInstrumentService(logger, store)
@@ -81,6 +83,7 @@ func Init() {
 		&store,
 		authService,
 		accountService,
+		adminService,
 		scoreService,
 		purchaseService,
 		paymentService,
