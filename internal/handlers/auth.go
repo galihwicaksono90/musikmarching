@@ -64,6 +64,9 @@ func (h *Handler) HandleAuthCallbackFunction(w http.ResponseWriter, r *http.Requ
 
 func (h *Handler) HandleMe(w http.ResponseWriter, r *http.Request) {
 	u := h.getSessionUser(r)
+	h.logger.Println("HandleMe")
+	h.logger.Println(u)
+	h.logger.Println("HandleMe")
 
 	if u == nil {
 		h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), u)
@@ -76,26 +79,29 @@ func (h *Handler) HandleMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := make(map[string]interface{})
-	user["id"] = account.ID
-	user["name"] = account.Name
-	user["email"] = account.Email
-	user["role_name"] = account.RoleName
+	var user model.SessionUser
 
-	if account.RoleName != db.RolenameContributor {
-		h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), user)
-		return
+	user.ID = account.ID
+	user.Name = account.Name
+	user.Email = account.Email
+	user.RoleName = account.RoleName
+
+	if account.RoleName == db.RolenameContributor {
+		c, err := h.contributor.GetByID(u.ID)
+		if err != nil {
+			h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "Failed to get contributor")
+			return
+		}
+		user.Name = c.FullName
+		user.Is_Verified = c.IsVerified
+		user.Verified_at = c.VerifiedAt
 	}
 
-	c, err := h.contributor.GetByID(u.ID)
-	if err != nil {
-		h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), u)
+	if err := h.auth.StoreUserSession(w, r, &user); err != nil {
+		h.logger.Println("err", err)
+		h.handleResponse(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), "Failed to store user session")
 		return
 	}
-
-	user["name"] = c.FullName
-	user["is_verified"] = c.IsVerified
-	user["verified_at"] = c.VerifiedAt
 
 	h.handleResponse(w, http.StatusOK, http.StatusText(http.StatusOK), user)
 }

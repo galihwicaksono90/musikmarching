@@ -5,14 +5,17 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type SessionUser struct {
-	ID         uuid.UUID   `json:"id"`
-	Email      string      `json:"email"`
-	Name       string      `json:"name"`
-	RoleName   db.Rolename `json:"role_name"`
-	PictureUrl string      `json:"picture"`
+	ID          uuid.UUID          `json:"id"`
+	Email       string             `json:"email"`
+	Name        string             `json:"name"`
+	RoleName    db.Rolename        `json:"role_name"`
+	PictureUrl  string             `json:"picture"`
+	Is_Verified pgtype.Bool        `json:"is_verified"`
+	Verified_at pgtype.Timestamptz `json:"verified_at"`
 }
 
 type Account struct {
@@ -29,8 +32,8 @@ type Account struct {
 type FileLocation string
 
 const (
-    PDF_LOCATION FileLocation = "pdf"
-    AUDIO_LOCATION  FileLocation = "audio"
-    PDF_IMAGE_LOCATION  FileLocation = "pdf_image"
-    PAYMENT_PROOF_IMAGE_LOCATION  FileLocation = "payment_proof"
+	PDF_LOCATION                 FileLocation = "pdf"
+	AUDIO_LOCATION               FileLocation = "audio"
+	PDF_IMAGE_LOCATION           FileLocation = "pdf_image"
+	PAYMENT_PROOF_IMAGE_LOCATION FileLocation = "payment_proof"
 )
