@@ -43,6 +43,13 @@ values
   'Swaranada Music', 
   'https://lh3.googleusercontent.com/a/ACg8ocJWwtbtedC3Ys49-9UFEcTJ4xiUFAdTLikFNOwuemfqxPaIEYE=s96-c',
   (select id from role where name = 'contributor')
+),
+(
+  '9d097a64-1fd3-4dca-9a7f-5b033b948ddf',
+  'lillahhamdi@gmail.com', 
+  'Lillah Hamdi', 
+  'https://lh3.googleusercontent.com/a/ACg8ocJWwtbtedC3Ys49-9UFEcTJ4xiUFAdTLikFNOwuemfqxPaIEYE=s96-c',
+  (select id from role where name = 'admin')
 )
 ;
 
